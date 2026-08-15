@@ -31,14 +31,19 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-const nav = [
+const nav: Array<{
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings";
+  label: string;
+  icon: typeof Database;
+  exact?: boolean;
+}> = [
   { to: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true },
   { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database },
   { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle },
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare },
   { to: "/admin/connections", label: "কানেকশন", icon: KeyRound },
   { to: "/admin/settings", label: "সেটিংস", icon: Settings },
-] as const;
+];
 
 function AdminLayout() {
   const navigate = useNavigate();
