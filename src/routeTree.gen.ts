@@ -16,6 +16,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
 import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
 import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 
@@ -54,6 +55,11 @@ const AdminPlaygroundRoute = AdminPlaygroundRouteImport.update({
   path: '/playground',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminTrainingRoute = AdminTrainingRouteImport.update({
   id: '/training',
   path: '/training',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
+    | '/admin/settings'
     | '/admin/training'
     | '/admin/'
     | '/api/public/chat'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
+    | '/admin/settings'
     | '/admin/training'
     | '/admin'
     | '/api/public/chat'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
+    | '/admin/settings'
     | '/admin/training'
     | '/admin/'
     | '/api/public/chat'
@@ -191,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlaygroundRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/training': {
       id: '/admin/training'
       path: '/training'
@@ -212,6 +231,7 @@ interface AdminRouteChildren {
   AdminAddRoute: typeof AdminAddRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
   AdminPlaygroundRoute: typeof AdminPlaygroundRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -220,6 +240,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAddRoute: AdminAddRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
   AdminPlaygroundRoute: AdminPlaygroundRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminTrainingRoute: AdminTrainingRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
