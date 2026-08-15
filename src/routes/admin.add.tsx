@@ -1,0 +1,238 @@
+import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  extractPairsFromText,
+  importConversationsJson,
+  importPairs,
+  savePair,
+} from "@/lib/console.functions";
+import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { Loader2, Sparkles, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/admin/add")({
+  component: AddData,
+});
+
+type Pair = { question: string; answer: string };
+
+function AddData() {
+  return (
+    <div className="mx-auto max-w-3xl">
+      <h1 className="text-2xl font-semibold">নতুন ডেটা যোগ করুন</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        যা যোগ করবেন, AI সঙ্গে সঙ্গে সেটা থেকে উত্তর দিতে শুরু করবে।
+      </p>
+
+      <Tabs defaultValue="voice" className="mt-6">
+        <TabsList>
+          <TabsTrigger value="voice">ভয়েস</TabsTrigger>
+          <TabsTrigger value="manual">প্রশ্ন-উত্তর</TabsTrigger>
+          <TabsTrigger value="json">JSON আপলোড</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="voice" className="mt-4">
+          <VoicePanel />
+        </TabsContent>
+        <TabsContent value="manual" className="mt-4">
+          <ManualPanel />
+        </TabsContent>
+        <TabsContent value="json" className="mt-4">
+          <JsonPanel />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function VoicePanel() {
+  const [text, setText] = useState("");
+  const [pairs, setPairs] = useState<Pair[]>([]);
+  const [busy, setBusy] = useState(false);
+  const extract = useServerFn(extractPairsFromText);
+  const save = useServerFn(importPairs);
+
+  async function runExtract() {
+    if (text.trim().length < 3) return;
+    setBusy(true);
+    try {
+      const { items } = await extract({ data: { text: text.trim() } });
+      if (!items.length) toast.error("কোনো প্রশ্ন-উত্তর বের করা যায়নি, নিজে লিখে দিন।");
+      setPairs(items);
+    } catch {
+      toast.error("প্রসেস করা যায়নি।");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveAll() {
+    const items = pairs.filter((p) => p.question.trim() && p.answer.trim());
+    if (!items.length) return;
+    setBusy(true);
+    try {
+      await save({ data: { items, source: "voice" } });
+      toast.success(`${items.length} টি জোড়া ট্রেনিংয়ে যোগ হয়েছে`);
+      setPairs([]);
+      setText("");
+    } catch {
+      toast.error("সেভ করা যায়নি।");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="panel space-y-4 p-5">
+      <VoiceRecorder onText={(t) => setText((prev) => (prev ? prev + " " + t : t))} />
+      <div className="space-y-1.5">
+        <Label htmlFor="voice-text">ট্রান্সক্রিপ্ট</Label>
+        <Textarea
+          id="voice-text"
+          rows={6}
+          placeholder="ভয়েস রেকর্ড করলে এখানে লেখা আসবে — চাইলে এডিটও করতে পারবেন।"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+      </div>
+      <Button onClick={runExtract} disabled={busy || text.trim().length < 3}>
+        {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+        প্রশ্ন-উত্তরে রূপান্তর
+      </Button>
+
+      {pairs.length > 0 && (
+        <div className="space-y-3 border-t border-border pt-4">
+          {pairs.map((p, i) => (
+            <div key={i} className="rounded-lg bg-secondary/60 p-3">
+              <Input
+                className="bg-card"
+                value={p.question}
+                onChange={(e) =>
+                  setPairs((prev) =>
+                    prev.map((x, j) => (j === i ? { ...x, question: e.target.value } : x)),
+                  )
+                }
+              />
+              <Textarea
+                className="mt-2 bg-card"
+                rows={3}
+                value={p.answer}
+                onChange={(e) =>
+                  setPairs((prev) =>
+                    prev.map((x, j) => (j === i ? { ...x, answer: e.target.value } : x)),
+                  )
+                }
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2"
+                onClick={() => setPairs((prev) => prev.filter((_, j) => j !== i))}
+              >
+                <Trash2 className="size-4" /> বাদ দিন
+              </Button>
+            </div>
+          ))}
+          <Button onClick={saveAll} disabled={busy}>
+            সব সেভ করুন
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ManualPanel() {
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [busy, setBusy] = useState(false);
+  const save = useServerFn(savePair);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await save({ data: { question: question.trim(), answer: answer.trim(), source: "manual" } });
+      toast.success("যোগ হয়েছে");
+      setQuestion("");
+      setAnswer("");
+    } catch {
+      toast.error("সেভ করা যায়নি।");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="panel space-y-4 p-5">
+      <div className="space-y-1.5">
+        <Label htmlFor="q">কাস্টমারের প্রশ্ন</Label>
+        <Textarea
+          id="q"
+          rows={2}
+          required
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="যেমন: ডেলিভারি চার্জ কত?"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="a">আপনার উত্তর</Label>
+        <Textarea
+          id="a"
+          rows={4}
+          required
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          placeholder="যেমন: ঢাকার ভিতরে ৮০ টাকা, ঢাকার বাইরে ১৩০ টাকা।"
+        />
+      </div>
+      <Button type="submit" disabled={busy}>
+        {busy ? "সেভ হচ্ছে..." : "ট্রেনিংয়ে যোগ করুন"}
+      </Button>
+    </form>
+  );
+}
+
+function JsonPanel() {
+  const [busy, setBusy] = useState(false);
+  const importJson = useServerFn(importConversationsJson);
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    try {
+      const result = await importJson({ data: { json: await file.text() } });
+      toast.success(
+        `${result.conversations} কথোপকথন, ${result.pairs} ট্রেনিং জোড়া যোগ হয়েছে`,
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "আপলোড ব্যর্থ হয়েছে।");
+    } finally {
+      setBusy(false);
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <div className="panel space-y-3 p-5">
+      <Label htmlFor="json-file">চ্যাট এক্সপোর্ট (JSON)</Label>
+      <Input id="json-file" type="file" accept="application/json" onChange={onFile} disabled={busy} />
+      <p className="text-xs text-muted-foreground">
+        ফরম্যাট: <code>[{"{"}"conversation_id":"...","messages":[{"{"}"role":"user","content":"..."{"}"}]{"}"}]</code>
+      </p>
+      {busy && (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" /> প্রসেস হচ্ছে...
+        </p>
+      )}
+    </div>
+  );
+}
