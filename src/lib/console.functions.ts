@@ -24,20 +24,24 @@ export const getStats = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const count = async (table: "conversations" | "messages" | "training_pairs", status?: string) => {
-      let q = supabaseAdmin.from(table).select("*", { count: "exact", head: true });
-      if (status) q = q.eq("status", status);
-      const { count: c } = await q;
-      return c ?? 0;
+    const pairCount = async (status: "approved" | "pending" | "rejected") => {
+      const { count } = await supabaseAdmin
+        .from("training_pairs")
+        .select("*", { count: "exact", head: true })
+        .eq("status", status);
+      return count ?? 0;
     };
 
-    const [conversations, messages, approved, pending, rejected] = await Promise.all([
-      count("conversations"),
-      count("messages"),
-      count("training_pairs", "approved"),
-      count("training_pairs", "pending"),
-      count("training_pairs", "rejected"),
+    const [convRes, msgRes, approved, pending, rejected] = await Promise.all([
+      supabaseAdmin.from("conversations").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("messages").select("*", { count: "exact", head: true }),
+      pairCount("approved"),
+      pairCount("pending"),
+      pairCount("rejected"),
     ]);
+    const conversations = convRes.count ?? 0;
+    const messages = msgRes.count ?? 0;
+
 
     return { conversations, messages, approved, pending, rejected };
   });
