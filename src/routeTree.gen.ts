@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
+import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
 import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
 import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
@@ -43,6 +44,11 @@ const AdminAddRoute = AdminAddRouteImport.update({
   path: '/add',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
+  id: '/connections',
+  path: '/connections',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPlaygroundRoute = AdminPlaygroundRouteImport.update({
   id: '/playground',
   path: '/playground',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/admin/add': typeof AdminAddRoute
+  '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/': typeof AdminIndexRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin/add': typeof AdminAddRoute
+  '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin': typeof AdminIndexRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/admin/add': typeof AdminAddRoute
+  '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/': typeof AdminIndexRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/admin/add'
+    | '/admin/connections'
     | '/admin/playground'
     | '/admin/training'
     | '/admin/'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin/add'
+    | '/admin/connections'
     | '/admin/playground'
     | '/admin/training'
     | '/admin'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/admin/add'
+    | '/admin/connections'
     | '/admin/playground'
     | '/admin/training'
     | '/admin/'
@@ -165,6 +177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAddRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/connections': {
+      id: '/admin/connections'
+      path: '/connections'
+      fullPath: '/admin/connections'
+      preLoaderRoute: typeof AdminConnectionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/playground': {
       id: '/admin/playground'
       path: '/playground'
@@ -191,6 +210,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAddRoute: typeof AdminAddRoute
+  AdminConnectionsRoute: typeof AdminConnectionsRoute
   AdminPlaygroundRoute: typeof AdminPlaygroundRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -198,6 +218,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAddRoute: AdminAddRoute,
+  AdminConnectionsRoute: AdminConnectionsRoute,
   AdminPlaygroundRoute: AdminPlaygroundRoute,
   AdminTrainingRoute: AdminTrainingRoute,
   AdminIndexRoute: AdminIndexRoute,
