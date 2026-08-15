@@ -14,16 +14,213 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agent_settings: {
+        Row: {
+          auto_approve: boolean
+          id: number
+          model: string
+          system_prompt: string
+          updated_at: string
+        }
+        Insert: {
+          auto_approve?: boolean
+          id?: number
+          model?: string
+          system_prompt?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_approve?: boolean
+          id?: number
+          model?: string
+          system_prompt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          revoked: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          revoked?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          revoked?: boolean
+        }
+        Relationships: []
+      }
+      conversations: {
+        Row: {
+          channel: string | null
+          created_at: string
+          external_id: string | null
+          id: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+          seq: number
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+          seq?: number
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          seq?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_pairs: {
+        Row: {
+          answer: string
+          context: string | null
+          conversation_id: string | null
+          created_at: string
+          id: string
+          question: string
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          context?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          question: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          context?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          question?: string
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_pairs_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      search_training_pairs: {
+        Args: { _limit?: number; _query: string }
+        Returns: {
+          answer: string
+          id: string
+          question: string
+          score: number
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +347,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
