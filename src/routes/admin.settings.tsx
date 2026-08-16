@@ -150,6 +150,25 @@ function SettingsPage() {
               <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
             </div>
           </div>
+
+          <div className="panel p-6 border-l-4 border-l-primary bg-primary/5">
+            <h2 className="font-bold mb-4">এক্সটার্নাল প্লাটফর্ম কানেক্টর</h2>
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                আপনার লারাভেল ব্যাকএন্ড বা অন্য সিস্টেমের সাথে কানেক্ট করুন।
+              </p>
+              <Link to="/admin/webhook-test">
+                <Button variant="outline" size="sm" className="w-full">
+                  প্লাটফর্ম কনফিগার করুন
+                </Button>
+              </Link>
+              <Link to="/admin/sync">
+                <Button variant="ghost" size="sm" className="w-full">
+                  API সিঙ্ক স্ট্যাটাস
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

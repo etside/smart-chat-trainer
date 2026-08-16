@@ -34,14 +34,23 @@ export async function verifyWebhookSignature(payload: string, signature: string,
     encoder.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["sign", "verify"]
   );
   
-  const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
-  const expected = Array.from(new Uint8Array(signed))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-    
-  // Simple check for equality
-  return expected === signature;
+  // Strip "sha256=" prefix if present
+  const signatureToVerify = signature.startsWith("sha256=") ? signature.slice(7) : signature;
+  
+  // Convert hex signature back to bytes for comparison
+  const signatureBytes = new Uint8Array(
+    signatureToVerify.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []
+  );
+  
+  const isValid = await crypto.subtle.verify(
+    "HMAC",
+    key,
+    signatureBytes,
+    encoder.encode(payload)
+  );
+  
+  return isValid;
 }

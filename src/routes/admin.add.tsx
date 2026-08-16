@@ -202,37 +202,76 @@ function ManualPanel() {
 
 function JsonPanel() {
   const [busy, setBusy] = useState(false);
+  const [jsonText, setJsonText] = useState("");
   const importJson = useServerFn(importConversationsJson);
+
+  async function handleImport(content: string) {
+    setBusy(true);
+    try {
+      // Basic validation check before sending to server
+      const parsed = JSON.parse(content);
+      if (!Array.isArray(parsed)) throw new Error("JSON must be an array of conversations.");
+      
+      const result = await importJson({ data: { json: content } });
+      toast.success(
+        `${result.conversations} কথোপকথন, ${result.pairs} ট্রেনিং জোড়া যোগ হয়েছে`,
+      );
+      setJsonText("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "আপলোড ব্যর্থ হয়েছে। ফরম্যাট চেক করুন।");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setBusy(true);
-    try {
-      const result = await importJson({ data: { json: await file.text() } });
-      toast.success(
-        `${result.conversations} কথোপকথন, ${result.pairs} ট্রেনিং জোড়া যোগ হয়েছে`,
-      );
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "আপলোড ব্যর্থ হয়েছে।");
-    } finally {
-      setBusy(false);
-      e.target.value = "";
-    }
+    const text = await file.text();
+    handleImport(text);
+    e.target.value = "";
   }
 
   return (
-    <div className="panel space-y-3 p-5">
-      <Label htmlFor="json-file">চ্যাট এক্সপোর্ট (JSON)</Label>
-      <Input id="json-file" type="file" accept="application/json" onChange={onFile} disabled={busy} />
-      <p className="text-xs text-muted-foreground">
-        ফরম্যাট: <code>[{"{"}"conversation_id":"...","messages":[{"{"}"role":"user","content":"..."{"}"}]{"}"}]</code>
+    <div className="panel space-y-4 p-5">
+      <div className="space-y-2">
+        <Label htmlFor="json-text">JSON ডেটা পেস্ট করুন</Label>
+        <Textarea 
+          id="json-text" 
+          rows={8} 
+          placeholder='[{"conversation_id":"...","messages":[...]}]'
+          value={jsonText}
+          onChange={(e) => setJsonText(e.target.value)}
+          className="font-mono text-xs"
+        />
+        <Button 
+          className="w-full" 
+          size="sm" 
+          disabled={busy || !jsonText.trim()} 
+          onClick={() => handleImport(jsonText)}
+        >
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+          টেক্সট থেকে ইমপোর্ট করুন
+        </Button>
+      </div>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground text-[10px]">অথবা ফাইল সিলেক্ট করুন</span>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="json-file">ফাইল আপলোড (JSON)</Label>
+        <Input id="json-file" type="file" accept="application/json" onChange={onFile} disabled={busy} />
+      </div>
+      
+      <p className="text-[10px] text-muted-foreground leading-relaxed italic">
+        * ফরম্যাট: <code>[{"{"}"conversation_id":"...","messages":[{"{"}"role":"user","content":"..."{"}"}]{"}"}]</code>
       </p>
-      {busy && (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> প্রসেস হচ্ছে...
-        </p>
-      )}
     </div>
   );
 }
