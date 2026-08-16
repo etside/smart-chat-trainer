@@ -129,11 +129,12 @@ function InnerRoot() {
   const fetchMetaCreds = useServerFn(getMetaCredentials);
   const fetchExtra = useServerFn(getExtraSettings);
   
-  const { data: extra } = useQuery({ 
+  /* const { data: extra } = useQuery({ 
     queryKey: ["extra-settings-public"], 
     queryFn: () => fetchExtra(),
     retry: false
-  });
+  }); */
+  const extra = null as any;
 
   const [metaConfig, setMetaConfig] = useState<{ appId: string; apiVersion: string } | null>(null);
 
