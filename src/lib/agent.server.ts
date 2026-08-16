@@ -1,5 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { chatComplete, type ChatMessage } from "./ai.server";
+import { logActionUsage } from "./usage.functions";
+
 
 // Cache for stock lookups to prevent excessive API calls
 const stockCache: Record<string, { data: any, timestamp: number }> = {};
@@ -114,6 +116,10 @@ ${exampleBlock}`,
   ];
 
   const reply = await chatComplete(messages, settings.model, settings.lovable_api_key_override);
+  
+  // Log message usage
+  await logActionUsage({ data: { action: "ai_message", metadata: { model: settings.model } } }).catch(console.error);
+  
   return { reply, examples: examples.map((e) => ({ question: e.question, answer: e.answer })) };
 }
 

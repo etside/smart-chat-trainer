@@ -2,6 +2,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { assertAdmin } from "./admin.server";
+import { logActionUsage } from "./usage.functions";
+
 
 const DEFAULT_SYNC_URL = "https://api.v2.wearimpressive.com/api/ai/webhook";
 
@@ -268,6 +270,9 @@ export const syncCatalog = createServerFn({ method: "POST" })
         // Trigger training after successful sync
         const { triggerTraining } = await import("./console.functions");
         await triggerTraining({ data: { sync_run_id: run.id } as any });
+
+        // Log sync usage
+        await logActionUsage({ data: { action: "product_sync", metadata: { items: trainingPairs.length } } }).catch(console.error);
       }
 
       return { 

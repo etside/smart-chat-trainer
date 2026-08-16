@@ -42,6 +42,7 @@ export type Database = {
           sync_token: string | null
           system_prompt: string
           updated_at: string
+          usage_config: Json | null
           vps_hosting_config: Json | null
         }
         Insert: {
@@ -71,6 +72,7 @@ export type Database = {
           sync_token?: string | null
           system_prompt?: string
           updated_at?: string
+          usage_config?: Json | null
           vps_hosting_config?: Json | null
         }
         Update: {
@@ -100,6 +102,7 @@ export type Database = {
           sync_token?: string | null
           system_prompt?: string
           updated_at?: string
+          usage_config?: Json | null
           vps_hosting_config?: Json | null
         }
         Relationships: []
@@ -376,6 +379,39 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          cost_bdt: number
+          cost_usd: number
+          created_at: string
+          credits_used: number
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          cost_bdt?: number
+          cost_usd?: number
+          created_at?: string
+          credits_used?: number
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          cost_bdt?: number
+          cost_usd?: number
+          created_at?: string
+          credits_used?: number
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -444,6 +480,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_usage_aggregates: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -451,6 +488,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_agent_credits: { Args: { amount: number }; Returns: undefined }
       log_audit: {
         Args: {
           _action: string

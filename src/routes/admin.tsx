@@ -18,6 +18,7 @@ import {
   PlusCircle,
   Settings,
   Terminal,
+  BarChart3
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -44,6 +45,7 @@ const nav: Array<{
 }> = [
   { to: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true, minRole: "viewer" },
   { to: "/admin/onboarding", label: "অনবোর্ডিং উইজার্ড", icon: PlusCircle, minRole: "admin" },
+  { to: "/admin/usage", label: "ইউজড ড্যাশবোর্ড", icon: BarChart3, minRole: "admin" },
   { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database, minRole: "viewer" },
   { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle, minRole: "editor" },
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare, minRole: "viewer" },
