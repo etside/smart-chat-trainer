@@ -11,8 +11,14 @@ export const Route = createFileRoute('/connect')({
 
 function ConnectPage() {
   const [copied, setCopied] = useState(false);
-  const mcpUrl = typeof window !== 'undefined' ? new URL("/mcp", window.location.origin).toString() : "";
+  const [mcpUrl, setMcpUrl] = useState("");
+  
+  useEffect(() => {
+    setMcpUrl(new URL("/mcp", window.location.origin).toString());
+  }, []);
+
   const appName = "Daddy AI";
+
   const appNameSlug = "daddy-ai-app";
 
   const copyToClipboard = (text: string) => {

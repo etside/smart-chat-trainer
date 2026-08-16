@@ -90,8 +90,9 @@ function AdminLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background selection:bg-primary/20">
+    <div className="flex min-h-screen bg-background selection:bg-primary/20 noise-overlay">
       {/* Enhanced Sidebar */}
+
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col glass border-r-0 p-6 md:flex relative z-20">
         <div className="flex items-center gap-3 mb-8">
           <div className="relative group">
@@ -151,10 +152,11 @@ function AdminLayout() {
             </Link>
           ))}
         </nav>
-        <main className="min-w-0 flex-1 p-5 md:p-8">
+        <main className="min-w-0 flex-1 p-5 md:p-8 page-transition" key={pathname}>
           <Outlet />
         </main>
       </div>
+
     </div>
   );
 }

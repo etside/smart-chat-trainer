@@ -2,13 +2,18 @@ import { getTrainingJobs, triggerTraining } from "@/lib/console.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertCircle, CheckCircle2, Clock, Loader2, Play } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Loader2, Play, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+
+
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/progress")({
   component: TrainingProgress,
 });
+
 
 function TrainingProgress() {
   const qc = useQueryClient();
@@ -22,13 +27,14 @@ function TrainingProgress() {
   });
 
   const mutation = useMutation({
-    mutationFn: () => startTraining({ data: {} }),
+    mutationFn: (versionId?: string) => startTraining({ data: { version_id: versionId } }),
     onSuccess: () => {
       toast.success("ট্রেনিং শুরু হয়েছে");
       qc.invalidateQueries({ queryKey: ["training-jobs"] });
     },
     onError: () => toast.error("ট্রেনিং শুরু করা যায়নি"),
   });
+
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -40,7 +46,8 @@ function TrainingProgress() {
           </p>
         </div>
         <Button 
-          onClick={() => mutation.mutate()} 
+          onClick={() => mutation.mutate(undefined)} 
+
           disabled={mutation.isPending || jobs?.some((j: any) => j.status === 'processing')}
         >
           {mutation.isPending ? (
@@ -62,52 +69,82 @@ function TrainingProgress() {
             <p className="text-muted-foreground">কোন ট্রেনিং জব পাওয়া যায়নি।</p>
           </div>
         ) : (
-          <div className="panel overflow-hidden">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="px-4 py-3 font-medium">জব আইডি</th>
-                  <th className="px-4 py-3 font-medium">স্ট্যাটাস</th>
-                  <th className="px-4 py-3 font-medium">আইটেম সংখ্যা</th>
-                  <th className="px-4 py-3 font-medium">সময়</th>
-                  <th className="px-4 py-3 font-medium">এরর</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {jobs?.map((job: any) => (
-                  <tr key={job.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-4 font-mono text-xs">{job.id.slice(0, 8)}</td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        {job.status === "completed" && (
-                          <CheckCircle2 className="size-4 text-green-500" />
-                        )}
-                        {job.status === "failed" && (
-                          <AlertCircle className="size-4 text-destructive" />
-                        )}
-                        {job.status === "processing" && (
-                          <Loader2 className="size-4 animate-spin text-primary" />
-                        )}
-                        {job.status === "pending" && (
-                          <Clock className="size-4 text-muted-foreground" />
-                        )}
-                        <span className="capitalize">{job.status}</span>
+          <div className="grid gap-6">
+            <AnimatePresence mode="popLayout">
+              {jobs?.map((job: any, index: number) => (
+                <motion.div
+                  key={job.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="panel p-6 bg-card/40 backdrop-blur-md border-white/5 shadow-xl hover:shadow-2xl transition-all"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className={cn(
+                        "size-12 rounded-2xl flex items-center justify-center shadow-lg",
+                        job.status === "completed" ? "bg-success/20 text-success shadow-success/10" :
+                        job.status === "failed" ? "bg-destructive/20 text-destructive shadow-destructive/10" :
+                        "bg-primary/20 text-primary shadow-primary/10"
+                      )}>
+                        {job.status === "completed" && <CheckCircle2 className="size-6" />}
+                        {job.status === "failed" && <AlertCircle className="size-6" />}
+                        {job.status === "running" && <Loader2 className="size-6 animate-spin" />}
+                        {job.status === "pending" && <Clock className="size-6" />}
                       </div>
-                    </td>
-                    <td className="px-4 py-4">{job.processed_count || 0}</td>
-                    <td className="px-4 py-4 text-muted-foreground">
-                      {new Date(job.created_at).toLocaleString("bn-BD")}
-                    </td>
-                    <td className="px-4 py-4 max-w-xs truncate text-destructive">
-                      {job.error_message || "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-lg">জব #{job.id.slice(0, 8)}</h3>
+                          <span className={cn(
+                            "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider",
+                            job.status === "completed" ? "bg-success/20 text-success" :
+                            job.status === "failed" ? "bg-destructive/20 text-destructive" :
+                            "bg-primary/20 text-primary"
+                          )}>
+                            {job.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                          <Clock className="size-3" />
+                          {new Date(job.created_at).toLocaleString("bn-BD")}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="text-right hidden md:block">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">আইটেম</p>
+                        <p className="text-xl font-display font-bold">{job.processed_count || 0}</p>
+                      </div>
+                      
+                      {job.status === "failed" && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => mutation.mutate(undefined)}
+                          disabled={mutation.isPending}
+                          className="h-9"
+                        >
+                          <RotateCcw className={cn("mr-2 size-4", mutation.isPending && "animate-spin")} />
+                          রিট্রাই
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {job.error_log && (
+                    <div className="mt-4 p-3 rounded-lg bg-destructive/5 border border-destructive/10 text-xs text-destructive font-mono">
+                      Error: {job.error_log}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>
     </div>
+
   );
 }
