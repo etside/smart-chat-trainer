@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { supabaseAdmin } from '@/integrations/supabase/client.server'
 import { generateReply } from '@/lib/agent.server'
+import { sendMetaMessage } from '@/lib/meta-sender.server'
 
 export const Route = createFileRoute('/api/public/webhooks/meta')({
   server: {
@@ -48,10 +49,18 @@ export const Route = createFileRoute('/api/public/webhooks/meta')({
                 // Generate AI reply using RAG
                 const { reply } = await generateReply(messageText, [])
                 
-                // For now we log it to conversations as a placeholder for Meta reply action
+                // Send real reply back to Meta
+                const platform = body.object === 'page' ? 'messenger' : 'whatsapp';
+                try {
+                  await sendMetaMessage(senderId, reply, platform);
+                } catch (sendError) {
+                  console.error('Failed to send Meta message:', sendError);
+                }
+                
+                // Log it to conversations
                 const { data: conv } = await supabaseAdmin.from('conversations').insert({
                   external_id: senderId,
-                  source: body.object === 'page' ? 'messenger' : 'whatsapp'
+                  source: platform
                 }).select('id').single()
 
                 if (conv) {
