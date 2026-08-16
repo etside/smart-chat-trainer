@@ -61,7 +61,7 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
     return {
       transcription,
       reply: result.reply,
-      sources: result.sources,
+      examplesCount: result.examples.length,
       conversationId: conv?.id,
     };
   });
