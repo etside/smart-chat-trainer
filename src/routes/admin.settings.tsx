@@ -33,12 +33,29 @@ const MODELS = [
 function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
   const [status, setStatus] = useState<string>("unknown");
   const [user, setUser] = useState<any>(null);
+  const [permissions, setPermissions] = useState<any[]>([]);
+
+  const fetchPermissions = () => {
+    // @ts-ignore
+    if (typeof FB !== 'undefined') {
+      // @ts-ignore
+      FB.api('/me/permissions', (response: any) => {
+        if (response && response.data) {
+          setPermissions(response.data);
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     const handleStatus = (e: any) => {
       setStatus(e.detail.status);
       if (e.detail.status === 'connected') {
         setUser(e.detail.authResponse);
+        fetchPermissions();
+      } else {
+        setUser(null);
+        setPermissions([]);
       }
     };
     window.addEventListener('fb-login-status', handleStatus);
@@ -53,20 +70,26 @@ function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
     return () => window.removeEventListener('fb-login-status', handleStatus);
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = (rerequest = false) => {
     // @ts-ignore
     if (typeof FB !== 'undefined') {
+      const loginOptions: any = { 
+        scope: 'pages_messaging,whatsapp_business_messaging,pages_manage_metadata,pages_read_engagement,email' 
+      };
+      
+      if (rerequest) {
+        loginOptions.auth_type = 'rerequest';
+      }
+
       // @ts-ignore
       FB.login((response) => {
         setStatus(response.status);
         if (response.status === 'connected') {
           setUser(response.authResponse);
-          toast.success("Meta লগইন সফল হয়েছে");
+          fetchPermissions();
+          toast.success(rerequest ? "পারমিশন রিকোয়েস্ট সফল হয়েছে" : "Meta লগইন সফল হয়েছে");
         }
-      }, { 
-        config_id: metaAppId, // Using App ID as config_id for the newer flow if applicable
-        scope: 'pages_messaging,whatsapp_business_messaging,pages_manage_metadata,pages_read_engagement' 
-      });
+      }, loginOptions);
     }
   };
 
@@ -75,37 +98,74 @@ function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
     FB.logout((response) => {
       setStatus(response.status);
       setUser(null);
+      setPermissions([]);
       toast.info("Meta লগআউট করা হয়েছে");
     });
   };
 
+  const declinedPermissions = permissions.filter(p => p.status === 'declined');
+
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6">
+    <div className="flex flex-col gap-4 p-5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`size-3 rounded-full ${status === 'connected' ? 'bg-success animate-pulse' : 'bg-muted'}`} />
           <div>
             <p className="text-sm font-bold">Meta কানেকশন স্ট্যাটাস</p>
             <p className="text-xs text-muted-foreground">
-              {status === 'connected' ? `কানেক্টেড (User ID: ${user?.userID})` : 
+              {status === 'connected' ? `কানেক্টেড (ID: ${user?.userID})` : 
                status === 'not_authorized' ? 'অ্যাপ অনুমোদিত নয়' : 'লগইন করা নেই'}
             </p>
           </div>
         </div>
-        {status === 'connected' ? (
-          <Button variant="outline" size="sm" onClick={handleLogout} className="h-8">
-            লগআউট
-          </Button>
-        ) : (
-          <Button size="sm" onClick={handleLogin} className="h-8 bg-[#1877F2] hover:bg-[#1877F2]/90">
-            <Facebook className="mr-2 size-4" />
-            Meta দিয়ে লগইন করুন
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {status === 'connected' ? (
+            <Button variant="outline" size="sm" onClick={handleLogout} className="h-8">
+              লগআউট
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => handleLogin()} className="h-8 bg-[#1877F2] hover:bg-[#1877F2]/90">
+              <Facebook className="mr-2 size-4" />
+              Meta লগইন
+            </Button>
+          )}
+        </div>
       </div>
+
       {status === 'connected' && (
-        <div className="text-[10px] font-mono text-muted-foreground bg-background/50 p-2 rounded border border-white/5 overflow-x-auto">
-          Access Token: {user?.accessToken.substring(0, 15)}...
+        <div className="space-y-3 pt-3 border-t border-white/5">
+          <div className="flex flex-wrap gap-2">
+            {permissions.map((p, i) => (
+              <div 
+                key={i} 
+                className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                  p.status === 'granted' ? 'bg-success/10 border-success/20 text-success' : 'bg-destructive/10 border-destructive/20 text-destructive'
+                }`}
+              >
+                {p.permission}: {p.status}
+              </div>
+            ))}
+          </div>
+          
+          {declinedPermissions.length > 0 && (
+            <div className="flex items-center justify-between p-2 rounded bg-destructive/5 border border-destructive/10">
+              <p className="text-[10px] text-destructive italic">
+                কিছু পারমিশন রিজেক্ট করা হয়েছে। ফুল ফিচারের জন্য এগুলো প্রয়োজন।
+              </p>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 text-[10px] hover:bg-destructive/10 text-destructive"
+                onClick={() => handleLogin(true)}
+              >
+                আবার রিকোয়েস্ট করুন
+              </Button>
+            </div>
+          )}
+
+          <div className="text-[9px] font-mono text-muted-foreground bg-background/50 p-2 rounded border border-white/5 overflow-x-auto">
+            Token: {user?.accessToken.substring(0, 30)}...
+          </div>
         </div>
       )}
     </div>
