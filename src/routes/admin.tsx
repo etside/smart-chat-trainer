@@ -43,10 +43,10 @@ const nav: Array<{
   { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database },
   { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle },
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare },
-  { to: "/admin/progress", label: "প্রগ্রেস", icon: Activity },
+  { to: "/admin/sync", label: "সিঙ্ক স্ট্যাটাস", icon: Activity },
+  { to: "/admin/progress", label: "ট্রেনিং প্রগ্রেস", icon: Activity },
   { to: "/admin/connections", label: "কানেকশন", icon: KeyRound },
   { to: "/admin/webhook-test", label: "টেস্ট প্যানেল", icon: Terminal },
-  { to: "/admin/sync", label: "সিঙ্ক স্ট্যাটাস", icon: Activity },
   { to: "/admin/settings", label: "সেটিংস", icon: Settings },
 ];
 
