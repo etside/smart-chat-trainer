@@ -439,7 +439,13 @@ export const transcribeVoice = createServerFn({ method: "POST" })
       .eq("id", 1)
       .maybeSingle();
 
+    const startTime = Date.now();
     const text = await transcribeAudio(data.audio, data.mimeType, settings?.lovable_api_key_override);
+    const duration = Date.now() - startTime;
+
+    const { logPerformanceMetric } = await import("./performance.functions");
+    await logPerformanceMetric("transcription", duration);
+
     return { text };
   });
 
@@ -459,6 +465,8 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
       ],
       "openai/gpt-5.6-terra",
     );
+    
+    if (typeof raw !== 'string') throw new Error("Expected string response from AI");
 
     const match = raw.match(/\[[\s\S]*\]/);
     let items: Array<{ question: string; answer: string }> = [];

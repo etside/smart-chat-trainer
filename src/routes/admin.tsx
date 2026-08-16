@@ -37,7 +37,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -59,6 +59,7 @@ const nav: Array<{
   { to: "/admin/webhook-dlq", label: "Webhook & DLQ", icon: Terminal, minRole: "editor" },
   { to: "/admin/logs", label: "ইভেন্ট লগ ও পলিসি", icon: History, minRole: "admin" },
   { to: "/connect", label: "AI কানেক্ট", icon: Terminal, minRole: "viewer" },
+  { to: "/admin/performance", label: "পারফরম্যান্স", icon: Activity, minRole: "admin" },
 ];
 
 function AdminLayout() {

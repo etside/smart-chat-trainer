@@ -22,12 +22,14 @@ export type Database = {
           boson_workspace_id: string | null
           credit_usage: number | null
           data_policy_content: string | null
+          enable_streaming: boolean | null
           fish_audio_api_key: string | null
           id: number
           last_sync_at: string | null
           last_sync_details: Json | null
           last_sync_status: string | null
           lovable_api_key_override: string | null
+          max_simultaneous_replies: number | null
           meta_access_token: string | null
           meta_api_version: string | null
           meta_app_id: string | null
@@ -52,12 +54,14 @@ export type Database = {
           boson_workspace_id?: string | null
           credit_usage?: number | null
           data_policy_content?: string | null
+          enable_streaming?: boolean | null
           fish_audio_api_key?: string | null
           id?: number
           last_sync_at?: string | null
           last_sync_details?: Json | null
           last_sync_status?: string | null
           lovable_api_key_override?: string | null
+          max_simultaneous_replies?: number | null
           meta_access_token?: string | null
           meta_api_version?: string | null
           meta_app_id?: string | null
@@ -82,12 +86,14 @@ export type Database = {
           boson_workspace_id?: string | null
           credit_usage?: number | null
           data_policy_content?: string | null
+          enable_streaming?: boolean | null
           fish_audio_api_key?: string | null
           id?: number
           last_sync_at?: string | null
           last_sync_details?: Json | null
           last_sync_status?: string | null
           lovable_api_key_override?: string | null
+          max_simultaneous_replies?: number | null
           meta_access_token?: string | null
           meta_api_version?: string | null
           meta_app_id?: string | null
@@ -267,6 +273,33 @@ export type Database = {
           read?: boolean | null
           title?: string
           type?: string
+        }
+        Relationships: []
+      }
+      performance_metrics: {
+        Row: {
+          action: string
+          created_at: string | null
+          duration_ms: number
+          id: string
+          metadata: Json | null
+          request_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          duration_ms: number
+          id?: string
+          metadata?: Json | null
+          request_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          duration_ms?: number
+          id?: string
+          metadata?: Json | null
+          request_id?: string | null
         }
         Relationships: []
       }
