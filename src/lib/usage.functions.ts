@@ -10,7 +10,7 @@ export const getUsageStats = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Get aggregated stats
-    const { data: stats, error } = await supabaseAdmin.rpc("get_usage_aggregates");
+    const { data: stats, error } = await supabaseAdmin.rpc("get_usage_aggregates" as any);
     if (error) throw error;
 
     // Get recent logs
@@ -28,9 +28,9 @@ export const getUsageStats = createServerFn({ method: "GET" })
       .single();
 
     return {
-      stats: stats || { total_credits: 0, total_usd: 0, total_bdt: 0 },
+      stats: (stats as any) || { total_credits: 0, total_usd: 0, total_bdt: 0 },
       logs: logs || [],
-      config: settings?.usage_config || {}
+      config: (settings?.usage_config as any) || {}
     };
   });
 
@@ -53,7 +53,7 @@ export const logActionUsage = createServerFn({ method: "POST" })
     const config = (settings?.usage_config as any)?.[data.action] || { credits: 0, usd: 0, bdt: 0 };
 
     const { error } = await supabaseAdmin.from("usage_logs").insert({
-      actor_id: context.userId || null,
+      actor_id: context?.userId || null,
       action: data.action,
       credits_used: config.credits,
       cost_usd: config.usd,
@@ -64,7 +64,7 @@ export const logActionUsage = createServerFn({ method: "POST" })
     if (error) throw error;
     
     // Update total credits in agent_settings (demo purposes, real app might track per user)
-    await supabaseAdmin.rpc('increment_agent_credits', { amount: config.credits });
+    await supabaseAdmin.rpc('increment_agent_credits' as any, { amount: config.credits });
 
     return { ok: true };
   });
