@@ -51,10 +51,9 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook`);
             toast.success("ডকুমেন্টেশন কপি হয়েছে");
           }}>কপি করুন</Button>
         </div>
-        {`Wear Impressive AI Webhook Integration Guide
-Authentication: Two layers required (Bearer Token + HMAC Signature)
-Endpoint: POST https://api.v2.wearimpressive.com/api/ai/webhook
-Actions: catalog, product, stock, categories, cart_add, order_place`}
+        {`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+
+Need to ensure faster transcribing , conversation analyze and faster response with simulatenously maximum agent reply messages based on their training`}
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
