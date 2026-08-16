@@ -130,7 +130,9 @@ function WebhookTest() {
                           reader.onloadend = () => {
                             const result = reader.result as string;
                             const base64 = result.split(",")[1];
-                            mutation.mutate({ type: "voice", audio: base64, mimeType: blob.type });
+                            if (base64) {
+                              mutation.mutate({ type: "voice", audio: base64, mimeType: blob.type });
+                            }
                           };
                         }}
                       />
