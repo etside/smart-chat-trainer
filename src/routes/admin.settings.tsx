@@ -22,9 +22,9 @@ export const Route = createFileRoute("/admin/settings")({
 });
 
 const MODELS = [
-  { id: "openai/gpt-5.6-sol", label: "সবচেয়ে ভালো (GPT-5.6 Sol)" },
-  { id: "openai/gpt-5.6-terra", label: "ব্যালান্সড (GPT-5.6 Terra)" },
-  { id: "openai/gpt-5.6-luna", label: "দ্রুত ও সাশ্রয়ী (GPT-5.6 Luna)" },
+  { id: "openai/gpt-5.6-sol", label: "Daddy High-Performance (GPT-5.6 Sol)" },
+  { id: "openai/gpt-5.6-terra", label: "Daddy Balanced (GPT-5.6 Terra)" },
+  { id: "openai/gpt-5.6-luna", label: "Daddy Fast & Light (GPT-5.6 Luna)" },
 ];
 
 function SettingsPage() {
