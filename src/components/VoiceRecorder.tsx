@@ -87,17 +87,23 @@ export function VoiceRecorder({ onText, onAudioBlob }: { onText: (text: string) 
         )}
       >
         {busy ? (
-          <Loader2 className="size-4 animate-spin" />
+          <div className="flex items-center gap-2">
+            <Loader2 className="size-4 animate-spin" />
+            <span className="flex items-center gap-1.5">
+              AI Processing <Sparkles className="size-3 text-accent animate-pulse" />
+            </span>
+          </div>
         ) : recording ? (
-          <Square className="size-4" />
+          <div className="flex items-center gap-2">
+            <Square className="size-4 fill-white" />
+            <span>থামান</span>
+          </div>
         ) : (
-          <Mic className="size-4" />
+          <div className="flex items-center gap-2">
+            <Mic className="size-4" />
+            <span>ভয়েস রেকর্ড</span>
+          </div>
         )}
-        {busy ? (
-          <span className="flex items-center gap-2">
-            AI Processing <Sparkles className="size-3 animate-pulse" />
-          </span>
-        ) : recording ? "থামান" : "ভয়েস রেকর্ড"}
       </Button>
       {recording && (
         <span className="flex items-center gap-2 text-sm text-muted-foreground">
