@@ -72,7 +72,6 @@ export const Route = createFileRoute("/api/public/webhook")({
         // Handle generic message events
         if (parsed.data.message) {
           try {
-            const { generateReply, logConversation } = await import("@/lib/agent.server");
             const { reply } = await generateReply(parsed.data.message, []);
             
             // Log activity to first valid API key for tracking if possible
@@ -89,6 +88,7 @@ export const Route = createFileRoute("/api/public/webhook")({
                 .update({ last_used_at: new Date().toISOString() })
                 .eq("id", firstKey.id);
             }
+
 
             await logConversation(
               parsed.data.conversation_id || parsed.data.sender || null,
