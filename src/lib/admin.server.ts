@@ -42,7 +42,10 @@ export function generateApiKey() {
 }
 
 export async function verifyWebhookSignature(payload: string, signature: string | null, secret: string | undefined) {
-  if (!signature || !secret) return false;
+  if (!signature || !secret) {
+    console.warn("Signature verification failed: Missing signature or secret");
+    return false;
+  }
 
   try {
     const encoder = new TextEncoder();
