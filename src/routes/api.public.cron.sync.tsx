@@ -6,7 +6,12 @@ export const Route = createFileRoute("/api/public/cron/sync")({
       GET: async ({ request }) => {
         // Simple secret check for cron jobs
         const authHeader = request.headers.get("Authorization");
-        const cronSecret = process.env['CRON_SECRET'] || "wi_internal_cron_secret";
+        const cronSecret = process.env['CRON_SECRET'];
+        
+        if (!cronSecret) {
+          console.error("CRON_SECRET environment variable is not configured.");
+          return new Response("Configuration Error", { status: 500 });
+        }
         
         if (authHeader !== `Bearer ${cronSecret}`) {
           return new Response("Unauthorized", { status: 401 });

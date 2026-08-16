@@ -7,7 +7,12 @@ export const Route = createFileRoute("/api/public/webhooks/payments/sslcommerz")
         const secret = request.headers.get("X-Webhook-Secret") || new URL(request.url).searchParams.get("secret");
         const expectedSecret = process.env['PAYMENTS_WEBHOOK_SECRET'];
         
-        if (expectedSecret && secret !== expectedSecret) {
+        if (!expectedSecret) {
+          console.error("PAYMENTS_WEBHOOK_SECRET is not configured.");
+          return new Response("Configuration Error", { status: 500 });
+        }
+
+        if (secret !== expectedSecret) {
           return new Response("Unauthorized", { status: 401 });
         }
         
