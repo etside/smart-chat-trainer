@@ -2,7 +2,7 @@ import { getStats, exportTrainingData } from "@/lib/console.functions";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Clock, Database, MessageSquare, Users, Download, Activity } from "lucide-react";
+import { CheckCircle2, Clock, Database, MessageSquare, Users, Download, Activity, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
