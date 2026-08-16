@@ -7,7 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, type ReactNode, useState } from "react";
+import { getMetaCredentials } from "../lib/settings.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 import { Toaster } from "../components/ui/sonner";
 import appCss from "../styles.css?url";
@@ -128,6 +130,50 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const fetchMetaCreds = useServerFn(getMetaCredentials);
+  const [metaConfig, setMetaConfig] = useState<{ appId: string; apiVersion: string } | null>(null);
+
+  useEffect(() => {
+    fetchMetaCreds()
+      .then((data) => {
+        if (data.appId) {
+          setMetaConfig({
+            appId: data.appId,
+            apiVersion: (data as any).apiVersion || "v19.0",
+          });
+        }
+      })
+      .catch((err) => console.error("Failed to fetch Meta config for SDK:", err));
+  }, [fetchMetaCreds]);
+
+  useEffect(() => {
+    if (!metaConfig?.appId || typeof window === "undefined") return;
+
+    // @ts-ignore
+    window.fbAsyncInit = function () {
+      // @ts-ignore
+      FB.init({
+        appId: metaConfig.appId,
+        cookie: true,
+        xfbml: true,
+        version: metaConfig.apiVersion,
+      });
+      // @ts-ignore
+      FB.AppEvents.logPageView();
+    };
+
+    (function (d, s, id) {
+      var js,
+        fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {
+        return;
+      }
+      js = d.createElement(s) as HTMLScriptElement;
+      js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode?.insertBefore(js, fjs);
+    })(document, "script", "facebook-jssdk");
+  }, [metaConfig]);
 
   return (
     <QueryClientProvider client={queryClient}>

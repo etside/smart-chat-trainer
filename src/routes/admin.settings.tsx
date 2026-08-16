@@ -51,6 +51,7 @@ function SettingsPage() {
   const [metaPageId, setMetaPageId] = useState("");
   const [metaWhatsappId, setMetaWhatsappId] = useState("");
   const [metaVerifyToken, setMetaVerifyToken] = useState("");
+  const [metaApiVersion, setMetaApiVersion] = useState("v19.0");
 
   const fetchSyncCreds = useServerFn(getSyncCredentials);
   const saveSyncCreds = useServerFn(updateSyncCredentials);
@@ -71,6 +72,7 @@ function SettingsPage() {
       setMetaPageId(metaData.pageId || "");
       setMetaWhatsappId(metaData.whatsappId || "");
       setMetaVerifyToken(metaData.verifyToken || "");
+      setMetaApiVersion((metaData as any).apiVersion || "v19.0");
     }
   }, [metaData]);
 
@@ -121,7 +123,8 @@ function SettingsPage() {
         accessToken: metaAccessToken,
         pageId: metaPageId,
         whatsappId: metaWhatsappId,
-        verifyToken: metaVerifyToken
+        verifyToken: metaVerifyToken,
+        apiVersion: metaApiVersion
       } 
     }),
     onSuccess: () => {
@@ -286,6 +289,15 @@ function SettingsPage() {
                   placeholder="WhatsApp Business Account ID"
                   value={metaWhatsappId}
                   onChange={(e) => setMetaWhatsappId(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">API Version</Label>
+                <Input
+                  placeholder="v19.0"
+                  value={metaApiVersion}
+                  onChange={(e) => setMetaApiVersion(e.target.value)}
                   className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
                 />
               </div>

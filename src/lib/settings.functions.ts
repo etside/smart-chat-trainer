@@ -51,7 +51,7 @@ export const getMetaCredentials = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
-      .select("meta_app_id, meta_app_secret, meta_access_token, meta_page_id, meta_whatsapp_business_account_id, meta_webhook_verify_token")
+      .select("meta_app_id, meta_app_secret, meta_access_token, meta_page_id, meta_whatsapp_business_account_id, meta_webhook_verify_token, meta_api_version")
       .eq("id", 1)
       .maybeSingle();
     
@@ -61,7 +61,8 @@ export const getMetaCredentials = createServerFn({ method: "GET" })
       accessToken: data?.meta_access_token ? "••••••••" : "",
       pageId: data?.meta_page_id || "",
       whatsappId: data?.meta_whatsapp_business_account_id || "",
-      verifyToken: data?.meta_webhook_verify_token || ""
+      verifyToken: data?.meta_webhook_verify_token || "",
+      apiVersion: data?.meta_api_version || "v19.0"
     };
   });
 
@@ -73,7 +74,8 @@ export const updateMetaCredentials = createServerFn({ method: "POST" })
       accessToken: z.string().optional(),
       pageId: z.string().optional(),
       whatsappId: z.string().optional(),
-      verifyToken: z.string().optional()
+      verifyToken: z.string().optional(),
+      apiVersion: z.string().optional()
     }).parse(d)
   )
   .middleware([requireSupabaseAuth])
@@ -88,6 +90,7 @@ export const updateMetaCredentials = createServerFn({ method: "POST" })
     if (data.pageId !== undefined) updateData.meta_page_id = data.pageId;
     if (data.whatsappId !== undefined) updateData.meta_whatsapp_business_account_id = data.whatsappId;
     if (data.verifyToken !== undefined) updateData.meta_webhook_verify_token = data.verifyToken;
+    if (data.apiVersion !== undefined) updateData.meta_api_version = data.apiVersion;
 
     const { error } = await supabaseAdmin
       .from("agent_settings")
