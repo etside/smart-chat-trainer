@@ -340,6 +340,27 @@ function WebhookTest() {
                 {textPayload}
               </pre>
             </div>
+            
+            <div className="rounded border border-primary/20 bg-primary/5 p-3">
+              <span className="text-xs font-bold text-primary block mb-2 uppercase tracking-tighter">AI Sync Webhook (Backend Integration)</span>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] text-muted-foreground">Catalog Sync Payload</span>
+                <button 
+                  onClick={() => copyToClipboard(JSON.stringify({action: "catalog", per_page: 50, session: "sync_12345"}, null, 2))} 
+                  className="text-primary hover:underline text-[10px] flex items-center gap-1"
+                >
+                  <Copy className="size-3" /> কপি করুন
+                </button>
+              </div>
+              <pre className="bg-slate-900/50 text-slate-400 p-2 rounded text-[9px] overflow-x-auto">
+                {JSON.stringify({
+                  action: "catalog",
+                  per_page: 50,
+                  session: "sync_12345"
+                }, null, 2)}
+              </pre>
+            </div>
+
             <div className="text-xs space-y-2">
               <p className="font-medium">রেসপন্স স্কিমা:</p>
               <ul className="list-disc list-inside text-muted-foreground">
