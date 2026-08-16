@@ -22,6 +22,7 @@ export type Database = {
           last_sync_at: string | null
           lovable_api_key_override: string | null
           meta_access_token: string | null
+          meta_api_version: string | null
           meta_app_id: string | null
           meta_app_secret: string | null
           meta_page_id: string | null
@@ -41,6 +42,7 @@ export type Database = {
           last_sync_at?: string | null
           lovable_api_key_override?: string | null
           meta_access_token?: string | null
+          meta_api_version?: string | null
           meta_app_id?: string | null
           meta_app_secret?: string | null
           meta_page_id?: string | null
@@ -60,6 +62,7 @@ export type Database = {
           last_sync_at?: string | null
           lovable_api_key_override?: string | null
           meta_access_token?: string | null
+          meta_api_version?: string | null
           meta_app_id?: string | null
           meta_app_secret?: string | null
           meta_page_id?: string | null
