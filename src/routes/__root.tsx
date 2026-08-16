@@ -11,8 +11,7 @@ import { useEffect, type ReactNode, useState } from "react";
 import { getMetaCredentials } from "../lib/settings.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { getExtraSettings } from "../lib/extra-settings.functions";
-import { getAgentSettings } from "../lib/console.functions";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Toaster } from "../components/ui/sonner";
 import appCss from "../styles.css?url";
@@ -132,13 +131,14 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  const queryClient = useQueryClient();
   const fetchMetaCreds = useServerFn(getMetaCredentials);
   const fetchExtra = useServerFn(getExtraSettings);
   
   const { data: extra } = useQuery({ 
     queryKey: ["extra-settings-public"], 
-    queryFn: () => fetchExtra() 
+    queryFn: () => fetchExtra(),
+    retry: false
   });
 
   const [metaConfig, setMetaConfig] = useState<{ appId: string; apiVersion: string } | null>(null);
