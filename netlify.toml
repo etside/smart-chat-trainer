@@ -6,6 +6,9 @@
   NODE_VERSION = "20"
   BUN_VERSION = "latest"
 
+[context.deploy-preview]
+  command = "bun run build"
+
 [[redirects]]
   from = "/*"
   to = "/dist/server/index.mjs"
