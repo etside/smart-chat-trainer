@@ -35,7 +35,8 @@ export const Route = createFileRoute("/api/public/webhook")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const rawBody = await request.text();
-        const secret = process.env['SYNC_SECRET'];
+        const { data: settings } = await supabaseAdmin.from("agent_settings").select("sync_secret").eq("id", 1).maybeSingle();
+        const secret = settings?.sync_secret || process.env['SYNC_SECRET'];
 
         let isAuthorized = false;
 

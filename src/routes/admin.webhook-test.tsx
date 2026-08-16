@@ -253,9 +253,14 @@ function WebhookTest() {
                       {testResponse.error ? 'FAILED' : 'SUCCESS'}
                     </span>
                   </div>
-                  <pre className="p-3 bg-slate-950 text-slate-300 text-[10px] font-mono rounded-lg border border-white/5 overflow-x-auto max-h-[200px]">
-                    {JSON.stringify(testResponse, null, 2)}
+                  <pre className="p-3 bg-slate-950 text-slate-300 text-[10px] font-mono rounded-lg border border-white/5 overflow-x-auto max-h-[250px] whitespace-pre-wrap break-all">
+                    {typeof testResponse === 'object' ? JSON.stringify(testResponse, null, 2) : testResponse}
                   </pre>
+                  {testResponse.error && (
+                    <div className="p-2 bg-destructive/10 border border-destructive/20 rounded text-[10px] text-destructive-foreground">
+                      টিপস: টোকেন বা সিক্রেট ভুল থাকলে লারাভেল ৪০১ এরর দেয়। সঠিক কি ব্যবহার করছেন নিশ্চিত করুন।
+                    </div>
+                  )}
                 </div>
               )}
 
