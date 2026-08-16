@@ -2,12 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 const WebhookSchema = z.object({
-  // Generic webhook schema that can be adapted
   event: z.string().optional(),
   message: z.string().optional(),
   sender: z.string().optional(),
   conversation_id: z.string().optional(),
   payload: z.any().optional(),
+  // For training pipeline ingestion
+  training_data: z.object({
+    question: z.string(),
+    answer: z.string(),
+    context: z.string().optional(),
+  }).optional(),
 });
 
 const corsHeaders = {
@@ -133,6 +138,34 @@ export const Route = createFileRoute("/api/public/webhook")({
           } catch (error) {
             console.error("Webhook processing error:", error);
             return json({ error: "Failed to process message" }, 500);
+          }
+        }
+
+        // Handle training pipeline ingestion
+        if (parsed.data.training_data) {
+          try {
+            const { question, answer, context: trainingContext } = parsed.data.training_data;
+            const { error } = await supabaseAdmin.from("training_pairs").upsert(
+              {
+                question,
+                answer,
+                context: trainingContext || null,
+                source: "webhook_ingest",
+                status: "approved",
+              },
+              { onConflict: "question" }
+            );
+
+            if (error) throw error;
+
+            // Trigger training job automatically
+            const { triggerTraining } = await import("@/lib/console.functions");
+            await triggerTraining({ data: { source: "webhook_ingest" } as any });
+
+            return json({ status: "ingested", message: "Training data added to pipeline" });
+          } catch (error) {
+            console.error("Training ingestion error:", error);
+            return json({ error: "Failed to ingest training data" }, 500);
           }
         }
 
