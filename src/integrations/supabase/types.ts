@@ -25,6 +25,8 @@ export type Database = {
           fish_audio_api_key: string | null
           id: number
           last_sync_at: string | null
+          last_sync_details: Json | null
+          last_sync_status: string | null
           lovable_api_key_override: string | null
           meta_access_token: string | null
           meta_api_version: string | null
@@ -52,6 +54,8 @@ export type Database = {
           fish_audio_api_key?: string | null
           id?: number
           last_sync_at?: string | null
+          last_sync_details?: Json | null
+          last_sync_status?: string | null
           lovable_api_key_override?: string | null
           meta_access_token?: string | null
           meta_api_version?: string | null
@@ -79,6 +83,8 @@ export type Database = {
           fish_audio_api_key?: string | null
           id?: number
           last_sync_at?: string | null
+          last_sync_details?: Json | null
+          last_sync_status?: string | null
           lovable_api_key_override?: string | null
           meta_access_token?: string | null
           meta_api_version?: string | null
@@ -138,6 +144,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
       }
       conversations: {
         Row: {
@@ -414,6 +450,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_audit: {
+        Args: {
+          _action: string
+          _actor_id: string
+          _entity_id: string
+          _entity_type: string
+          _metadata: Json
+        }
+        Returns: undefined
       }
       search_training_pairs: {
         Args: { _limit?: number; _query: string }
