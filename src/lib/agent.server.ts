@@ -7,7 +7,7 @@ export type HistoryTurn = { role: "user" | "assistant"; content: string };
 export async function getSettings() {
   const { data } = await supabaseAdmin
     .from("agent_settings")
-    .select("system_prompt, model, auto_approve")
+    .select("system_prompt, model, auto_approve, lovable_api_key_override")
     .eq("id", 1)
     .maybeSingle();
 
@@ -15,6 +15,7 @@ export async function getSettings() {
     system_prompt: data?.system_prompt ?? "",
     model: data?.model ?? "openai/gpt-5.6-sol",
     auto_approve: data?.auto_approve ?? false,
+    lovable_api_key_override: data?.lovable_api_key_override,
   };
 }
 
@@ -29,6 +30,7 @@ export async function findExamples(query: string, limit = 8) {
 export async function generateReply(
   message: string,
   history: HistoryTurn[] = [],
+  versionId?: string | null,
 ): Promise<{ reply: string; examples: Array<{ question: string; answer: string }> }> {
   const settings = await getSettings();
   const examples = await findExamples(message);
@@ -52,7 +54,7 @@ ${exampleBlock}`,
     { role: "user", content: message },
   ];
 
-  const reply = await chatComplete(messages, settings.model);
+  const reply = await chatComplete(messages, settings.model, settings.lovable_api_key_override);
   return { reply, examples: examples.map((e) => ({ question: e.question, answer: e.answer })) };
 }
 

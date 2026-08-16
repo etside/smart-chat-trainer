@@ -333,7 +333,8 @@ export const transcribeVoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
-    const text = await transcribeAudio(data.audio, data.mimeType);
+    const settings = await getAgentSettings({ context });
+    const text = await transcribeAudio(data.audio, data.mimeType, settings.lovable_api_key_override);
     return { text };
   });
 
