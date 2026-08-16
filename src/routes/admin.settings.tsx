@@ -45,10 +45,34 @@ function SettingsPage() {
   const [syncToken, setSyncToken] = useState("");
   const [syncSecret, setSyncSecret] = useState("");
 
+  const [metaAppId, setMetaAppId] = useState("");
+  const [metaAppSecret, setMetaAppSecret] = useState("");
+  const [metaAccessToken, setMetaAccessToken] = useState("");
+  const [metaPageId, setMetaPageId] = useState("");
+  const [metaWhatsappId, setMetaWhatsappId] = useState("");
+  const [metaVerifyToken, setMetaVerifyToken] = useState("");
+
   const fetchSyncCreds = useServerFn(getSyncCredentials);
   const saveSyncCreds = useServerFn(updateSyncCredentials);
+  const fetchMetaCreds = useServerFn(getMetaCredentials);
+  const saveMetaCreds = useServerFn(updateMetaCredentials);
+  const verifyMeta = useServerFn(verifyMetaConnection);
+  const getWebhookConfig = useServerFn(getMetaWebhookConfig);
 
   const { data: syncData } = useQuery({ queryKey: ["sync-credentials"], queryFn: () => fetchSyncCreds() });
+  const { data: metaData } = useQuery({ queryKey: ["meta-credentials"], queryFn: () => fetchMetaCreds() });
+  const { data: webhookConfig } = useQuery({ queryKey: ["meta-webhook-config"], queryFn: () => getWebhookConfig() });
+
+  useEffect(() => {
+    if (metaData) {
+      setMetaAppId(metaData.appId || "");
+      setMetaAppSecret(metaData.appSecret || "");
+      setMetaAccessToken(metaData.accessToken || "");
+      setMetaPageId(metaData.pageId || "");
+      setMetaWhatsappId(metaData.whatsappId || "");
+      setMetaVerifyToken(metaData.verifyToken || "");
+    }
+  }, [metaData]);
 
   useEffect(() => {
     if (syncData) {
