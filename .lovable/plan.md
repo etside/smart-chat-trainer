@@ -1,32 +1,27 @@
-# Implementation Plan - visual text edits & feature enhancements
+# Implementation Plan - Visual Text Edits & Feature Enhancements
 
-Apply requested visual text updates to the dashboard and implement comprehensive feature enhancements for the Wear Impressive AI console.
+Apply requested visual text updates and implement comprehensive feature enhancements for the Wear Impressive AI console.
 
 ## User-facing changes
 
-- **Dashboard update**: Replace the current summary text with the specific instruction and approval block.
-- **AI credit & billing**: Display current credit usage/balance in the dashboard and settings.
-- **Custom AI API keys**: Add support for users to provide their own OpenAI/Lovable API keys.
-- **Model/Version tracking**: 
-  - Track training "snapshots" or versions.
-  - Allow selecting which version a connection (API key) uses.
-  - Support rollback to previous training states.
-- **Training progress page**: New page showing status, last run time, and errors for every automatic training job.
-- **Webhook receiver**: Public endpoint to handle messages from external platforms and trigger training/response flows.
-- **Data export**: Buttons to download JSON conversation exports, voice transcripts, and approved training sets.
+- **Dashboard Update**: The dashboard summary has been updated with the requested instruction and approval block.
+- **AI Credit & Billing**: Display AI credit usage and allow adding custom API keys in the settings.
+- **Model/Version Tracking**: New interface to track training versions, select versions for API connections, and roll back if needed.
+- **Training Progress Page**: A dedicated page showing the status, timing, and errors for automatic training jobs.
+- **Webhook Receiver**: Support for external platforms to send messages to the app via a dedicated webhook endpoint.
+- **Data Export**: Tools to download training sets, JSON exports, and voice transcripts.
 
 ## Technical details
 
-- **Database schema updates**:
+- **Database Schema Updates**:
   - `agent_settings`: Add `lovable_api_key_override`.
-  - `training_jobs`: New table to track status of automated training runs.
-  - `training_versions`: New table to store snapshots of approved pairs.
-  - `api_keys`: Add `version_id` to link keys to specific training snapshots.
-- **Transcription & voice**: Ensure both Bengali and English models are explicitly supported in `ai.server.ts` prompts.
-- **Server functions**:
-  - `exportData`: New function to stream/return JSON/CSV exports.
-  - `getTrainingJobs`: Fetch status of background tasks.
-- **Webhook handler**: Implement `src/routes/api/public/webhook.ts`.
+  - `training_jobs`: New table for tracking background training tasks.
+  - `training_versions`: Table to store snapshots of approved Q&A pairs.
+  - `api_keys`: Add `version_id` to link keys to specific snapshots.
+- **AI & Transcription**: Refine `ai.server.ts` to explicitly handle simultaneous Bengali and English transcription and voice processing.
+- **API Enhancements**:
+  - Implement `src/routes/api/public/webhook.ts` for external integrations.
+  - Add data export server functions using streamed responses.
 
 ## Architecture
 
