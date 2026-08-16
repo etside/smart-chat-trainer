@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Terminal, Shield, Save, RefreshCcw, Search, ExternalLink, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 
 export const Route = createFileRoute("/admin/logs")({
   component: AdminLogsPage,

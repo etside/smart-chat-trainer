@@ -57,6 +57,13 @@ export const Route = createFileRoute("/api/public/webhook")({
 
         if (!isAuthorized) {
           console.warn("Unauthorized webhook attempt blocked.");
+          await supabaseAdmin.from("webhook_logs").insert({
+            source: 'custom',
+            event_type: 'unauthorized',
+            payload: { error: 'Invalid API Key or Signature' },
+            headers: Object.fromEntries(request.headers.entries()),
+            status_code: 401
+          });
           return json({ error: "Unauthorized" }, 401);
         }
 
@@ -64,8 +71,25 @@ export const Route = createFileRoute("/api/public/webhook")({
         try {
           body = JSON.parse(rawBody);
         } catch {
+          await supabaseAdmin.from("webhook_logs").insert({
+            source: 'custom',
+            event_type: 'invalid_json',
+            payload: { error: 'Invalid JSON body' },
+            headers: Object.fromEntries(request.headers.entries()),
+            status_code: 400
+          });
           return json({ error: "Invalid JSON body" }, 400);
         }
+
+        // Log successful authorized request
+        await supabaseAdmin.from("webhook_logs").insert({
+          source: 'custom',
+          event_type: body.event || 'message',
+          payload: body,
+          headers: Object.fromEntries(request.headers.entries()),
+          status_code: 200
+        });
+
 
         const parsed = WebhookSchema.safeParse(body);
         if (!parsed.success) return json({ error: "Invalid webhook payload" }, 400);
