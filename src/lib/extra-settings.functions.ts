@@ -10,7 +10,7 @@ export const getExtraSettings = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
-      .select("reduce_motion, b2b_backblaze_key, boson_workspace_id, fish_audio_api_key, alt_api_keys, vps_hosting_config")
+      .select("*")
       .eq("id", 1)
       .maybeSingle();
     
