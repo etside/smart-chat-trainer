@@ -72,12 +72,38 @@ function Landing() {
             Daddy <span className="text-primary italic">AI</span>
           </h1>
           
-          <div className="mt-8 h-20 overflow-hidden text-xl leading-relaxed text-muted-foreground max-w-3xl mx-auto delay-200">
-            <div className="animate-vertical-scroll">
-              <p className="h-20 flex items-center justify-center">"এই ড্রেসটার দাম কত?" — Daddy AI: "১,২০০ টাকা, আমাদের স্টকে ২ টি আছে।"</p>
-              <p className="h-20 flex items-center justify-center">"Can you show me real estate listings?" — Daddy AI: "Sure, we have 5 new luxury apartments in Gulshan."</p>
-              <p className="h-20 flex items-center justify-center">"নতুন ডিজাইনের কালেকশন আছে?" — Daddy AI: "অবশ্যই! আমাদের নতুন সিল্ক কালেকশন গতকালই এসেছে।"</p>
+          <div className="mx-auto mt-12 max-w-2xl h-[280px] overflow-hidden relative glass border-2 border-white/20 rounded-3xl p-8 group hover:border-primary/30 transition-all duration-500 shadow-2xl delay-200">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+            <div className="animate-vertical-scroll space-y-8 py-4">
+              {[
+                { q: "Is this product in stock?", a: "Checking current inventory... Yes, we have 12 units available for immediate delivery!", icon: "🛍️", color: "from-blue-500/20" },
+                { q: "এই ড্রেসটার কি আর কোনো কালার আছে?", a: "অবশ্যই! আমাদের কাছে লাল, নীল এবং কালো রঙে এটি পাওয়া যাচ্ছে।", icon: "👗", color: "from-pink-500/20" },
+                { q: "How do I return my order?", a: "We offer a 30-day hassle-free return policy. Shall I start the process for you?", icon: "📦", color: "from-green-500/20" },
+                { q: "অর্ডার কনফার্ম করার জন্য কি কি লাগবে?", a: "আপনার নাম, ঠিকানা এবং ফোন নম্বর দিলেই আমি অর্ডারটি কনফার্ম করে দিচ্ছি।", icon: "📝", color: "from-purple-500/20" },
+                { q: "Can I get a discount for bulk?", a: "I can offer a 15% discount for orders over 10 items. Interested?", icon: "💰", color: "from-yellow-500/20" }
+              ].map((item, i) => (
+                <div key={i} className="space-y-4 relative">
+                  <div className="flex justify-start">
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl rounded-tl-none px-5 py-3 text-sm text-white/90 shadow-lg max-w-[85%] text-left transform hover:scale-[1.02] transition-transform">
+                      <span className="text-xs font-black text-primary block mb-1 uppercase tracking-tighter">Customer</span>
+                      {item.q}
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <div className={`bg-gradient-to-br ${item.color} to-white/5 backdrop-blur-xl border border-primary/30 rounded-2xl rounded-tr-none px-5 py-3 text-sm text-white shadow-primary/10 shadow-xl max-w-[85%] text-left transform hover:scale-[1.02] transition-transform`}>
+                      <span className="text-xs font-black text-primary block mb-1 uppercase tracking-tighter flex items-center gap-1.5">
+                        <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+                        Daddy AI {item.icon}
+                      </span>
+                      {item.a}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
+            {/* Fade effects for top/bottom */}
+            <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background/80 to-transparent z-10" />
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 to-transparent z-10" />
           </div>
 
           <div className="mt-12 flex animate-in items-center justify-center gap-x-6 delay-300">
