@@ -63,7 +63,7 @@ I can't see the navigation buttons`);
           <span className="text-primary/80">$</span> daddy-ai --status check-sync
           {"\n"}<span className="text-white/40">{`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
 
-Navigation button color into black`}</span>
+I can't see the navigation buttons`}</span>
         </div>
       </div>
 
