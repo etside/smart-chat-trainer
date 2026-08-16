@@ -116,7 +116,7 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook`}</span>
         </Link>
         <Link
           to="/admin/webhook-test"
-          className="panel panel-hover block p-6"
+          className="panel panel-hover block p-6 bg-card/30 backdrop-blur-md"
         >
           <Terminal className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">ওয়েবহুক টেস্ট প্যানেল</h2>
