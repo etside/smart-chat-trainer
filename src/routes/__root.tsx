@@ -111,10 +111,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
   }),
   shellComponent: RootShell,
-  component: RootComponent,
+  component: RootComponentWrapper,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
+
+function RootComponentWrapper() {
+  const { queryClient } = Route.useRouteContext();
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RootComponent />
+    </QueryClientProvider>
+  );
+}
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
@@ -131,7 +140,6 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const queryClient = useQueryClient();
   const fetchMetaCreds = useServerFn(getMetaCredentials);
   const fetchExtra = useServerFn(getExtraSettings);
   
@@ -210,10 +218,10 @@ function RootComponent() {
   }, [metaConfig]);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster position="top-center" richColors />
-    </QueryClientProvider>
+    </>
   );
 }
