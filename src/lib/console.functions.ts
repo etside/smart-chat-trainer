@@ -271,8 +271,37 @@ export const revokeApiKey = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("api_keys").update({ revoked: true }).eq("id", data.id);
+    await supabaseAdmin.from("api_keys").delete().eq("id", data.id);
     return { ok: true };
+  });
+
+export const rotateApiKey = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { data: oldKey } = await supabaseAdmin
+      .from("api_keys")
+      .select("name, version_id")
+      .eq("id", data.id)
+      .single();
+      
+    if (!oldKey) throw new Error("Key not found");
+    
+    const newRawKey = generateApiKey();
+    const newHash = await hashApiKey(newRawKey);
+    
+    await supabaseAdmin.from("api_keys").delete().eq("id", data.id);
+    await supabaseAdmin.from("api_keys").insert({
+      name: oldKey.name,
+      key_hash: newHash,
+      key_prefix: newRawKey.slice(0, 10),
+      version_id: oldKey.version_id
+    });
+    
+    return { key: newRawKey };
   });
 
 export const getTrainingJobs = createServerFn({ method: "GET" })

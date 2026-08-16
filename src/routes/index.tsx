@@ -41,6 +41,9 @@ function Landing() {
             <Link to="/auth" className="text-sm font-medium hover:text-primary transition-colors">
               Pricing
             </Link>
+            <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors">
+              Documentation
+            </Link>
             <Button asChild size="sm" className="rounded-full px-6">
               <Link to={session ? "/admin" : "/auth"}>
                 {session ? "Dashboard" : "Get Started"}
@@ -167,16 +170,67 @@ function Landing() {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-24 border-y border-border/40">
-         <div className="mx-auto max-w-7xl px-6 text-center">
-            <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-               <div className="flex items-center gap-2 text-2xl font-bold">Impressive</div>
-               <div className="flex items-center gap-2 text-2xl font-bold">Usenodi.ai</div>
-               <div className="flex items-center gap-2 text-2xl font-bold">ElevenLabs</div>
-               <div className="flex items-center gap-2 text-2xl font-bold">RetailNext</div>
+      {/* Cost Comparison Section */}
+      <section className="py-32 px-6 lg:px-8 relative overflow-hidden">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Value Proposition</h2>
+            <p className="text-muted-foreground text-lg">Why leading businesses switch to Daddy AI.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="glass p-10 rounded-[2.5rem] border-primary/20 shadow-2xl relative overflow-hidden group">
+               <div className="absolute top-0 right-0 p-6">
+                 <div className="bg-primary/20 text-primary px-4 py-1 rounded-full text-sm font-bold animate-pulse">ROI: 800%</div>
+               </div>
+               <h3 className="text-3xl font-bold mb-8 italic">Daddy AI Console</h3>
+               <div className="space-y-6">
+                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
+                   <span className="text-muted-foreground">Human Labor (Monthly)</span>
+                   <span className="text-2xl font-bold line-through opacity-50">$4,500</span>
+                 </div>
+                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
+                   <span className="text-muted-foreground">Daddy AI (Monthly)</span>
+                   <span className="text-4xl font-bold text-primary">$49</span>
+                 </div>
+                 <p className="text-sm text-muted-foreground italic mt-8 leading-relaxed">
+                   * Based on 24/7 availability across 3 platforms, processing 5,000+ messages monthly with full inventory sync.
+                 </p>
+               </div>
+               <div className="absolute -bottom-10 -right-10 size-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all" />
             </div>
-         </div>
+
+            <div className="space-y-8 pl-0 md:pl-12">
+               <div className="flex gap-6 items-start">
+                 <div className="size-12 rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
+                   <Zap className="size-6 text-success" />
+                 </div>
+                 <div>
+                   <h4 className="text-xl font-bold mb-2 italic">Zero Hallucinations</h4>
+                   <p className="text-muted-foreground">Unlike generic LLMs, our RAG-first approach ensures 100% price and stock accuracy.</p>
+                 </div>
+               </div>
+               <div className="flex gap-6 items-start">
+                 <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                   <Users className="size-6 text-primary" />
+                 </div>
+                 <div>
+                   <h4 className="text-xl font-bold mb-2 italic">Infinite Scalability</h4>
+                   <p className="text-muted-foreground">Handle 1 or 1,000,000 concurrent chats without increasing headcount.</p>
+                 </div>
+               </div>
+               <div className="flex gap-6 items-start">
+                 <div className="size-12 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
+                   <ShieldCheck className="size-6 text-accent" />
+                 </div>
+                 <div>
+                   <h4 className="text-xl font-bold mb-2 italic">GDPR Compliant</h4>
+                   <p className="text-muted-foreground">Enterprise-grade data protection and local hosting options for complete privacy.</p>
+                 </div>
+               </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* CTA Section */}
@@ -202,9 +256,9 @@ function Landing() {
             <span className="font-bold text-lg tracking-tight">Daddy AI</span>
           </div>
           <div className="flex gap-8 text-sm text-muted-foreground">
-             <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-             <a href="#" className="hover:text-primary transition-colors">Terms</a>
-             <a href="#" className="hover:text-primary transition-colors">Documentation</a>
+             <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+             <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+             <Link to="/admin" className="hover:text-primary transition-colors">Documentation</Link>
           </div>
           <p className="text-sm text-muted-foreground">
             © 2026 Daddy AI. All rights reserved.
