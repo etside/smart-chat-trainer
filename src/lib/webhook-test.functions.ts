@@ -23,7 +23,7 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let textMessage = data.message || "";
-    let transcription: string | null = null;
+    let transcriptionResult: string | null = null;
 
     if (data.type === "voice" && data.audio) {
       const { data: settings } = await supabaseAdmin
@@ -32,8 +32,8 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
         .eq("id", 1)
         .maybeSingle();
       
-      transcription = await transcribeAudio(data.audio, data.mimeType || "audio/webm", settings?.lovable_api_key_override);
-      textMessage = transcription;
+      transcriptionResult = await transcribeAudio(data.audio, data.mimeType || "audio/webm", settings?.lovable_api_key_override);
+      textMessage = transcriptionResult;
     }
 
     if (!textMessage) {
@@ -59,7 +59,7 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
     }
 
     return {
-      transcription,
+      transcription: transcriptionResult,
       reply: result.reply,
       examplesCount: result.examples.length,
       conversationId: conv?.id,
