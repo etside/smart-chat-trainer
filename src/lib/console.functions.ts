@@ -5,6 +5,7 @@ import { z } from "zod";
 import { generateReply } from "./agent.server";
 import { chatComplete, transcribeAudio } from "./ai.server";
 import { assertAdmin, generateApiKey, hashApiKey } from "./admin.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const getMyRole = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -550,3 +551,43 @@ export const exportTrainingRunLogs = createServerFn({ method: "POST" })
 
     return { json: JSON.stringify(exportData, null, 2) };
   });
+
+export const submitSupportInquiry = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => 
+    z.object({
+      name: z.string().min(2),
+      contact: z.string().min(5), // email or phone
+      website: z.string().optional(),
+      category: z.enum(["faq", "inquiry", "suggestion", "complaint"]),
+      message: z.string().min(5),
+    }).parse(d)
+  )
+  .handler(async ({ data }) => {
+    // This is public, no middleware
+    await supabaseAdmin.from("webhook_logs").insert({
+      source: 'support_modal',
+      event_type: data.category,
+      payload: {
+        name: data.name,
+        contact: data.contact,
+        website: data.website,
+        message: data.message,
+        timestamp: new Date().toISOString()
+      },
+      status_code: 200,
+      processing_status: 'success'
+    });
+
+    return { success: true };
+  });
+
+export const getFaqs = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data } = await supabaseAdmin
+      .from("training_pairs")
+      .select("question, answer")
+      .eq("status", "approved")
+      .limit(5);
+    return data ?? [];
+  });
+
