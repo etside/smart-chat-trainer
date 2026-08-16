@@ -48,7 +48,7 @@ export const getMetaWebhookConfig = createServerFn({ method: "GET" })
     // In TanStack Start context, we can construct it if we have access to process.env or just rely on a hardcoded origin
     // since we know the app is deployed to *.lovable.app.
     // For now, let's use a standard pattern.
-    const callbackUrl = `${process.env.VITE_PUBLIC_APP_URL || 'https://daddyai.lovable.app'}/api/public/webhooks/meta`;
+    const callbackUrl = `${process.env['VITE_PUBLIC_APP_URL'] || 'https://daddyai.lovable.app'}/api/public/webhooks/meta`;
     
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: settings } = await supabaseAdmin
