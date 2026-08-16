@@ -13,8 +13,10 @@ import { deletePair, listPairs, savePair, setPairStatus } from "@/lib/console.fu
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, Loader2, Pencil, Trash2, X } from "lucide-react";
+import { Check, Loader2, Pencil, Trash2, X, AlertTriangle } from "lucide-react";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { useState } from "react";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/training")({
@@ -32,6 +34,8 @@ function TrainingData() {
   const [editing, setEditing] = useState<{ id: string; question: string; answer: string } | null>(
     null,
   );
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
 
   const fetchPairs = useServerFn(listPairs);
   const save = useServerFn(savePair);
@@ -65,9 +69,11 @@ function TrainingData() {
     mutationFn: (id: string) => remove({ data: { id } }),
     onSuccess: () => {
       toast.success("মুছে ফেলা হয়েছে");
+      setDeletingId(null);
       invalidate();
     },
   });
+
 
   const total = data?.total ?? 0;
   const size = data?.size ?? 25;
@@ -184,8 +190,9 @@ function TrainingData() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => deleteMutation.mutate(row.id)}
+                    onClick={() => setDeletingId(row.id)}
                   >
+
                     <Trash2 className="size-3.5" /> ডিলিট
                   </Button>
                 </div>
@@ -216,6 +223,16 @@ function TrainingData() {
           পরের
         </Button>
       </div>
+
+      <ConfirmModal
+        isOpen={Boolean(deletingId)}
+        onClose={() => setDeletingId(null)}
+        onConfirm={() => deletingId && deleteMutation.mutate(deletingId)}
+        isLoading={deleteMutation.isPending}
+        title="ডেটা মুছে ফেলুন"
+        description="আপনি কি নিশ্চিত যে আপনি এই ট্রেনিং জোড়াটি মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা সম্ভব হবে না।"
+      />
     </div>
+
   );
 }
