@@ -161,8 +161,7 @@ function AdminLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col h-screen overflow-y-auto">
-        <nav className="flex gap-1 overflow-x-auto bg-sidebar px-3 py-2 text-sidebar-foreground lg:hidden shrink-0 border-b border-border/20 sticky top-0 z-30 glass">
-
+        <nav className="flex gap-2 overflow-x-auto bg-sidebar px-4 py-3 text-sidebar-foreground lg:hidden shrink-0 border-b border-border/20 sticky top-0 z-30 glass custom-scrollbar-hide">
           {filteredNav.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             return (
@@ -170,13 +169,16 @@ function AdminLayout() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "whitespace-nowrap rounded-md px-3 py-1.5 text-xs transition-colors",
+                  "whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200 border-2",
                   active
-                    ? "bg-black text-white"
-                    : "text-muted-foreground hover:bg-black/10 hover:text-black"
+                    ? "bg-black text-white border-black shadow-md scale-105"
+                    : "text-muted-foreground border-transparent hover:bg-black/10 hover:text-black hover:border-black/5"
                 )}
               >
-                {item.label}
+                <div className="flex items-center gap-2">
+                  <item.icon className={cn("size-4", active && "animate-pulse")} />
+                  {item.label}
+                </div>
               </Link>
             );
           })}
