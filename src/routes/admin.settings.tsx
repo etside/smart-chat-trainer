@@ -30,6 +30,82 @@ const MODELS = [
   { id: "openai/gpt-5.6-luna", label: "Daddy Fast & Light (GPT-5.6 Luna)" },
 ];
 
+function MetaLoginButton() {
+  const [status, setStatus] = useState<string>("unknown");
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const handleStatus = (e: any) => {
+      setStatus(e.detail.status);
+      if (e.detail.status === 'connected') {
+        setUser(e.detail.authResponse);
+      }
+    };
+    window.addEventListener('fb-login-status', handleStatus);
+    
+    // Initial check if SDK already loaded
+    // @ts-ignore
+    if (typeof FB !== 'undefined' && FB.getLoginStatus) {
+      // @ts-ignore
+      FB.getLoginStatus((res) => handleStatus({ detail: res }));
+    }
+
+    return () => window.removeEventListener('fb-login-status', handleStatus);
+  }, []);
+
+  const handleLogin = () => {
+    // @ts-ignore
+    FB.login((response) => {
+      setStatus(response.status);
+      if (response.status === 'connected') {
+        setUser(response.authResponse);
+        toast.success("Meta লগইন সফল হয়েছে");
+      }
+    }, { scope: 'pages_messaging,whatsapp_business_messaging,pages_manage_metadata,pages_read_engagement' });
+  };
+
+  const handleLogout = () => {
+    // @ts-ignore
+    FB.logout((response) => {
+      setStatus(response.status);
+      setUser(null);
+      toast.info("Meta লগআউট করা হয়েছে");
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`size-3 rounded-full ${status === 'connected' ? 'bg-success animate-pulse' : 'bg-muted'}`} />
+          <div>
+            <p className="text-sm font-bold">Meta কানেকশন স্ট্যাটাস</p>
+            <p className="text-xs text-muted-foreground">
+              {status === 'connected' ? `কানেক্টেড (User ID: ${user?.userID})` : 
+               status === 'not_authorized' ? 'অ্যাপ অনুমোদিত নয়' : 'লগইন করা নেই'}
+            </p>
+          </div>
+        </div>
+        {status === 'connected' ? (
+          <Button variant="outline" size="sm" onClick={handleLogout} className="h-8">
+            লগআউট
+          </Button>
+        ) : (
+          <Button size="sm" onClick={handleLogin} className="h-8 bg-[#1877F2] hover:bg-[#1877F2]/90">
+            <Facebook className="mr-2 size-4" />
+            Meta দিয়ে লগইন করুন
+          </Button>
+        )}
+      </div>
+      {status === 'connected' && (
+        <div className="text-[10px] font-mono text-muted-foreground bg-background/50 p-2 rounded border border-white/5 overflow-x-auto">
+          Access Token: {user?.accessToken.substring(0, 15)}...
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SettingsPage() {
   const qc = useQueryClient();
   const fetchSettings = useServerFn(getAgentSettings);
@@ -255,6 +331,9 @@ function SettingsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="col-span-full mb-4">
+                <MetaLoginButton />
+              </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">App ID</Label>
                 <Input
