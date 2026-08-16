@@ -11,7 +11,7 @@ import { useEffect, type ReactNode, useState } from "react";
 import { getMetaCredentials } from "../lib/settings.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { getExtraSettings } from "../lib/extra-settings.functions";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { Toaster } from "../components/ui/sonner";
 import appCss from "../styles.css?url";
@@ -110,14 +110,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: ReactNode }) {
+function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  
   return (
     <html lang="en">
       <head>
@@ -125,7 +125,7 @@ function RootShell({ children }: { children: ReactNode }) {
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          {children}
+          <InnerRoot />
         </QueryClientProvider>
         <Scripts />
       </body>
@@ -133,7 +133,7 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function RootComponent() {
+function InnerRoot() {
   const fetchMetaCreds = useServerFn(getMetaCredentials);
   const fetchExtra = useServerFn(getExtraSettings);
   
@@ -213,7 +213,6 @@ function RootComponent() {
 
   return (
     <>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster position="top-center" richColors />
     </>
