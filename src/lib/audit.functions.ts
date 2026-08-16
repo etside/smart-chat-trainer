@@ -57,7 +57,7 @@ export const rotateSyncCredentials = createServerFn({ method: "POST" })
       _actor_id: context.userId,
       _action: 'rotate_sync_credentials',
       _entity_type: 'agent_settings',
-      _entity_id: null,
+      _entity_id: undefined,
       _metadata: { old_token_prefix: old?.sync_token?.slice(0, 8) }
     });
 
