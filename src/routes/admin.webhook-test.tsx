@@ -27,7 +27,10 @@ function WebhookTest() {
     mutationFn: async (payload: { type: "text" | "voice"; message?: string; audio?: string; mimeType?: string }) => {
       return testFn({
         data: {
-          ...payload,
+          type: payload.type,
+          message: payload.message,
+          audio: payload.audio,
+          mimeType: payload.mimeType,
           sender,
         },
       });
@@ -118,17 +121,19 @@ function WebhookTest() {
                 <TabsContent value="voice" className="mt-4">
                   <div className="rounded-lg border bg-card p-4 text-center">
                     <p className="text-sm text-muted-foreground mb-4">অডিও রেকর্ড করে ওয়েববহুক পেলোড হিসেবে পাঠান</p>
-                    <VoiceRecorder 
-                      onTranscription={() => {}}
-                      onAudioBlob={async (blob) => {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(blob);
-                        reader.onloadend = () => {
-                          const base64 = (reader.result as string).split(",")[1];
-                          mutation.mutate({ type: "voice", audio: base64, mimeType: blob.type });
-                        };
-                      }}
-                    />
+                    <div className="flex justify-center">
+                      <VoiceRecorder 
+                        onText={() => {}}
+                        onAudioBlob={async (blob: Blob) => {
+                          const reader = new FileReader();
+                          reader.readAsDataURL(blob);
+                          reader.onloadend = () => {
+                            const base64 = (reader.result as string).split(",")[1];
+                            mutation.mutate({ type: "voice", audio: base64, mimeType: blob.type });
+                          };
+                        }}
+                      />
+                    </div>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -165,9 +170,9 @@ function WebhookTest() {
                         <div>
                           <span className="text-primary">AI REPLY:</span> {log.reply}
                         </div>
-                        {log.sources && log.sources.length > 0 && (
+                        {log.examplesCount !== undefined && (
                           <div>
-                            <span className="text-primary">SOURCES:</span> {log.sources.length} matches found
+                            <span className="text-primary">SOURCES:</span> {log.examplesCount} matches found
                           </div>
                         )}
                         {log.conversationId && (
