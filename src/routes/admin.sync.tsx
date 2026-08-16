@@ -80,14 +80,14 @@ function SyncStatusPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-5xl animate-fade">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Activity className="size-6 text-primary" /> প্রোডাক্ট সিঙ্ক স্ট্যাটাস
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <Activity className="size-8 text-primary" /> প্রোডাক্ট সিঙ্ক স্ট্যাটাস
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            প্রোডাক্ট, স্টক এবং ইনভেন্টরি সিঙ্ক্রোনাইজেশন মনিটর করুন।
+          <p className="mt-2 text-muted-foreground">
+            Daddy AI-এর প্রোডাক্ট, স্টক এবং ইনভেন্টরি সিঙ্ক্রোনাইজেশন রিয়েল-টাইমে মনিটর করুন।
           </p>
         </div>
         <div className="flex gap-3">
@@ -113,7 +113,7 @@ function SyncStatusPage() {
         </div>
       </div>
 
-      <div className="mt-6 panel p-5 border-primary/10">
+      <div className="mt-8 panel panel-hover p-6 border-primary/10">
         <h2 className="font-semibold flex items-center gap-2 mb-4">
           <Clock className="size-4 text-primary" /> অটোমেটিক সিঙ্ক সিডিউল (Scheduled Sync)
         </h2>
