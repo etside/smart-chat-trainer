@@ -38,11 +38,14 @@ function Landing() {
             <span className="font-bold text-xl tracking-tight hidden sm:block">Daddy AI</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/auth" className="text-sm font-medium hover:text-primary transition-colors">
-              Pricing
+            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+              Features
             </Link>
-            <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors">
-              Documentation
+            <Link to="/connect" className="text-sm font-medium hover:text-primary transition-colors">
+              Integrations
+            </Link>
+            <Link to="/privacy" className="text-sm font-medium hover:text-primary transition-colors">
+              Legal
             </Link>
             <Button asChild size="sm" className="rounded-full px-6">
               <Link to={session ? "/admin" : "/auth"}>
@@ -282,8 +285,9 @@ function Landing() {
             <span className="font-bold text-lg tracking-tight">Daddy AI</span>
           </div>
           <div className="flex gap-8 text-sm text-muted-foreground">
-             <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-             <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+             <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+             <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+             <Link to="/privacy-request" className="hover:text-primary transition-colors">GDPR Request</Link>
              <Link to="/admin" className="hover:text-primary transition-colors">Documentation</Link>
           </div>
           <p className="text-sm text-muted-foreground">

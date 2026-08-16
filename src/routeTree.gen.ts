@@ -22,6 +22,7 @@ import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminApiKeysRouteImport } from './routes/admin.api-keys'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminOnboardingRouteImport } from './routes/admin.onboarding'
 import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
 import { Route as AdminProgressRouteImport } from './routes/admin.progress'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -99,6 +100,11 @@ const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
 const AdminLogsRoute = AdminLogsRouteImport.update({
   id: '/logs',
   path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOnboardingRoute = AdminOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPlaygroundRoute = AdminPlaygroundRouteImport.update({
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -207,6 +214,7 @@ export interface FileRoutesByTo {
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
     | '/admin/api-keys'
     | '/admin/connections'
     | '/admin/logs'
+    | '/admin/onboarding'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/admin/api-keys'
     | '/admin/connections'
     | '/admin/logs'
+    | '/admin/onboarding'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/admin/api-keys'
     | '/admin/connections'
     | '/admin/logs'
+    | '/admin/onboarding'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -447,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLogsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/onboarding': {
+      id: '/admin/onboarding'
+      path: '/onboarding'
+      fullPath: '/admin/onboarding'
+      preLoaderRoute: typeof AdminOnboardingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/playground': {
       id: '/admin/playground'
       path: '/playground'
@@ -546,6 +565,7 @@ interface AdminRouteChildren {
   AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
   AdminLogsRoute: typeof AdminLogsRoute
+  AdminOnboardingRoute: typeof AdminOnboardingRoute
   AdminPlaygroundRoute: typeof AdminPlaygroundRoute
   AdminProgressRoute: typeof AdminProgressRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -561,6 +581,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminApiKeysRoute: AdminApiKeysRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
   AdminLogsRoute: AdminLogsRoute,
+  AdminOnboardingRoute: AdminOnboardingRoute,
   AdminPlaygroundRoute: AdminPlaygroundRoute,
   AdminProgressRoute: AdminProgressRoute,
   AdminSettingsRoute: AdminSettingsRoute,

@@ -124,6 +124,16 @@ Actions: catalog, product, stock, categories, cart_add, order_place`}
             অটোমেটিক ট্রেনিং জব এবং স্ট্যাটাস দেখুন।
           </p>
         </Link>
+        <Link
+          to="/admin/onboarding"
+          className="panel panel-hover block p-6 border-accent/20 bg-accent/5 shadow-accent/5"
+        >
+          <PlusCircle className="size-5 text-accent" />
+          <h2 className="mt-3 font-semibold">অনবোর্ডিং উইজার্ড</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            নতুন প্ল্যাটফর্ম কানেক্ট করার গাইডলাইন এবং সেটআপ।
+          </p>
+        </Link>
       </div>
 
       <div className="mt-8">
