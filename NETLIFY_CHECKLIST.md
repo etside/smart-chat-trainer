@@ -25,10 +25,13 @@ Optional but recommended for full feature support.
 - `B2B_BACKBLAZE_KEY`: Backblaze B2 Application Key.
 - `BOSON_WORKSPACE_ID`: Your Boson Workspace identifier.
 - `FISH_AUDIO_API_KEY`: API key for Fish Audio transcription/synthesis.
+- `VPS_HOSTING_CONFIG`: **(JSON String)** Optional configuration for VPS hosting (e.g. `{"host": "1.2.3.4", "user": "admin"}`).
 
 ### 5. Deployment Info
-- `NODE_VERSION`: `20` (or higher)
-- `BUN_VERSION`: `1.1.0` (or higher)
+- `NODE_VERSION`: `20`
+- `BUN_VERSION`: `latest`
+- `CRON_SECRET`: Secret for scheduled sync jobs.
+
 
 ---
 *Note: After adding these variables, you may need to trigger a new deploy for changes to take effect.*
