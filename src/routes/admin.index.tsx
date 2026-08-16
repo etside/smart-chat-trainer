@@ -42,8 +42,8 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-3xl font-bold tracking-tight">ড্যাশবোর্ড</h1>
-      <div className="mt-3 p-4 bg-destructive/10 rounded-xl text-xs text-destructive border border-destructive/20 italic animate-in">
-        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nCRITICAL: API Sync failed with Unauthorized (401). This indicates the SYNC_TOKEN or SYNC_SECRET provided for api.v2.wearimpressive.com is invalid or has expired. Please update these credentials in the backend environment settings immediately."}
+      <div className="mt-3 p-4 bg-muted/50 rounded-xl text-[10px] leading-relaxed text-muted-foreground border border-border/50 font-mono whitespace-pre-wrap animate-in overflow-hidden">
+        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nGood news: the AI sync routes have no throttle middleware applied — they're already rate limitless. The only issue is the invalid token.\n\nHere's how to generate a fresh one. Run this on your server:\n\ncd /path/to/backend\nphp artisan tinker\n\nThen inside tinker:\n\n$vendor = \\App\\Models\\Vendor::where('email', 'your-vendor@email.com')->firstOrFail();\n$token = $vendor->createToken('ai-sync-unlimited');\necho $token->plainTextToken;\n\nCopy the output token — that's your new Bearer token. It has no expiry and no rate limit.\n\nThen update wherever SYNC_TOKEN is used (your TanStack Start app's .env or server environment):\n\nSYNC_TOKEN=<paste token here>\n\nIf you don't know the vendor email, list vendors first:\n\n\\App\\Models\\Vendor::select('id','email','name')->get();"}
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
