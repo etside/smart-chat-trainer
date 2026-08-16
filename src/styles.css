@@ -151,9 +151,10 @@
 }
 
 @utility glass {
-  background: color-mix(in oklch, var(--color-card), transparent 20%);
-  backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in oklch, var(--color-border), transparent 50%);
+  background: color-mix(in oklch, var(--color-card), transparent 35%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid color-mix(in oklch, var(--color-border), transparent 65%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 
 @utility bento-item {

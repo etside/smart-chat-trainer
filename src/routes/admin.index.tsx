@@ -42,25 +42,36 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-3xl font-bold tracking-tight">ড্যাশবোর্ড</h1>
-      <div className="mt-3 p-4 bg-muted/50 rounded-xl text-[10px] leading-relaxed text-muted-foreground border border-border/50 font-mono whitespace-pre-wrap animate-in overflow-hidden relative group">
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="sm" className="h-6 text-[9px]" onClick={() => {
+      <div className="mt-3 overflow-hidden rounded-xl border border-border/40 bg-black/80 shadow-2xl animate-in font-mono group relative">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border/20 bg-white/5">
+          <div className="flex gap-1.5">
+            <div className="size-2.5 rounded-full bg-red-500/50" />
+            <div className="size-2.5 rounded-full bg-amber-500/50" />
+            <div className="size-2.5 rounded-full bg-emerald-500/50" />
+          </div>
+          <div className="text-[9px] uppercase tracking-tighter text-muted-foreground font-sans font-bold">System Status: Active</div>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-[9px] hover:bg-white/10 text-muted-foreground" onClick={() => {
             navigator.clipboard.writeText(`Authentication verified and operational. (Action: catalog, session ID required)
 Set up the Wear Impressive AI Webhook integration.
 POST https://api.v2.wearimpressive.com/api/ai/webhook`);
             toast.success("ডকুমেন্টেশন কপি হয়েছে");
-          }}>কপি করুন</Button>
+          }}>
+            <Terminal className="size-3 mr-1" /> Copy Script
+          </Button>
         </div>
-        {`Authentication verified and operational. (Action: catalog, session ID required)
+        <div className="p-4 text-[11px] leading-relaxed text-emerald-400/90 whitespace-pre-wrap">
+          <span className="text-primary/80">$</span> daddy-ai --status check-sync
+          {"\n"}<span className="text-white/40">{`Authentication verified and operational. (Action: catalog, session ID required)
 Set up the Wear Impressive AI Webhook integration.
-POST https://api.v2.wearimpressive.com/api/ai/webhook`}
+POST https://api.v2.wearimpressive.com/api/ai/webhook`}</span>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c, i) => (
           <div 
             key={c.label} 
-            className="panel panel-hover p-6 border-t-2 border-t-primary/20 bg-card/50 backdrop-blur-sm animate-in"
+            className="panel panel-hover p-6 border-t-2 border-t-primary/20 bg-card/40 backdrop-blur-md animate-in"
             style={{ animationDelay: `${i * 100}ms` }}
           >
             <div className="flex items-center justify-between mb-3">
@@ -76,7 +87,7 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook`}
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Link to="/admin/add" className="panel panel-hover block p-6">
+        <Link to="/admin/add" className="panel panel-hover block p-6 bg-card/30 backdrop-blur-md">
           <Database className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">নতুন ডেটা যোগ করুন</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -85,7 +96,7 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook`}
         </Link>
         <Link
           to="/admin/playground"
-          className="panel panel-hover block p-6"
+          className="panel panel-hover block p-6 bg-card/30 backdrop-blur-md"
         >
           <MessageSquare className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">এজেন্ট পরীক্ষা করুন</h2>
@@ -115,7 +126,7 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook`}
         </Link>
         <Link
           to="/admin/progress"
-          className="panel panel-hover block p-6"
+          className="panel panel-hover block p-6 bg-card/30 backdrop-blur-md"
         >
           <Activity className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">ট্রেনিং প্রগ্রেস</h2>
@@ -135,7 +146,7 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook`}
         </Link>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 p-6 panel bg-card/20 backdrop-blur-xl">
         <h2 className="text-lg font-semibold mb-4">ডেটা এক্সপোর্ট</h2>
         <div className="flex gap-4">
           <Button variant="outline" onClick={() => handleExport("training_pairs")}>

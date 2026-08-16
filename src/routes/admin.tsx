@@ -109,7 +109,7 @@ function AdminLayout() {
   });
 
   return (
-    <div className="flex min-h-screen bg-background selection:bg-primary/20 noise-overlay overflow-hidden">
+    <div className="flex min-h-screen bg-background/95 selection:bg-primary/20 noise-overlay overflow-hidden mesh-bg">
       {/* 2-Column Responsive Layout */}
 
 
