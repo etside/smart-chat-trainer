@@ -14,13 +14,14 @@ export const getExtraSettings = createServerFn({ method: "GET" })
       .eq("id", 1)
       .maybeSingle();
     
+    const row = data as any;
     return {
-      reduceMotion: data?.reduce_motion ?? false,
-      b2bBackblazeKey: data?.b2b_backblaze_key ? "••••••••" : "",
-      bosonWorkspaceId: data?.boson_workspace_id || "",
-      fishAudioApiKey: data?.fish_audio_api_key ? "••••••••" : "",
-      altApiKeys: data?.alt_api_keys || {},
-      vpsHostingConfig: data?.vps_hosting_config || {}
+      reduceMotion: row?.reduce_motion ?? false,
+      b2bBackblazeKey: row?.b2b_backblaze_key ? "••••••••" : "",
+      bosonWorkspaceId: row?.boson_workspace_id || "",
+      fishAudioApiKey: row?.fish_audio_api_key ? "••••••••" : "",
+      altApiKeys: row?.alt_api_keys || {},
+      vpsHostingConfig: row?.vps_hosting_config || {}
     };
   });
 
