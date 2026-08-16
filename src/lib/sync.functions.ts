@@ -16,6 +16,49 @@ export const syncCatalog = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // Check if the URL is the new API endpoint
+    if (data.url.includes("api.v2.wearimpressive.com")) {
+      try {
+        const syncRes = await fetch(data.url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer 10f036a1730c407a7b060447f08543ac9f21ef1e0f9ef0f75f2b8ff474b2d7c4`,
+            "X-Secret": "c7188d3e68a3a58ebd4adfb0209630b26922aebe619f14fb4e080742208fbed2"
+          },
+          body: JSON.stringify({ action: "get_all_info" })
+        });
+        
+        if (!syncRes.ok) throw new Error(`API sync failed: ${syncRes.statusText}`);
+        
+        const apiData = await syncRes.json();
+        // Assuming the API returns an array of products/info
+        // If the API returns a different format, we might need to adjust this
+        const items = Array.isArray(apiData) ? apiData : (apiData.products || []);
+        
+        const trainingPairs = items.map((item: any) => ({
+          question: `${item.name || item.title} এর স্টক বা দাম কত?`,
+          answer: `${item.name || item.title} এর দাম ${item.price} টাকা। স্টক: ${item.stock_status || item.inventory || 'Available'}। বিবরণ: ${item.description || ''}`,
+          status: 'approved' as const,
+          source: 'api_sync'
+        })).slice(0, 1000);
+
+        const { error } = await supabaseAdmin
+          .from("training_pairs")
+          .upsert(trainingPairs, { onConflict: 'question' });
+
+        if (error) throw error;
+
+        return { 
+          count: trainingPairs.length, 
+          message: `Successfully synced ${trainingPairs.length} items from API.` 
+        };
+      } catch (err: any) {
+        console.error("API Sync error:", err);
+        throw new Error(`API Sync failed: ${err.message}`);
+      }
+    }
+
     try {
       const res = await fetch(data.url);
       if (!res.ok) throw new Error(`Failed to fetch catalog: ${res.statusText}`);

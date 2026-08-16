@@ -224,8 +224,9 @@ function WebhookTest() {
           <p className="text-sm text-muted-foreground mb-4">
             wearimpressive.com থেকে সরাসরি প্রোডাক্ট ডেটা সিঙ্ক করে AI ট্রেনিং উন্নত করুন।
           </p>
-          <div className="rounded-md bg-secondary/30 p-3 mb-4 text-xs font-mono break-all">
-            URL: https://wearimpressive.com/api/meta-catalog?format=csv
+          <div className="rounded-md bg-secondary/30 p-3 mb-4 text-xs font-mono break-all space-y-2">
+            <div>URL: https://api.v2.wearimpressive.com/api/ai/webhook</div>
+            <div className="text-[10px] text-muted-foreground opacity-70">Method: POST | Syncing: Products, Stocks, Inventory, Orders</div>
           </div>
           <Button 
             variant="outline" 
