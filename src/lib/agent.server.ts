@@ -115,7 +115,7 @@ ${exampleBlock}`,
     { role: "user", content: message },
   ];
 
-  const reply = await chatComplete(messages, settings.model, settings.lovable_api_key_override);
+  const reply = await chatComplete(messages, "openai/gpt-4o-mini", settings.lovable_api_key_override);
   
   // Log message usage
   await logActionUsage({ data: { action: "ai_message", metadata: { model: settings.model } } }).catch(console.error);

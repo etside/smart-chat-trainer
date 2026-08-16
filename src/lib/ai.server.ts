@@ -45,8 +45,8 @@ export async function transcribeAudio(
   const ext = mimeType.includes("mp4") || mimeType.includes("m4a") ? "m4a" : "webm";
   const form = new FormData();
   form.append("file", new Blob([binary], { type: mimeType }), `audio.${ext}`);
-  form.append("model", "openai/gpt-4o-transcribe");
-  form.append("prompt", "ট্রান্সক্রিপ্টটি বাংলা বা বাংলিশে হতে পারে। দয়া করে সঠিক বানান ও যতিচিহ্ন বজায় রাখুন। (The transcript may be in Bengali or Banglish. Please maintain correct spelling and punctuation.)");
+  form.append("model", "openai/whisper-large-v3-turbo");
+  form.append("prompt", "ট্রান্সক্রিপ্টটি দ্রুত ও নির্ভুলভাবে বাংলা বা বাংলিশে করুন। (Transcribe quickly and accurately in Bengali or Banglish.)");
 
   const res = await fetch(`${GATEWAY}/audio/transcriptions`, {
     method: "POST",
