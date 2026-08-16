@@ -40,9 +40,9 @@ function TrainingProgress() {
     <div className="mx-auto max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">ট্রেনিং প্রগ্রেস</h1>
+          <h1 className="text-2xl font-semibold">ট্রেনিং লাইভ প্রগ্রেস</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            অটোমেটিক ট্রেনিং জব এবং ডেটা প্রসেসিং স্ট্যাটাস।
+            অটোমেটিক ট্রেনিং জব, রিট্রাই এবং ফেইলিয়র স্ট্যাটাস এখানে দেখা যাবে।
           </p>
         </div>
         <Button 
@@ -116,6 +116,11 @@ function TrainingProgress() {
                       <div className="text-right hidden md:block">
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">আইটেম</p>
                         <p className="text-xl font-display font-bold">{job.processed_count || 0}</p>
+                      </div>
+
+                      <div className="text-right hidden md:block">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">রিট্রাই</p>
+                        <p className="text-xl font-display font-bold text-warning">{job.retry_count || 0}</p>
                       </div>
                       
                       {job.status === "failed" && (
