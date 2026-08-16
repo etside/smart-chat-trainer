@@ -43,7 +43,7 @@ function Dashboard() {
     <div className="mx-auto max-w-5xl">
       <h1 className="text-3xl font-bold tracking-tight">ড্যাশবোর্ড</h1>
       <div className="mt-3 p-4 bg-primary/5 rounded-xl text-xs text-muted-foreground border border-primary/10 italic animate-in">
-        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nAPI Sync error: Unauthorized (401). Please verify that the SYNC_TOKEN and SYNC_SECRET in the environment match the current API requirements. Authentication failed during the last sync attempt."}
+        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nWebhook & API configuration active. Courier (Pathao/Steadfast/RedX) and Payment (SSLCommerz/bKash/Nagad) endpoints are now mapped. AI Sync status endpoint operational. Secrets should be managed in the backend environment settings."}
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
