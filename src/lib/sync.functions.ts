@@ -9,7 +9,7 @@ export const syncCatalog = createServerFn({ method: "POST" })
       .object({
         url: z.string().url().default("https://wearimpressive.com/api/meta-catalog?format=csv"),
       })
-      .parse(d),
+      .parse(d || {}),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
