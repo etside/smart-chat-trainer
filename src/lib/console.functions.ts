@@ -506,8 +506,8 @@ export const exportTrainingRunLogs = createServerFn({ method: "POST" })
       status: job.status,
       created_at: job.created_at,
       finished_at: job.finished_at,
-      processed_count: job.processed_count,
-      retry_count: job.retry_count,
+      processed_count: (job as any).processed_count,
+      retry_count: (job as any).retry_count,
       error_log: job.error_log,
       samples: samples || []
     };
