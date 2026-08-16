@@ -23,10 +23,10 @@ import { useEffect } from "react";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "কনসোল — Wear Impressive AI" },
-      { name: "description", content: "AI সেলস এজেন্ট ট্রেনিং কনসোল।" },
-      { property: "og:title", content: "কনসোল — Wear Impressive AI" },
-      { property: "og:description", content: "AI সেলস এজেন্ট ট্রেনিং কনসোল।" },
+      { title: "কনসোল — Daddy AI" },
+      { name: "description", content: "Daddy AI সেলস এজেন্ট ট্রেনিং কনসোল।" },
+      { property: "og:title", content: "কনসোল — Daddy AI" },
+      { property: "og:description", content: "Daddy AI সেলস এজেন্ট ট্রেনিং কনসোল।" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -91,9 +91,12 @@ function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-sidebar p-4 text-sidebar-foreground md:flex">
-        <div className="px-2 py-3">
-          <p className="font-display text-lg font-semibold">Wear Impressive</p>
-          <p className="text-xs text-sidebar-foreground/70">AI Training Console</p>
+        <div className="flex items-center gap-3 px-2 py-3 border-b border-sidebar-border mb-4">
+          <img src={logoAsset.url} alt="Daddy AI" className="size-8 rounded-lg" />
+          <div>
+            <p className="font-display text-base font-bold leading-tight">Daddy AI</p>
+            <p className="text-[10px] uppercase tracking-wider text-sidebar-foreground/50 font-bold">Training Console</p>
+          </div>
         </div>
         <nav className="mt-4 flex flex-col gap-1">
           {nav.map((item) => {

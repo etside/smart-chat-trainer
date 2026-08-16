@@ -41,14 +41,14 @@ function Dashboard() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="text-2xl font-semibold">ড্যাশবোর্ড</h1>
-      <div className="mt-1 p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground border italic">
-        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nAdvanced sync endpoint configured. Token and Secret are stored securely."}
+      <h1 className="text-3xl font-bold tracking-tight">ড্যাশবোর্ড</h1>
+      <div className="mt-3 p-4 bg-primary/5 rounded-xl text-xs text-muted-foreground border border-primary/10 italic animate-in">
+        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nAdvanced sync endpoint configured for Daddy AI. Token and Secret are stored securely."}
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c) => (
-          <div key={c.label} className="panel p-5">
+          <div key={c.label} className="panel panel-hover p-6 border-l-4 border-l-primary/30">
             <c.icon className="size-5 text-primary" />
             <p className="mt-3 text-2xl font-semibold tabular-nums">
               {isLoading ? "—" : c.value}
@@ -59,7 +59,7 @@ function Dashboard() {
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Link to="/admin/add" className="panel block p-5 transition-colors hover:bg-secondary/50">
+        <Link to="/admin/add" className="panel panel-hover block p-6">
           <Database className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">নতুন ডেটা যোগ করুন</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -68,7 +68,7 @@ function Dashboard() {
         </Link>
         <Link
           to="/admin/playground"
-          className="panel block p-5 transition-colors hover:bg-secondary/50"
+          className="panel panel-hover block p-6"
         >
           <MessageSquare className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">এজেন্ট পরীক্ষা করুন</h2>
@@ -78,7 +78,7 @@ function Dashboard() {
         </Link>
         <Link
           to="/admin/sync"
-          className="panel block p-5 transition-colors hover:bg-secondary/50 border-primary/20 bg-primary/5"
+          className="panel panel-hover block p-6 border-primary/20 bg-primary/5 shadow-primary/5"
         >
           <Activity className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">প্রোডাক্ট সিঙ্ক</h2>
@@ -88,7 +88,7 @@ function Dashboard() {
         </Link>
         <Link
           to="/admin/webhook-test"
-          className="panel block p-5 transition-colors hover:bg-secondary/50"
+          className="panel panel-hover block p-6"
         >
           <Terminal className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">ওয়েবহুক টেস্ট প্যানেল</h2>
@@ -98,7 +98,7 @@ function Dashboard() {
         </Link>
         <Link
           to="/admin/progress"
-          className="panel block p-5 transition-colors hover:bg-secondary/50"
+          className="panel panel-hover block p-6"
         >
           <Activity className="size-5 text-primary" />
           <h2 className="mt-3 font-semibold">ট্রেনিং প্রগ্রেস</h2>
