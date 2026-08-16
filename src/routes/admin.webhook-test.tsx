@@ -4,10 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { testWebhookPayload } from "@/lib/webhook-test.functions";
-import { useMutation } from "@tanstack/react-query";
+import { syncCatalog } from "@/lib/sync.functions";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageSquare, Mic, Send, Terminal, Zap } from "lucide-react";
+import { MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode, Copy } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
