@@ -17,33 +17,31 @@ export const syncCatalog = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     try {
-      // 1. Fetch CSV
       const res = await fetch(data.url);
       if (!res.ok) throw new Error(`Failed to fetch catalog: ${res.statusText}`);
       const csvText = await res.text();
 
-      // Simple CSV parser (assuming comma-separated and quoted)
       const lines = csvText.split("\n").filter(l => l.trim());
       if (lines.length < 2) return { count: 0, message: "Catalog is empty" };
 
       const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ''));
       
-      // We want to map this to training pairs
-      // Likely columns: id, title, description, price, link, image_link, availability
       const items = lines.slice(1).map(line => {
         const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ''));
         const obj: Record<string, string> = {};
-        headers.forEach((h, i) => { obj[h] = values[i] || ""; });
+        headers.forEach((h, i) => { 
+          if (h) {
+            obj[h] = values[i] || "";
+          }
+        });
         return obj;
       });
 
-      // Transform products into training pairs
-      // Example: "How much is [Title]?" -> "[Title] is [Price]. You can find it here: [Link]"
       const trainingPairs = items.map(item => {
-        const title = item.title || item.name || "Product";
-        const price = item.price || "Contact for price";
-        const link = item.link || item.url || "";
-        const description = item.description || "";
+        const title = item['title'] || item['name'] || "Product";
+        const price = item['price'] || "Contact for price";
+        const link = item['link'] || item['url'] || "";
+        const description = item['description'] || "";
         
         return {
           question: `${title} এর দাম কত? (How much is ${title}?)`,
@@ -51,10 +49,9 @@ export const syncCatalog = createServerFn({ method: "POST" })
           status: 'approved' as const,
           source: 'catalog_sync'
         };
-      }).slice(0, 1000); // Limit to 1000 pairs per sync for safety
+      }).slice(0, 1000);
 
-      // 2. Insert into database
-      const { data: inserted, error } = await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from("training_pairs")
         .upsert(trainingPairs, { onConflict: 'question' });
 
