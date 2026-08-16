@@ -253,7 +253,7 @@ export const createApiKey = createServerFn({ method: "POST" })
       name: data.name,
       key_hash: await hashApiKey(key),
       key_prefix: key.slice(0, 10),
-      version_id: data.version_id,
+      version_id: data.version_id ?? null,
     });
     return { key };
   });
