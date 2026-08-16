@@ -30,13 +30,16 @@ export const Route = createFileRoute("/api/public/webhook")({
       POST: async ({ request }) => {
         const apiKey = request.headers.get("x-api-key");
         const signature = request.headers.get("x-webhook-signature");
-        const idempotencyKey = request.headers.get("x-idempotency-key");
 
         const { hashApiKey, verifyWebhookSignature } = await import("@/lib/admin.server");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        // Use API Key or Signature verification
+        const rawBody = await request.text();
+        const secret = process.env['SYNC_SECRET'];
+
         let isAuthorized = false;
+
+        // 1. Check API Key
         if (apiKey) {
           const { data: keyRow } = await supabaseAdmin
             .from("api_keys")
@@ -46,16 +49,15 @@ export const Route = createFileRoute("/api/public/webhook")({
           if (keyRow && !keyRow.revoked) isAuthorized = true;
         }
 
-        const rawBody = await request.text();
-        const secret = process.env['SYNC_SECRET'];
-        
+        // 2. Check HMAC Signature (if API key fails)
         if (!isAuthorized && signature && secret) {
-          if (await verifyWebhookSignature(rawBody, signature, secret)) {
-            isAuthorized = true;
-          }
+          isAuthorized = await verifyWebhookSignature(rawBody, signature, secret);
         }
 
-        if (!isAuthorized) return json({ error: "Unauthorized" }, 401);
+        if (!isAuthorized) {
+          console.warn("Unauthorized webhook attempt blocked.");
+          return json({ error: "Unauthorized" }, 401);
+        }
 
         let body;
         try {
