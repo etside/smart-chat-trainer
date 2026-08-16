@@ -181,7 +181,7 @@ function AdminLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col h-screen overflow-y-auto">
-        <nav className="flex gap-2 overflow-x-auto bg-sidebar px-4 py-3 text-sidebar-foreground lg:hidden shrink-0 border-b border-border/20 sticky top-0 z-30 glass custom-scrollbar-hide">
+        <nav className="flex gap-2 overflow-x-auto bg-sidebar px-4 py-4 text-sidebar-foreground lg:hidden shrink-0 border-b border-border/20 sticky top-0 z-30 glass custom-scrollbar-hide shadow-xl">
           {filteredNav.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             return (
@@ -189,15 +189,16 @@ function AdminLayout() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200 border-2",
+                  "whitespace-nowrap rounded-xl px-5 py-3 text-sm font-black transition-all duration-300 border-2 active:scale-95 touch-manipulation",
                   active
-                    ? "bg-black text-white border-black shadow-md scale-105"
-                    : "text-muted-foreground border-transparent hover:bg-black/10 hover:text-black hover:border-black/5"
+                    ? "bg-black text-white border-black shadow-xl scale-105 z-10"
+                    : "text-muted-foreground border-transparent hover:bg-black/10 hover:text-black hover:border-black/5 bg-white/5"
                 )}
               >
-                <div className="flex items-center gap-2">
-                  <item.icon className={cn("size-4", active && "animate-pulse")} />
+                <div className="flex items-center gap-2.5">
+                  <item.icon className={cn("size-5", active && "animate-pulse")} />
                   {item.label}
+                  {active && <div className="size-1.5 rounded-full bg-primary" />}
                 </div>
               </Link>
             );
