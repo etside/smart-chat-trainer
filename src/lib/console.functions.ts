@@ -341,7 +341,7 @@ export const triggerTraining = createServerFn({ method: "POST" })
           .from("training_jobs")
           .update({
             status: "failed",
-            error_message: err instanceof Error ? err.message : "Unknown error",
+            error_log: err instanceof Error ? err.message : "Unknown error",
             finished_at: new Date().toISOString()
           } as any)
           .eq("id", job.id);
