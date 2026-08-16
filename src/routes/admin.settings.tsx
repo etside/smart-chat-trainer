@@ -15,8 +15,9 @@ import { getSyncCredentials, updateSyncCredentials, getMetaCredentials, updateMe
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Key, Save, Sparkles } from "lucide-react";
+import { Key, Save, Sparkles, Facebook, MessageSquare, Info, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { verifyMetaConnection, getMetaWebhookConfig } from "@/lib/meta.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/settings")({
