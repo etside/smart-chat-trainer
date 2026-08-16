@@ -402,12 +402,20 @@ function SettingsPage() {
               <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
                 <h3 className="text-sm font-bold flex items-center gap-2 mb-2">
                   <ShieldCheck className="size-4 text-primary" />
-                  Webhook কনফিগারেশন
+                  Webhook & API কনফিগারেশন
                 </h3>
                 <div className="space-y-3 text-xs">
                   <div className="flex justify-between items-center py-1 border-b border-white/5">
                     <span className="text-muted-foreground italic">Callback URL:</span>
                     <code className="text-primary font-mono">{webhookConfig?.callbackUrl || "..."}</code>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-white/5">
+                    <span className="text-muted-foreground italic">Data Deletion URL:</span>
+                    <code className="text-primary font-mono">{`${typeof window !== 'undefined' ? window.location.origin : ''}/api/public/meta/deletion`}</code>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-white/5">
+                    <span className="text-muted-foreground italic">MCP Server URL:</span>
+                    <code className="text-primary font-mono">{`${typeof window !== 'undefined' ? window.location.origin : ''}/mcp`}</code>
                   </div>
                   <div className="flex justify-between items-center py-1">
                     <span className="text-muted-foreground italic">Verify Token:</span>
