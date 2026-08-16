@@ -147,6 +147,36 @@ export type Database = {
           },
         ]
       }
+      sync_runs: {
+        Row: {
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          items_count: number | null
+          source: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          items_count?: number | null
+          source?: string | null
+          started_at?: string | null
+          status: string
+        }
+        Update: {
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          items_count?: number | null
+          source?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       training_jobs: {
         Row: {
           created_at: string | null
