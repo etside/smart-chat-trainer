@@ -5,23 +5,35 @@ import { playgroundReply } from "@/lib/console.functions";
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Database, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/admin/playground")({
   component: Playground,
 });
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { 
+  role: "user" | "assistant"; 
+  content: string;
+  examples?: Array<{ question: string; answer: string }>;
+};
+
 
 function Playground() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const reply = useServerFn(playgroundReply);
+  const [showSources, setShowSources] = useState<Record<number, boolean>>({});
+
+  const toggleSources = (index: number) => {
+    setShowSources(prev => ({ ...prev, [index]: !prev[index] }));
+  };
 
   async function send(text: string) {
+
     const message = text.trim();
     if (!message || busy) return;
     const history = messages.slice(-10);
@@ -30,8 +42,9 @@ function Playground() {
     setBusy(true);
     try {
       const res = await reply({ data: { message, history } });
-      setMessages((prev) => [...prev, { role: "assistant", content: res.reply }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: res.reply, examples: res.examples }]);
     } catch {
+
       toast.error("উত্তর তৈরি করা যায়নি।");
     } finally {
       setBusy(false);
