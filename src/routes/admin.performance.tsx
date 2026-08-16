@@ -17,6 +17,9 @@ import { toast } from "sonner";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const Route = createFileRoute("/admin/performance")({
+  beforeLoad: async ({ context }) => {
+    // Basic auth check handled by middleware, but TanStack Start expects structure
+  },
   component: PerformanceDashboard,
 });
 

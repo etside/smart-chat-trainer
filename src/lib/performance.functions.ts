@@ -2,13 +2,14 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { assertAdmin } from "./admin.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const getPerformanceStats = createServerFn({ method: "GET" })
-  .middleware([/* requireSupabaseAuth - adding later in route */])
+  .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const ctx = context as any;
-    // Note: requireSupabaseAuth should be added in the final version
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertAdmin(ctx.supabase, ctx.userId);
 
     const { data: metrics } = await supabaseAdmin
       .from("performance_metrics")
@@ -33,8 +34,12 @@ export const updatePerformanceSettings = createServerFn({ method: "POST" })
     max_simultaneous_replies: z.number().int().min(1).max(50),
     enable_streaming: z.boolean()
   }).parse(d))
-  .handler(async ({ data }) => {
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    const ctx = context as any;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertAdmin(ctx.supabase, ctx.userId);
+
     await supabaseAdmin
       .from("agent_settings")
       .update({
