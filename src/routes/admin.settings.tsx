@@ -460,30 +460,77 @@ function SettingsPage() {
 
             <div className="mt-8 space-y-4">
               <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
-                <h3 className="text-sm font-bold flex items-center gap-2 mb-2">
+                <h3 className="text-sm font-bold flex items-center gap-2 mb-4">
                   <ShieldCheck className="size-4 text-primary" />
-                  Webhook & API কনফিগারেশন
+                  Meta Client OAuth & Webhook সেটিংস
                 </h3>
-                <div className="space-y-3 text-xs">
-                  <div className="flex justify-between items-center py-1 border-b border-white/5">
-                    <span className="text-muted-foreground italic">Callback URL:</span>
-                    <code className="text-primary font-mono">{webhookConfig?.callbackUrl || "..."}</code>
+                <div className="space-y-4 text-xs">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-3 rounded bg-background/50 border border-white/5 space-y-2">
+                      <p className="font-bold text-primary italic">Client OAuth Settings</p>
+                      <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                        <li>Standard OAuth: Enabled</li>
+                        <li>Web OAuth Login: Enabled</li>
+                        <li>Enforce HTTPS: Yes (Required)</li>
+                        <li>Strict Mode: Enabled</li>
+                      </ul>
+                    </div>
+                    <div className="p-3 rounded bg-background/50 border border-white/5 space-y-2">
+                      <p className="font-bold text-primary italic">JavaScript SDK Settings</p>
+                      <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                        <li>Login with JS SDK: Enabled</li>
+                        <li>Allowed Domains: <code>{typeof window !== 'undefined' ? window.location.hostname : ''}</code></li>
+                      </ul>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center py-1 border-b border-white/5">
-                    <span className="text-muted-foreground italic">Data Deletion URL:</span>
-                    <code className="text-primary font-mono">{`${typeof window !== 'undefined' ? window.location.origin : ''}/api/public/meta/deletion`}</code>
-                  </div>
-                  <div className="flex justify-between items-center py-1 border-b border-white/5">
-                    <span className="text-muted-foreground italic">MCP Server URL:</span>
-                    <code className="text-primary font-mono">{`${typeof window !== 'undefined' ? window.location.origin : ''}/mcp`}</code>
-                  </div>
-                  <div className="flex justify-between items-center py-1">
-                    <span className="text-muted-foreground italic">Verify Token:</span>
-                    <div className="flex items-center gap-2">
+
+                  <div className="space-y-3 pt-2">
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                      <span className="text-muted-foreground font-medium">Valid OAuth Redirect URI:</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-primary font-mono truncate">{`${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`}</code>
+                        <Button variant="ghost" size="icon" className="size-6 shrink-0" onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/auth/callback`);
+                          toast.success("Redirect URI কপি করা হয়েছে");
+                        }}>
+                          <Copy className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                      <span className="text-muted-foreground font-medium">Deauthorize / Data Deletion URL:</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-primary font-mono truncate">https://salesdaddy.netlify.app/data-policy</code>
+                        <Button variant="ghost" size="icon" className="size-6 shrink-0" onClick={() => {
+                          navigator.clipboard.writeText("https://salesdaddy.netlify.app/data-policy");
+                          toast.success("Policy URL কপি করা হয়েছে");
+                        }}>
+                          <Copy className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                      <span className="text-muted-foreground font-medium">Webhook Callback URL:</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-primary font-mono truncate">{webhookConfig?.callbackUrl || "..."}</code>
+                        <Button variant="ghost" size="icon" className="size-6 shrink-0" onClick={() => {
+                          navigator.clipboard.writeText(webhookConfig?.callbackUrl || "");
+                          toast.success("Callback URL কপি করা হয়েছে");
+                        }}>
+                          <Copy className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded bg-background/40 border border-white/5">
+                      <span className="text-muted-foreground font-medium">Verify Token:</span>
                       <Input 
-                        className="h-6 w-48 text-[10px] bg-background/50 border-white/10"
+                        className="h-7 w-48 text-[10px] bg-background/50 border-white/10"
                         value={metaVerifyToken}
                         onChange={(e) => setMetaVerifyToken(e.target.value)}
+                        placeholder="আপনার ভেরিফাই টোকেন"
                       />
                     </div>
                   </div>
