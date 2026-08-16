@@ -51,8 +51,9 @@ export const Route = createFileRoute("/api/public/webhook")({
           const rawBody = await request.text();
           try { requestPayload = JSON.parse(rawBody); } catch {}
           
-          const { data: settings } = await supabaseAdmin.from("agent_settings").select("sync_secret").eq("id", 1).maybeSingle();
-          const secret = (settings as any)?.webhook_secret || process.env['WEBHOOK_SECRET'] || settings?.sync_secret || process.env['SYNC_SECRET'];
+          const { data: settings } = await supabaseAdmin.from("agent_settings").select("webhook_secret, sync_secret").eq("id", 1).maybeSingle();
+          const secret = (settings as any)?.webhook_secret || process.env['WEBHOOK_SECRET'] || (settings as any)?.sync_secret || process.env['SYNC_SECRET'];
+
 
           let isAuthorized = false;
 

@@ -69,6 +69,17 @@ export async function generateReply(
   const requestId = crypto.randomUUID();
   const settings = await getSettings();
   
+  // Fetch matching auto-reply template if applicable
+  const { data: templates } = await supabaseAdmin
+    .from("auto_reply_templates")
+    .select("*")
+    .limit(5);
+  
+  const autoReplyContext = templates?.length 
+    ? "নিচের টেমপ্লেটগুলো থেকে উত্তর তৈরির ধারণা নিন:\n" + templates.map(t => `- ${t.name} (${t.platform}): ${t.template_text}`).join("\n")
+    : "কোনো নির্দিষ্ট টেমপ্লেট পাওয়া যায়নি।";
+
+  
   // Parallel Execution Limit (Simple count check)
   const { data: runningJobs } = await supabaseAdmin
     .from("usage_logs")
@@ -124,11 +135,17 @@ export async function generateReply(
       role: "system",
       content: `${settings.system_prompt}
 
-Language Priority: Respond in the language used by the customer (Bengali or English). If the customer uses Banglish (Bengali in Latin script), respond in standard Bengali or high-quality Banglish based on their preference.
+Language Priority: Respond in the language used by the customer (Bengali or English). If the customer uses Banglish (Bengali in Latin script), respond in standard Bengali or high-quality Banglish based on their preference. For social platforms, use the configured auto-reply templates when a matching context is found.
+
+Auto-Reply Context:
+{auto_reply_context}
+
 
 নিচে আমাদের আগের আসল কথোপকথন থেকে সবচেয়ে মিল থাকা উদাহরণ দেওয়া হলো। এই টোন, ভাষা ও তথ্য অনুসরণ করে উত্তর দাও। উত্তর ছোট রাখো (১-৩ লাইন), ঠিক যেভাবে পেজ থেকে রিপ্লাই দেওয়া হয়।
 
-${exampleBlock}`,
+${exampleBlock}
+
+${autoReplyContext}`,
     },
     ...history.slice(-10).map((h) => ({ role: h.role, content: h.content }) as ChatMessage),
     { role: "user", content: message },

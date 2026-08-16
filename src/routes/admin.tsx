@@ -19,9 +19,12 @@ import {
   Settings,
   Terminal,
   BarChart3,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare,
+  Menu,
+  X
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -38,7 +41,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance" | "/privacy" | "/terms" | "/privacy-request";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance" | "/admin/auto-replies" | "/privacy" | "/terms" | "/privacy-request";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -51,6 +54,7 @@ const nav: Array<{
   { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database, minRole: "viewer" },
   { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle, minRole: "editor" },
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare, minRole: "viewer" },
+  { to: "/admin/auto-replies", label: "অটো-রিপ্লাই টেমপ্লেট", icon: MessageSquare, minRole: "editor" },
   { to: "/admin/sync", label: "সিঙ্ক স্ট্যাটাস", icon: Activity, minRole: "viewer" },
   { to: "/admin/audit-logs", label: "অডিট লগ", icon: History, minRole: "admin" },
   { to: "/admin/progress", label: "ট্রেনিং লাইভ", icon: Activity, minRole: "viewer" },
@@ -72,6 +76,7 @@ function AdminLayout() {
   const { session, loading } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const fetchMyRole = useServerFn(getMyRole);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const roleQuery = useQuery({
     queryKey: ["my-role", session?.user.id],
@@ -154,15 +159,20 @@ function AdminLayout() {
         </nav>
 
         <div className="mt-auto space-y-4 pt-6 border-t border-border/40">
-          <div className="px-4">
+          <div className="px-4 grid gap-2">
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full justify-start text-[10px] uppercase tracking-widest font-black border-2 border-primary/20 hover:bg-primary/5"
+              className="w-full justify-start text-[10px] uppercase tracking-widest font-black border-2 border-primary/20 hover:bg-primary/5 h-9"
               onClick={() => document.documentElement.classList.toggle('high-contrast')}
             >
               <Activity className="size-3 mr-2 text-primary" /> High Contrast
             </Button>
+            <div className="flex gap-2">
+              <Link to="/privacy" className="text-[9px] text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
+              <Link to="/terms" className="text-[9px] text-muted-foreground hover:text-primary transition-colors">Terms</Link>
+              <Link to="/privacy-request" className="text-[9px] text-muted-foreground hover:text-primary transition-colors">GDPR</Link>
+            </div>
           </div>
           <button
             onClick={async () => {
@@ -171,7 +181,7 @@ function AdminLayout() {
                 navigate({ to: "/auth" });
               }
             }}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-black text-destructive hover:bg-destructive/5 transition-colors border-2 border-transparent hover:border-destructive/20"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-black text-destructive hover:bg-destructive/5 transition-colors border-2 border-transparent hover:border-destructive/20 h-11"
           >
             <LogOut className="size-4.5" /> লগআউট
           </button>
@@ -179,28 +189,84 @@ function AdminLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col h-screen overflow-y-auto">
-        <nav className="flex gap-2 overflow-x-auto bg-sidebar px-4 py-3 text-sidebar-foreground lg:hidden shrink-0 border-b border-border/20 sticky top-0 z-30 glass custom-scrollbar-hide">
-          {filteredNav.map((item) => {
-            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200 border-2",
-                  active
-                    ? "bg-black text-white border-black shadow-md scale-105"
-                    : "text-muted-foreground border-transparent hover:bg-black/10 hover:text-black hover:border-black/5"
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <item.icon className={cn("size-4", active && "animate-pulse")} />
-                  {item.label}
-                </div>
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Mobile Navbar Header */}
+        <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-border/20 bg-background/80 backdrop-blur-md sticky top-0 z-40">
+          <div className="flex items-center gap-2">
+             <div className="size-8 rounded-lg bg-black flex items-center justify-center">
+               <img src={logoAsset.url} alt="Logo" className="size-5 invert" />
+             </div>
+             <span className="text-sm font-black tracking-tighter uppercase">Daddy AI</span>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="rounded-full hover:bg-black/5"
+          >
+            {isMobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+          </Button>
+        </div>
+
+        {/* Mobile Navigation Drawer */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden fixed inset-0 z-30 bg-background/95 backdrop-blur-lg pt-20 pb-6 px-4 flex flex-col animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar-hide">
+              {filteredNav.map((item) => {
+                const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-4 rounded-2xl px-5 py-4 text-lg font-black transition-all border-2",
+                      active
+                        ? "bg-black text-white border-black shadow-xl"
+                        : "text-muted-foreground border-transparent hover:bg-black/5 active:bg-black/10"
+                    )}
+                  >
+                    <item.icon className={cn("size-6", active && "animate-pulse")} />
+                    {item.label}
+                    {active && <div className="ml-auto size-2 rounded-full bg-primary" />}
+                  </Link>
+                );
+              })}
+            </div>
+            
+            <div className="mt-6 space-y-4 pt-6 border-t border-border/40">
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant="outline" 
+                  className="justify-center text-[10px] uppercase font-black border-2 h-10"
+                  onClick={() => document.documentElement.classList.toggle('high-contrast')}
+                >
+                  <Activity className="size-3 mr-2" /> Contrast
+                </Button>
+                <button
+                  onClick={async () => {
+                    if (confirm("লগআউট করতে চান?")) {
+                      await supabase.auth.signOut();
+                      navigate({ to: "/auth" });
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 rounded-xl text-[10px] uppercase font-black text-destructive bg-destructive/5 h-10 border-2 border-destructive/20"
+                >
+                  <LogOut className="size-3" /> Logout
+                </button>
+              </div>
+              <div className="flex justify-center gap-6">
+                <Link to="/privacy" className="text-[11px] font-bold text-muted-foreground">Privacy</Link>
+                <Link to="/terms" className="text-[11px] font-bold text-muted-foreground">Terms</Link>
+                <Link to="/privacy-request" className="text-[11px] font-bold text-muted-foreground">GDPR</Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Layout Header fallback for mobile scroll if menu closed */}
+        {!isMobileMenuOpen && (
+           <div className="lg:hidden h-1 overflow-hidden pointer-events-none" />
+        )}
         <main className="min-w-0 flex-1 p-5 md:p-8 page-transition" key={pathname}>
           <Outlet />
         </main>

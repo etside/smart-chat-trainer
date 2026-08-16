@@ -95,10 +95,19 @@ function VoicePanel() {
   }
 
   return (
-    <div className="panel space-y-4 p-5">
-      <VoiceRecorder onText={(t) => setText((prev) => (prev ? prev + " " + t : t))} />
+    <div className="panel space-y-4 p-5 relative overflow-hidden">
+      <div className="flex items-center justify-between">
+        <VoiceRecorder onText={(t) => {
+          setText((prev) => (prev ? prev + " " + t : t));
+          setShowPreview(false); // Ensure preview is reset so user can confirm new text
+        }} />
+        {busy && <div className="animate-pulse flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-widest"><Sparkles className="size-3" /> Processing...</div>}
+      </div>
       <div className="space-y-1.5">
-        <Label htmlFor="voice-text" className="font-bold tracking-tight">ট্রান্সক্রিপ্ট প্রিভিউ (Confirm/Edit Transcript)</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="voice-text" className="font-bold tracking-tight">ট্রান্সক্রিপ্ট প্রিভিউ (Confirm/Edit Transcript)</Label>
+          {text && <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => setText("")}><Trash2 className="size-3 mr-1" /> Clear</Button>}
+        </div>
         <Textarea
           id="voice-text"
           rows={6}
@@ -106,9 +115,9 @@ function VoicePanel() {
           value={text}
           onChange={(e) => {
             setText(e.target.value);
-            if (showPreview) setShowPreview(false); // Reset preview if text changes manually
+            if (showPreview) setShowPreview(false);
           }}
-          className="bg-card/40 focus:bg-background transition-colors"
+          className="bg-card/40 focus:bg-background transition-all focus:ring-2 focus:ring-primary/20"
         />
       </div>
       {!showPreview && (

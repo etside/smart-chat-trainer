@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+test.use({ actionTimeout: 10000 });
+
 test.describe('RBAC and Auth Security E2E', () => {
   const BASE_URL = 'http://localhost:8080';
 

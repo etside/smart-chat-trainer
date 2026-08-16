@@ -184,6 +184,39 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_reply_templates: {
+        Row: {
+          created_at: string | null
+          id: string
+          language: string
+          name: string
+          platform: string
+          template_text: string
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          language: string
+          name: string
+          platform: string
+          template_text: string
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          language?: string
+          name?: string
+          platform?: string
+          template_text?: string
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           channel: string | null
