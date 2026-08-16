@@ -32,18 +32,23 @@ export const getStats = createServerFn({ method: "GET" })
       return count ?? 0;
     };
 
-    const [convRes, msgRes, approved, pending, rejected] = await Promise.all([
+    const [convRes, msgRes, approved, pending, rejected, settingsRes] = await Promise.all([
       supabaseAdmin.from("conversations").select("*", { count: "exact", head: true }),
       supabaseAdmin.from("messages").select("*", { count: "exact", head: true }),
       pairCount("approved"),
       pairCount("pending"),
       pairCount("rejected"),
+      supabaseAdmin.from("agent_settings").select("credit_usage").eq("id", 1).maybeSingle(),
     ]);
-    const conversations = convRes.count ?? 0;
-    const messages = msgRes.count ?? 0;
-
-
-    return { conversations, messages, approved, pending, rejected };
+    
+    return { 
+      conversations: convRes.count ?? 0, 
+      messages: msgRes.count ?? 0, 
+      approved, 
+      pending, 
+      rejected,
+      creditUsage: settingsRes.data?.credit_usage ?? 0
+    };
   });
 
 export const listPairs = createServerFn({ method: "GET" })
@@ -183,11 +188,17 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
-      .select("system_prompt, model, auto_approve")
+      .select("system_prompt, model, auto_approve, lovable_api_key_override, credit_usage")
       .eq("id", 1)
       .maybeSingle();
     return (
-      data ?? { system_prompt: "", model: "openai/gpt-5.6-sol", auto_approve: false }
+      data ?? { 
+        system_prompt: "", 
+        model: "openai/gpt-5.6-sol", 
+        auto_approve: false,
+        lovable_api_key_override: "",
+        credit_usage: 0
+      }
     );
   });
 
@@ -198,6 +209,7 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
         system_prompt: z.string().max(8000),
         model: z.string().max(60),
         auto_approve: z.boolean(),
+        lovable_api_key_override: z.string().max(200).optional(),
       })
       .parse(d),
   )
@@ -219,13 +231,13 @@ export const listApiKeys = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("api_keys")
-      .select("id, name, key_prefix, revoked, last_used_at, created_at")
+      .select("id, name, key_prefix, revoked, last_used_at, created_at, version_id")
       .order("created_at", { ascending: false });
     return data ?? [];
   });
 
 export const createApiKey = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => z.object({ name: z.string().min(1).max(60) }).parse(d))
+  .inputValidator((d: unknown) => z.object({ name: z.string().min(1).max(60), version_id: z.string().uuid().optional() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
@@ -235,6 +247,7 @@ export const createApiKey = createServerFn({ method: "POST" })
       name: data.name,
       key_hash: await hashApiKey(key),
       key_prefix: key.slice(0, 10),
+      version_id: data.version_id,
     });
     return { key };
   });
@@ -247,6 +260,41 @@ export const revokeApiKey = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("api_keys").update({ revoked: true }).eq("id", data.id);
     return { ok: true };
+  });
+
+export const getTrainingJobs = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("training_jobs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20);
+    return data ?? [];
+  });
+
+export const getTrainingVersions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("training_versions")
+      .select("id, name, created_at")
+      .order("created_at", { ascending: false });
+    return data ?? [];
+  });
+
+export const exportTrainingData = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ type: z.enum(["training_pairs", "conversations"]) }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows } = await supabaseAdmin.from(data.type).select("*");
+    return { json: JSON.stringify(rows ?? [], null, 2) };
   });
 
 export const playgroundReply = createServerFn({ method: "POST" })
