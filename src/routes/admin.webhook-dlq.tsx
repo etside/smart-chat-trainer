@@ -13,8 +13,7 @@ import {
   ShieldAlert,
   Terminal,
   ChevronLeft,
-  ChevronRight,
-  Database
+  ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +55,8 @@ function WebhookDLQPage() {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const deliveryCounts = stats?.deliveryCounts || { total: 0, success: 0, dead_letter: 0, pending: 0 };
+
   return (
     <div className="mx-auto max-w-6xl space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -75,25 +76,25 @@ function WebhookDLQPage() {
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
             <Activity className="size-3" /> মোট ডেলিভারি
           </p>
-          <p className="text-3xl font-display font-bold mt-2">{stats?.deliveryCounts.total ?? 0}</p>
+          <p className="text-3xl font-display font-bold mt-2">{deliveryCounts.total}</p>
         </div>
         <div className="panel p-5 border-success/20 bg-success/5 backdrop-blur-md">
           <p className="text-[10px] font-bold text-success uppercase tracking-widest flex items-center gap-2">
             <CheckCircle2 className="size-3" /> সফল
           </p>
-          <p className="text-3xl font-display font-bold mt-2">{stats?.deliveryCounts.success ?? 0}</p>
+          <p className="text-3xl font-display font-bold mt-2">{deliveryCounts.success}</p>
         </div>
         <div className="panel p-5 border-destructive/20 bg-destructive/5 backdrop-blur-md">
           <p className="text-[10px] font-bold text-destructive uppercase tracking-widest flex items-center gap-2">
             <AlertCircle className="size-3" /> ব্যর্থ (Dead Letter)
           </p>
-          <p className="text-3xl font-display font-bold mt-2">{stats?.deliveryCounts.dead_letter ?? 0}</p>
+          <p className="text-3xl font-display font-bold mt-2">{deliveryCounts.dead_letter}</p>
         </div>
         <div className="panel p-5 border-warning/20 bg-warning/5 backdrop-blur-md">
           <p className="text-[10px] font-bold text-warning uppercase tracking-widest flex items-center gap-2">
             <Clock className="size-3" /> পেন্ডিং রিট্রাই
           </p>
-          <p className="text-3xl font-display font-bold mt-2">{stats?.deliveryCounts.pending ?? 0}</p>
+          <p className="text-3xl font-display font-bold mt-2">{deliveryCounts.pending}</p>
         </div>
       </div>
 
