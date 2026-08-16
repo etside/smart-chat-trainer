@@ -169,6 +169,12 @@ export const syncCatalog = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+          "X-AI-Signature": `sha256=${await (async () => {
+            const encoder = new TextEncoder();
+            const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+            const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(JSON.stringify({ action: "get_all_info" })));
+            return Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, "0")).join("");
+          })()}`,
           "X-Secret": secret,
           "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`
         },
