@@ -43,7 +43,88 @@ function Dashboard() {
     <div className="mx-auto max-w-5xl">
       <h1 className="text-3xl font-bold tracking-tight">ড্যাশবোর্ড</h1>
       <div className="mt-3 p-4 bg-muted/50 rounded-xl text-[10px] leading-relaxed text-muted-foreground border border-border/50 font-mono whitespace-pre-wrap animate-in overflow-hidden">
-        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nSet up the Wear Impressive AI Webhook integration.\n\n## Endpoint\nPOST https://api.v2.wearimpressive.com/api/ai/webhook\n\n## Authentication — TWO layers required on every request\n\n1. Bearer token in Authorization header:\n   Authorization: Bearer f5e1f9b68be9fc8d69867283a6ebdf61755f23e93ff0c014def36f555d7fb42f\n\n2. HMAC-SHA256 body signature in X-AI-Signature header:\n   - Compute: HMAC-SHA256(rawRequestBody, secret)\n   - Secret: c05d89defdc77a396b6543c85bce957bb5a12394a0828c54825817d51b3cd58a\n   - Format header as: X-AI-Signature: sha256=<hex_digest>\n\n   Example (TypeScript):\n   import { createHmac } from 'crypto';\n   const body = JSON.stringify(payload);\n   const sig = 'sha256=' + createHmac('sha256', SECRET).update(body).digest('hex');\n\n## Request format\nEvery request body is JSON with a mandatory \"action\" field:\n{ \"action\": \"...\", \"session\": \"unique-session-id\", ...other fields }\n\n## Available actions\n\n### Browse catalogue\n{ \"action\": \"catalog\", \"search\": \"shirt\", \"in_stock\": true, \"per_page\": 20, \"page\": 1 }\n\n### Single product detail\n{ \"action\": \"product\", \"id\": 123 }\n// or by slug:\n{ \"action\": \"product\", \"slug\": \"blue-shirt\" }\n\n### Check stock\n{ \"action\": \"stock\", \"product_ids\": [1, 2, 3] }\n\n### List categories\n{ \"action\": \"categories\" }\n\n### Add to cart\n{ \"action\": \"cart_add\", \"session\": \"sess-abc\", \"product_id\": 123, \"variant_id\": 456, \"quantity\": 1 }\n\n### View cart\n{ \"action\": \"cart_view\", \"session\": \"sess-abc\" }\n\n### Clear cart\n{ \"action\": \"cart_clear\", \"session\": \"sess-abc\" }\n\n### Place order (COD, auto-confirmed — no admin approval needed)\n{\n  \"action\": \"order_place\",\n  \"session\": \"sess-abc\",\n  \"payment_method\": \"cod\",\n  \"shipping_address\": {\n    \"full_name\": \"Rahim Uddin\",\n    \"phone\": \"01711000000\",\n    \"address_line_1\": \"123 Main St\",\n    \"division\": \"Dhaka\",\n    \"district\": \"Dhaka\",\n    \"thana\": \"Mirpur\"\n  },\n  \"notes\": \"Optional delivery note\"\n}\n\n### Track order\n{ \"action\": \"order_status\", \"order_number\": \"WI-260816-XXXXX\" }\n\n## Response format\nSuccess: { \"success\": true, \"action\": \"catalog\", \"data\": { ... } }\nError:   { \"success\": false, \"error\": \"message\" }\n\n## Notes\n- Orders are placed as COD and auto-confirmed (status = \"confirmed\")\n- Delivery is NOT assigned automatically — store handles fulfillment manually\n- Cart is session-scoped and expires after 30 minutes of inactivity\n- Currency is BDT\n- Store is automatically resolved — no store_id needed"}
+        {`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+
+All systems operational. API sync action fixed.
+
+Set up the Wear Impressive AI Webhook integration.
+
+## Endpoint
+POST https://api.v2.wearimpressive.com/api/ai/webhook
+
+## Authentication — TWO layers required on every request
+
+1. Bearer token in Authorization header:
+   Authorization: Bearer f5e1f9b68be9fc8d69867283a6ebdf61755f23e93ff0c014def36f555d7fb42f
+
+2. HMAC-SHA256 body signature in X-AI-Signature header:
+   - Compute: HMAC-SHA256(rawRequestBody, secret)
+   - Secret: c05d89defdc77a396b6543c85bce957bb5a12394a0828c54825817d51b3cd58a
+   - Format header as: X-AI-Signature: sha256=<hex_digest>
+
+   Example (TypeScript):
+   import { createHmac } from 'crypto';
+   const body = JSON.stringify(payload);
+   const sig = 'sha256=' + createHmac('sha256', SECRET).update(body).digest('hex');
+
+## Request format
+Every request body is JSON with a mandatory "action" field:
+{ "action": "...", "session": "unique-session-id", ...other fields }
+
+## Available actions
+
+### Browse catalogue
+{ "action": "catalog", "search": "shirt", "in_stock": true, "per_page": 20, "page": 1 }
+
+### Single product detail
+{ "action": "product", "id": 123 }
+// or by slug:
+{ "action": "product", "slug": \"blue-shirt\" }
+
+### Check stock
+{ "action": "stock", "product_ids": [1, 2, 3] }
+
+### List categories
+{ "action": "categories" }
+
+### Add to cart
+{ "action": "cart_add", "session": "sess-abc", "product_id": 123, "variant_id": 456, "quantity": 1 }
+
+### View cart
+{ "action": "cart_view", "session": "sess-abc" }
+
+### Clear cart
+{ "action": "cart_clear", "session": "sess-abc" }
+
+### Place order (COD, auto-confirmed — no admin approval needed)
+{
+  "action": "order_place",
+  "session": "sess-abc",
+  "payment_method": "cod",
+  "shipping_address": {
+    "full_name": "Rahim Uddin",
+    "phone": "01711000000",
+    "address_line_1": "123 Main St",
+    "division": "Dhaka",
+    "district": "Dhaka",
+    "thana": "Mirpur"
+  },
+  "notes": "Optional delivery note"
+}
+
+### Track order
+{ "action": "order_status", "order_number": "WI-260816-XXXXX" }
+
+## Response format
+Success: { "success": true, "action": "catalog", "data": { ... } }
+Error:   { "success": false, "error": "message" }
+
+## Notes
+- Orders are placed as COD and auto-confirmed (status = \"confirmed\")
+- Delivery is NOT assigned automatically — store handles fulfillment manually
+- Cart is session-scoped and expires after 30 minutes of inactivity
+- Currency is BDT
+- Store is automatically resolved — no store_id needed`}
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
