@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { KeyRound, Webhook, CheckCircle2, ArrowRight, ShieldCheck, Database, Mic, Loader2, Sparkles, Send } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { transcribeVoice, triggerTraining } from "@/lib/console.functions";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/onboarding")({
   component: OnboardingWizard,
