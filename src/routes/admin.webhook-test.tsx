@@ -4,11 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { testWebhookPayload } from "@/lib/webhook-test.functions";
-import { syncCatalog } from "@/lib/sync.functions";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { getWebhookLogs } from "@/lib/webhook-logs.functions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode, Copy } from "lucide-react";
+import { MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode, Copy, Download, History, Activity } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -20,19 +20,16 @@ function WebhookTest() {
   const [activeTab, setActiveTab] = useState<"text" | "voice">("text");
   const [message, setMessage] = useState("");
   const [sender, setSender] = useState("tester_123");
-  const [logs, setLogs] = useState<any[]>([]);
+  const [localLogs, setLocalLogs] = useState<any[]>([]);
   const queryClient = useQueryClient();
 
   const testFn = useServerFn(testWebhookPayload);
-  const syncFn = useServerFn(syncCatalog);
+  const fetchLogs = useServerFn(getWebhookLogs);
 
-  const syncMutation = useMutation({
-    mutationFn: () => syncFn(),
-    onSuccess: (res) => {
-      toast.success(res.message);
-      queryClient.invalidateQueries({ queryKey: ["stats"] });
-    },
-    onError: (err) => toast.error(err.message),
+  const { data: dbLogs } = useQuery({
+    queryKey: ["webhook-db-logs"],
+    queryFn: () => fetchLogs(),
+    refetchInterval: 10000
   });
 
   const textPayload = JSON.stringify({
@@ -44,6 +41,16 @@ function WebhookTest() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("ক্লিপবোর্ডে কপি হয়েছে");
+  };
+
+  const handleExport = (data: any[], filename: string) => {
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(data, null, 2)
+    )}`;
+    const link = document.createElement("a");
+    link.setAttribute("href", jsonString);
+    link.setAttribute("download", filename);
+    link.click();
   };
 
   const mutation = useMutation({
@@ -59,7 +66,7 @@ function WebhookTest() {
       });
     },
     onSuccess: (data) => {
-      setLogs((prev) => [
+      setLocalLogs((prev) => [
         {
           timestamp: new Date().toLocaleTimeString(),
           type: "success",
@@ -67,10 +74,11 @@ function WebhookTest() {
         },
         ...prev,
       ]);
+      queryClient.invalidateQueries({ queryKey: ["webhook-db-logs"] });
       toast.success("টেস্ট সম্পন্ন হয়েছে");
     },
     onError: (err: any) => {
-      setLogs((prev) => [
+      setLocalLogs((prev) => [
         {
           timestamp: new Date().toLocaleTimeString(),
           type: "error",
@@ -84,9 +92,19 @@ function WebhookTest() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="flex items-center gap-2">
-        <Terminal className="size-6 text-primary" />
-        <h1 className="text-2xl font-semibold">ওয়েবহুক টেস্ট প্যানেল</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Terminal className="size-6 text-primary" />
+          <h1 className="text-2xl font-semibold">ওয়েবহুক টেস্ট প্যানেল</h1>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => handleExport(localLogs, "test_session_logs.json")}>
+             <Download className="mr-2 size-4" /> সেশন এক্সপোর্ট
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => handleExport(dbLogs || [], "webhook_audit_logs.json")}>
+             <History className="mr-2 size-4" /> অডিট লগ এক্সপোর্ট
+          </Button>
+        </div>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
         এক্সটার্নাল প্লাটফর্ম থেকে আসা ভয়েস বা টেক্সট পেলোড সিমুলেট করুন এবং AI-এর রেসপন্স যাচাই করুন।
@@ -172,11 +190,11 @@ function WebhookTest() {
             <Terminal className="size-4" /> আউটপুট লগ
           </h2>
           <div className="panel h-[500px] overflow-y-auto bg-slate-950 p-4 font-mono text-xs text-slate-300">
-            {logs.length === 0 ? (
+            {localLogs.length === 0 ? (
               <p className="text-slate-500 italic">এখনো কোনো টেস্ট করা হয়নি...</p>
             ) : (
               <div className="space-y-4">
-                {logs.map((log, i) => (
+                {localLogs.map((log, i) => (
                   <div key={i} className={`border-l-2 pl-3 ${log.type === 'error' ? 'border-red-500' : 'border-green-500'}`}>
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-slate-500">[{log.timestamp}]</span>
@@ -201,11 +219,6 @@ function WebhookTest() {
                             <span className="text-primary">SOURCES:</span> {log.examplesCount} matches found
                           </div>
                         )}
-                        {log.conversationId && (
-                          <div className="text-[10px] text-slate-500">
-                            Conversation ID: {log.conversationId} (Log saved to DB)
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>
@@ -219,23 +232,16 @@ function WebhookTest() {
       <div className="mt-12 grid gap-6 lg:grid-cols-2">
         <div className="panel p-5">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <RefreshCw className="size-4 text-primary" /> প্রোডাক্ট ক্যাটালগ সিঙ্ক
+            <RefreshCw className="size-4 text-primary" /> কুইক সিঙ্ক লিঙ্ক
           </h2>
           <p className="text-sm text-muted-foreground mb-4">
-            wearimpressive.com থেকে সরাসরি প্রোডাক্ট ডেটা সিঙ্ক করে AI ট্রেনিং উন্নত করুন।
+             সিঙ্ক প্রগ্রেস এবং স্ট্যাটাস দেখতে নিচের বাটনে ক্লিক করুন।
           </p>
-          <div className="rounded-md bg-secondary/30 p-3 mb-4 text-xs font-mono break-all space-y-2">
-            <div>URL: https://api.v2.wearimpressive.com/api/ai/webhook</div>
-            <div className="text-[10px] text-muted-foreground opacity-70">Method: POST | Syncing: Products, Stocks, Inventory, Orders</div>
-          </div>
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={() => syncMutation.mutate()}
-            disabled={syncMutation.isPending}
-          >
-            {syncMutation.isPending ? "সিঙ্ক হচ্ছে..." : "এখনই সিঙ্ক করুন"}
-          </Button>
+          <Link to="/admin/sync">
+            <Button variant="outline" className="w-full">
+              সিঙ্ক স্ট্যাটাস পেজ দেখুন <Activity className="ml-2 size-4" />
+            </Button>
+          </Link>
         </div>
 
         <div className="panel p-5">
