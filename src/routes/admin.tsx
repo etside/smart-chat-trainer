@@ -35,7 +35,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -51,6 +51,7 @@ const nav: Array<{
   { to: "/admin/connections", label: "কানেকশন", icon: KeyRound, minRole: "admin" },
   { to: "/admin/webhook-test", label: "টেস্ট প্যানেল", icon: Terminal, minRole: "editor" },
   { to: "/admin/settings", label: "সেটিংস", icon: Settings, minRole: "admin" },
+  { to: "/admin/webhook-dlq", label: "DLQ", icon: Terminal, minRole: "editor" },
   { to: "/connect", label: "AI কানেক্ট", icon: Terminal, minRole: "viewer" },
 ];
 

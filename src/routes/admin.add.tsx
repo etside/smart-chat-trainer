@@ -12,7 +12,7 @@ import {
 } from "@/lib/console.functions";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Sparkles, Trash2 } from "lucide-react";
+import { CheckCircle2, Loader2, Sparkles, Terminal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
