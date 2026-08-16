@@ -1,6 +1,6 @@
 [build]
   command = "bun run build"
-  publish = "dist/client"
+  publish = ".output/public"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -12,11 +12,11 @@
 
 [[redirects]]
   from = "/*"
-  to = "/dist/server/index.mjs"
+  to = "/.netlify/functions/index"
   status = 200
 
 [functions]
-  directory = "dist/server"
+  directory = ".output/server"
 
 [[headers]]
   for = "/*"
