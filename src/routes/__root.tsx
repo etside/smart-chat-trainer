@@ -119,17 +119,9 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   
   return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <QueryClientProvider client={queryClient}>
-          <InnerRoot />
-        </QueryClientProvider>
-        <Scripts />
-      </body>
-    </html>
+    <QueryClientProvider client={queryClient}>
+      <InnerRoot />
+    </QueryClientProvider>
   );
 }
 
@@ -212,9 +204,15 @@ function InnerRoot() {
   }, [metaConfig]);
 
   return (
-    <>
-      <Outlet />
-      <Toaster position="top-center" richColors />
-    </>
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <Outlet />
+        <Toaster position="top-center" richColors />
+        <Scripts />
+      </body>
+    </html>
   );
 }
