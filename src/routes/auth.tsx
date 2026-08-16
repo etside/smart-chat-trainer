@@ -47,8 +47,8 @@ function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-5 selection:bg-primary/20">
-      <div className="panel w-full max-w-sm overflow-hidden p-0 shadow-2xl animate-in">
+    <main className="flex min-h-screen items-center justify-center bg-background px-5 selection:bg-primary/20 relative overflow-hidden mesh-bg">
+      <div className="panel w-full max-w-sm overflow-hidden p-0 shadow-2xl animate-in relative z-10">
         <div className="bg-primary/5 p-8 text-center border-b border-border/50">
           <img src={logoAsset.url} alt="Daddy AI" className="mx-auto h-16 w-auto mb-4 drop-shadow-md" />
           <h1 className="text-2xl font-bold tracking-tight">Daddy AI</h1>
