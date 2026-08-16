@@ -63,67 +63,93 @@ function SettingsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-semibold">সেটিংস</h1>
-      <p className="mt-1 text-sm text-muted-foreground">এজেন্টের ব্যক্তিত্ব ও নিয়ম ঠিক করুন।</p>
-
-      <div className="panel mt-6 space-y-5 p-5">
-        <div className="space-y-1.5">
-          <Label htmlFor="prompt">সিস্টেম প্রম্পট</Label>
-          <Textarea
-            id="prompt"
-            rows={12}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">
-            এজেন্ট কীভাবে কথা বলবে, কী করবে না — সব এখানে লিখুন।
-          </p>
+    <div className="mx-auto max-w-4xl">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">সেটিংস</h1>
+          <p className="mt-1 text-sm text-muted-foreground italic">Daddy AI-এর ব্যক্তিত্ব ও নিয়মাবলী কনফিগার করুন।</p>
         </div>
-
-        <div className="space-y-1.5">
-          <Label>মডেল</Label>
-          <Select value={model} onValueChange={setModel}>
-            <SelectTrigger className="w-72">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MODELS.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="api-key">Custom AI API Key (Optional)</Label>
-          <Input
-            id="api-key"
-            type="password"
-            placeholder="sk-..."
-            value={apiKeyOverride}
-            onChange={(e) => setApiKeyOverride(e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">
-            আপনার নিজের OpenAI বা Lovable API Key ব্যবহার করতে চাইলে এখানে দিন।
-          </p>
-        </div>
-
-        <div className="flex items-center justify-between gap-4 rounded-lg bg-secondary/60 p-4">
-          <div>
-            <p className="text-sm font-medium">নতুন ডেটা স্বয়ংক্রিয়ভাবে অ্যাপ্রুভ</p>
-            <p className="text-xs text-muted-foreground">
-              বন্ধ থাকলে নতুন জোড়াগুলো রিভিউয়ের অপেক্ষায় থাকবে।
-            </p>
-          </div>
-          <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
-        </div>
-
-        <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+        <Button 
+          size="lg" 
+          onClick={() => mutation.mutate()} 
+          disabled={mutation.isPending}
+          className="shadow-xl shadow-primary/20"
+        >
           {mutation.isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}
         </Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="panel p-8">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="size-2 rounded-full bg-primary" />
+              <h2 className="text-lg font-bold">এজেন্ট ইনস্ট্রাকশন (System Prompt)</h2>
+            </div>
+            <Textarea
+              id="prompt"
+              rows={15}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="font-mono text-sm leading-relaxed bg-muted/30 focus:bg-background transition-all"
+              placeholder="আপনি একজন দক্ষ সেলস এজেন্ট..."
+            />
+            <p className="mt-4 text-xs text-muted-foreground leading-relaxed">
+              <strong>টিপস:</strong> আপনি এখানে এজেন্টের টোন, কথা বলার ভাষা (বাংলা/ইংরেজি), এবং কী কী তথ্য শেয়ার করা যাবে তা নির্দিষ্ট করতে পারেন।
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="panel p-6 bg-card/50">
+            <h2 className="font-bold mb-4 flex items-center gap-2">
+              <Sparkles className="size-4 text-primary" />
+              AI ইঞ্জিন
+            </h2>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground">মডেল সিলেক্ট করুন</Label>
+                <Select value={model} onValueChange={setModel}>
+                  <SelectTrigger className="w-full bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MODELS.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Custom API Key</Label>
+                <Input
+                  id="api-key"
+                  type="password"
+                  placeholder="sk-..."
+                  value={apiKeyOverride}
+                  onChange={(e) => setApiKeyOverride(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="panel p-6 border-l-4 border-l-accent">
+            <h2 className="font-bold mb-4">অটোমেশন</h2>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium">অটো-অ্যাপ্রুভ</p>
+                <p className="text-xs text-muted-foreground">
+                  নতুন ডেটা সরাসরি ট্রেনিংয়ে যাবে।
+                </p>
+              </div>
+              <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
