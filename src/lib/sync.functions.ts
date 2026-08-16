@@ -173,28 +173,41 @@ export const syncCatalog = createServerFn({ method: "POST" })
       .single();
 
     try {
-      const payload = { action: "catalog", per_page: 50, session: `sync_${run?.id || Date.now()}` }; // Added session ID
+      const payload = { 
+        action: "catalog", 
+        per_page: 50, 
+        session: `sync_${run?.id || Date.now()}`,
+        token: token.startsWith("Bearer ") ? token.slice(7) : token // Passing token in body as well
+      };
       const bodyStr = JSON.stringify(payload);
       
       const syncRes = await fetchWithRetry(data.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
           "X-AI-Signature": `sha256=${await (async () => {
             const encoder = new TextEncoder();
             const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-            // Ensure payload is exactly what we send in the body
             const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(bodyStr));
             return Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, "0")).join("");
           })()}`,
           "X-Secret": secret,
-          "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`
+          "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`,
+          "Token": token.startsWith("Bearer ") ? token.slice(7) : token,
+          "Secret": secret
         },
         body: bodyStr
       });
       
-      if (!syncRes.ok) throw new Error(`API sync failed: ${syncRes.statusText} (${syncRes.status})`);
+      if (!syncRes.ok) {
+        let errorBody = "";
+        try {
+          errorBody = await syncRes.text();
+        } catch (e) {}
+        throw new Error(`API sync failed: ${syncRes.statusText} (${syncRes.status}) - ${errorBody.slice(0, 500)}`);
+      }
       
       const apiData = await syncRes.json();
       const items = apiData.success && apiData.data?.products ? apiData.data.products : (Array.isArray(apiData) ? apiData : []);
