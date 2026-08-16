@@ -309,14 +309,16 @@ export const triggerTraining = createServerFn({ method: "POST" })
     const { data: job, error } = await supabaseAdmin
       .from("training_jobs")
       .insert({
-        status: "processing",
-        processed_count: 0,
+        status: "running", // Matches CHECK constraint
         sync_run_id: data.sync_run_id || null
       } as any)
       .select()
       .single();
 
-    if (error) throw new Error("Failed to start training job");
+    if (error) {
+      console.error("Training job creation error:", error);
+      throw new Error(`Failed to start training job: ${error.message}`);
+    }
 
     // Mocking an immediate background process update for demo purposes
     // In a real app, this would be a background queue or edge function
