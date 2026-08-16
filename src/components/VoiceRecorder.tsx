@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { transcribeVoice } from "@/lib/console.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Mic, Square } from "lucide-react";
-import { useRef, useState } from "react";
+import { Loader2, Mic, Square, Sparkles } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 function blobToBase64(blob: Blob) {
@@ -80,6 +81,10 @@ export function VoiceRecorder({ onText, onAudioBlob }: { onText: (text: string) 
         variant={recording ? "destructive" : "default"}
         onClick={recording ? stop : start}
         disabled={busy}
+        className={cn(
+          "transition-all duration-300",
+          recording ? "bg-destructive shadow-lg shadow-destructive/20 scale-105" : "shadow-md hover:shadow-lg"
+        )}
       >
         {busy ? (
           <Loader2 className="size-4 animate-spin" />
@@ -88,7 +93,11 @@ export function VoiceRecorder({ onText, onAudioBlob }: { onText: (text: string) 
         ) : (
           <Mic className="size-4" />
         )}
-        {busy ? "ট্রান্সক্রাইব হচ্ছে..." : recording ? "থামান" : "ভয়েস রেকর্ড"}
+        {busy ? (
+          <span className="flex items-center gap-2">
+            AI Processing <Sparkles className="size-3 animate-pulse" />
+          </span>
+        ) : recording ? "থামান" : "ভয়েস রেকর্ড"}
       </Button>
       {recording && (
         <span className="flex items-center gap-2 text-sm text-muted-foreground">
