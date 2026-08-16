@@ -24,7 +24,9 @@ export const syncCatalog = createServerFn({ method: "POST" })
       const lines = csvText.split("\n").filter(l => l.trim());
       if (lines.length < 2) return { count: 0, message: "Catalog is empty" };
 
-      const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ''));
+      const firstLine = lines[0];
+      if (!firstLine) return { count: 0, message: "Empty headers" };
+      const headers = firstLine.split(",").map(h => h.trim().replace(/^"|"$/g, ''));
       
       const items = lines.slice(1).map(line => {
         const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ''));
