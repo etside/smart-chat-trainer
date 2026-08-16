@@ -168,7 +168,7 @@ export const syncCatalog = createServerFn({ method: "POST" })
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
           "X-Secret": secret,
           "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`
         },
