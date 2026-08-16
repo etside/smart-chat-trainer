@@ -19,8 +19,10 @@ export type Database = {
           auto_approve: boolean
           credit_usage: number | null
           id: number
+          last_sync_at: string | null
           lovable_api_key_override: string | null
           model: string
+          sync_schedule: string | null
           system_prompt: string
           updated_at: string
         }
@@ -28,8 +30,10 @@ export type Database = {
           auto_approve?: boolean
           credit_usage?: number | null
           id?: number
+          last_sync_at?: string | null
           lovable_api_key_override?: string | null
           model?: string
+          sync_schedule?: string | null
           system_prompt?: string
           updated_at?: string
         }
@@ -37,8 +41,10 @@ export type Database = {
           auto_approve?: boolean
           credit_usage?: number | null
           id?: number
+          last_sync_at?: string | null
           lovable_api_key_override?: string | null
           model?: string
+          sync_schedule?: string | null
           system_prompt?: string
           updated_at?: string
         }
@@ -152,7 +158,9 @@ export type Database = {
           error_message: string | null
           finished_at: string | null
           id: string
+          idempotency_key: string | null
           items_count: number | null
+          metadata: Json | null
           source: string | null
           started_at: string | null
           status: string
@@ -161,7 +169,9 @@ export type Database = {
           error_message?: string | null
           finished_at?: string | null
           id?: string
+          idempotency_key?: string | null
           items_count?: number | null
+          metadata?: Json | null
           source?: string | null
           started_at?: string | null
           status: string
@@ -170,7 +180,9 @@ export type Database = {
           error_message?: string | null
           finished_at?: string | null
           id?: string
+          idempotency_key?: string | null
           items_count?: number | null
+          metadata?: Json | null
           source?: string | null
           started_at?: string | null
           status?: string
@@ -185,6 +197,7 @@ export type Database = {
           id: string
           started_at: string | null
           status: string
+          sync_run_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -193,6 +206,7 @@ export type Database = {
           id?: string
           started_at?: string | null
           status: string
+          sync_run_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -201,8 +215,17 @@ export type Database = {
           id?: string
           started_at?: string | null
           status?: string
+          sync_run_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "training_jobs_sync_run_id_fkey"
+            columns: ["sync_run_id"]
+            isOneToOne: false
+            referencedRelation: "sync_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       training_pairs: {
         Row: {
