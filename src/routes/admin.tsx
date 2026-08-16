@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import logoAsset from "@/assets/daddy-ai-logo.png.asset.json";
 import {
   Activity,
   Database,
