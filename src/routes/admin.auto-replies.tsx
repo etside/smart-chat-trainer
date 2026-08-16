@@ -7,9 +7,10 @@ import { listTemplates, saveTemplate, deleteTemplate } from "@/lib/auto-replies.
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageSquare, Plus, Trash2, Edit2, Globe, Layout, Sparkles, Loader2 } from "lucide-react";
+import { MessageSquare, Plus, Trash2, Edit2, Globe, Layout, Sparkles, Loader2, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getMyRole } from "@/lib/console.functions";
 
 export const Route = createFileRoute("/admin/auto-replies")({
   component: AutoRepliesPage,
@@ -20,6 +21,12 @@ function AutoRepliesPage() {
   const fetchTemplates = useServerFn(listTemplates);
   const save = useServerFn(saveTemplate);
   const remove = useServerFn(deleteTemplate);
+  const fetchMyRole = useServerFn(getMyRole);
+
+  const roleQuery = useQuery({
+    queryKey: ["my-role"],
+    queryFn: () => fetchMyRole(),
+  });
 
   const { data: templates, isLoading } = useQuery({
     queryKey: ["auto-reply-templates"],
@@ -50,18 +57,22 @@ function AutoRepliesPage() {
 
   if (isLoading) return <div className="p-10 text-center text-muted-foreground">লোড হচ্ছে...</div>;
 
+  const userRole = roleQuery.data?.role || "viewer";
+  const canEdit = userRole === "admin" || userRole === "editor";
+
   return (
-    <div className="mx-auto max-w-6xl animate-in fade-in duration-500">
+    <div className="mx-auto max-w-6xl animate-in fade-in duration-500 pb-20">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3 italic">
             <Sparkles className="size-8 text-primary" /> Auto-Reply Templates
           </h1>
-          <p className="mt-2 text-muted-foreground">
-            সরাসরি সোশ্যাল প্ল্যাটফর্মে উত্তরের জন্য প্রি-ডিজাইন করা টেমপ্লেট ম্যানেজ করুন।
+          <p className="mt-2 text-muted-foreground flex items-center gap-2">
+            <User className="size-4" /> Role: <span className="font-bold text-primary uppercase">{userRole}</span> 
+            {!canEdit && <span className="text-xs bg-muted px-2 py-0.5 rounded text-destructive">(Read Only)</span>}
           </p>
         </div>
-        {!isNew && !editing && (
+        {!isNew && !editing && canEdit && (
           <Button onClick={() => setIsNew(true)} className="rounded-full shadow-lg shadow-primary/20">
             <Plus className="size-4 mr-2" /> নতুন টেমপ্লেট
           </Button>
@@ -149,16 +160,18 @@ function AutoRepliesPage() {
               <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <MessageSquare className="size-5 text-primary" />
               </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="size-8" onClick={() => setEditing(t)}>
-                  <Edit2 className="size-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="size-8 text-destructive" onClick={() => {
-                  if(confirm("মুছে ফেলতে চান?")) deleteMutation.mutate(t.id);
-                }}>
-                  <Trash2 className="size-3.5" />
-                </Button>
-              </div>
+              {canEdit && (
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => setEditing(t)}>
+                    <Edit2 className="size-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="size-8 text-destructive" onClick={() => {
+                    if(confirm("মুছে ফেলতে চান?")) deleteMutation.mutate(t.id);
+                  }}>
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+              )}
             </div>
             <h3 className="font-bold text-lg mb-1">{t.name}</h3>
             <div className="flex gap-2 mb-4">
