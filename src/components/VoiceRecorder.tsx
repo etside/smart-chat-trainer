@@ -47,16 +47,38 @@ export function VoiceRecorder({ onText, onAudioBlob }: { onText: (text: string) 
         }
         setBusy(true);
         try {
-          const { text } = await transcribe({
-            data: { 
-              audio: await blobToBase64(blob), 
-              mimeType: blob.type || (recorder.mimeType === 'audio/x-m4a' ? 'audio/mp4' : 'audio/webm') 
-            },
-          });
-          if (text.trim()) onText(text.trim());
-          else toast.error("কোনো কথা শোনা যায়নি।");
-        } catch {
-          toast.error("ট্রান্সক্রাইব করা যায়নি, আবার চেষ্টা করুন।");
+          // Retry logic
+          let attempts = 0;
+          let success = false;
+          let text = "";
+          
+          while (attempts < 2 && !success) {
+            try {
+              const res = await transcribe({
+                data: { 
+                  audio: await blobToBase64(blob), 
+                  mimeType: blob.type || (recorder.mimeType === 'audio/x-m4a' ? 'audio/mp4' : 'audio/webm') 
+                },
+              });
+              text = res.text;
+              success = true;
+            } catch (err) {
+              attempts++;
+              if (attempts >= 2) throw err;
+              await new Promise(r => setTimeout(r, 1000));
+            }
+          }
+
+          if (text.trim()) {
+            onText(text.trim());
+            toast.success("ট্রান্সক্রিপশন সফল হয়েছে।");
+          } else {
+            toast.error("কোনো কথা শোনা যায়নি। আবার চেষ্টা করুন।");
+          }
+        } catch (err: any) {
+          console.error("Transcription error:", err);
+          const msg = err.message?.includes("RATE_LIMIT") ? "অতিরিক্ত রিকোয়েস্ট, একটু পরে চেষ্টা করুন।" : "ট্রান্সক্রাইব করা যায়নি, আপনার মাইক্রোফোন বা ইন্টারনেট চেক করুন।";
+          toast.error(msg);
         } finally {
           setBusy(false);
         }

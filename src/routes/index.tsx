@@ -72,10 +72,13 @@ function Landing() {
             Daddy <span className="text-primary italic">AI</span>
           </h1>
           
-          <p className="mt-8 animate-in text-xl leading-relaxed text-muted-foreground max-w-3xl mx-auto delay-200">
-            Elevate your customer service with the most human-like AI agents. 
-            Trained on your data, syncs with your stock, and speaks your brand language perfectly.
-          </p>
+          <div className="mt-8 h-20 overflow-hidden text-xl leading-relaxed text-muted-foreground max-w-3xl mx-auto delay-200">
+            <div className="animate-vertical-scroll">
+              <p className="h-20 flex items-center justify-center">"এই ড্রেসটার দাম কত?" — Daddy AI: "১,২০০ টাকা, আমাদের স্টকে ২ টি আছে।"</p>
+              <p className="h-20 flex items-center justify-center">"Can you show me real estate listings?" — Daddy AI: "Sure, we have 5 new luxury apartments in Gulshan."</p>
+              <p className="h-20 flex items-center justify-center">"নতুন ডিজাইনের কালেকশন আছে?" — Daddy AI: "অবশ্যই! আমাদের নতুন সিল্ক কালেকশন গতকালই এসেছে।"</p>
+            </div>
+          </div>
 
           <div className="mt-12 flex animate-in items-center justify-center gap-x-6 delay-300">
             <Button asChild size="lg" className="h-14 px-10 text-lg rounded-full shadow-2xl shadow-primary/30 transition-all hover:scale-105">
