@@ -51,11 +51,16 @@ export const updatePerformanceSettings = createServerFn({ method: "POST" })
   });
 
 export async function logPerformanceMetric(action: string, durationMs: number, requestId?: string, metadata: any = {}) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("performance_metrics").insert({
-    action,
-    duration_ms: durationMs,
-    request_id: requestId || crypto.randomUUID(),
-    metadata
-  });
+  // Use try-catch to ensure logging failure doesn't break the main flow
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("performance_metrics").insert({
+      action,
+      duration_ms: durationMs,
+      request_id: requestId || crypto.randomUUID(),
+      metadata
+    });
+  } catch (err) {
+    console.error("Failed to log performance metric:", err);
+  }
 }
