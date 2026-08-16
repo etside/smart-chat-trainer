@@ -20,7 +20,7 @@ async function logSecurityEvent(supabase: any, userId: string, action: string, m
 
 import { generateReply } from "./agent.server";
 import { chatComplete, transcribeAudio } from "./ai.server";
-import { assertRole, generateApiKey, hashApiKey } from "./admin.server";
+import { generateApiKey, hashApiKey } from "./admin.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const getMyRole = createServerFn({ method: "GET" })
