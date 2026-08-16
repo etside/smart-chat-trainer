@@ -22,11 +22,19 @@ function TrainingProgress() {
   const qc = useQueryClient();
   const fetchJobs = useServerFn(getTrainingJobs);
   const startTraining = useServerFn(triggerTraining);
+  const fetchJobDetail = useServerFn(getTrainingJobDetail);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["training-jobs"],
     queryFn: () => fetchJobs(),
     refetchInterval: 5000,
+  });
+
+  const { data: jobDetail, isLoading: isDetailLoading } = useQuery({
+    queryKey: ["training-job-detail", selectedJobId],
+    queryFn: () => selectedJobId ? fetchJobDetail({ data: { id: selectedJobId } }) : null,
+    enabled: !!selectedJobId,
   });
 
   const mutation = useMutation({

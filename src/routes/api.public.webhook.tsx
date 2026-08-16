@@ -146,7 +146,7 @@ export const Route = createFileRoute("/api/public/webhook")({
               source: 'webhook',
               status: 'pending',
               metadata: { context: trainingContext, webhook_payload: body } as any
-            });
+            } as any);
 
             if (!insertError) {
               const { data: runningJobs } = await supabaseAdmin
