@@ -19,7 +19,8 @@ import {
   Settings,
   Terminal,
   BarChart3,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare
 } from "lucide-react";
 import { useEffect } from "react";
 
