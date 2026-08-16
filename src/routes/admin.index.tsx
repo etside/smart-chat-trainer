@@ -61,9 +61,9 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook`);
         </div>
         <div className="p-4 text-[11px] leading-relaxed text-emerald-400/90 whitespace-pre-wrap">
           <span className="text-primary/80">$</span> daddy-ai --status check-sync
-          {"\n"}<span className="text-white/40">{`Authentication verified and operational. (Action: catalog, session ID required)
-Set up the Wear Impressive AI Webhook integration.
-POST https://api.v2.wearimpressive.com/api/ai/webhook`}</span>
+          {"\n"}<span className="text-white/40">{`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+
+Navigation button color into black`}</span>
         </div>
       </div>
 
