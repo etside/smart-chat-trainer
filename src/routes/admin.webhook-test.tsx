@@ -25,13 +25,12 @@ function WebhookTest() {
 
   const mutation = useMutation({
     mutationFn: async (payload: { type: "text" | "voice"; message?: string; audio?: string; mimeType?: string }) => {
-      const { type, message, audio, mimeType } = payload;
       return testFn({
         data: {
-          type,
-          message,
-          audio,
-          mimeType,
+          type: payload.type,
+          message: payload.message,
+          audio: payload.audio,
+          mimeType: payload.mimeType,
           sender,
         },
       });
@@ -84,7 +83,7 @@ function WebhookTest() {
                   id="sender" 
                   value={sender} 
                   onChange={(e) => setSender(e.target.value)} 
-                  placeholder="e.g. customer_99"
+                  placeholder="customer_99"
                   className="mt-1"
                 />
               </div>
@@ -129,7 +128,8 @@ function WebhookTest() {
                           const reader = new FileReader();
                           reader.readAsDataURL(blob);
                           reader.onloadend = () => {
-                            const base64 = (reader.result as string).split(",")[1];
+                            const result = reader.result as string;
+                            const base64 = result.split(",")[1];
                             mutation.mutate({ type: "voice", audio: base64, mimeType: blob.type });
                           };
                         }}
