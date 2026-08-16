@@ -376,7 +376,10 @@ function SettingsPage() {
               onClick={async () => {
                 if (confirm("আপনি কি নিশ্চিতভাবে ক্রেডেনশিয়াল রোলব্যাক করতে চান?")) {
                   const old = JSON.parse(localStorage.getItem('prev_sync_creds') || '{}');
-                  if (!old.token) return toast.error("কোন ব্যাকআপ পাওয়া যায়নি");
+                  if (!old.token) {
+                    toast.error("কোন ব্যাকআপ পাওয়া যায়নি");
+                    return;
+                  }
                   await rollbackSyncMutation.mutateAsync(old);
                 }
               }}
