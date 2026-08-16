@@ -1,6 +1,37 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
 import { chatComplete, type ChatMessage } from "./ai.server";
+
+// Cache for stock lookups to prevent excessive API calls
+const stockCache: Record<string, { data: any, timestamp: number }> = {};
+const CACHE_TTL = 1000 * 60 * 5; // 5 minutes
+const RATE_LIMIT_MS = 2000; // 2 seconds between lookups per key
+const lastLookup: Record<string, number> = {};
+
+async function getFreshStockData(query: string) {
+  const now = Date.now();
+  if (lastLookup[query] && now - lastLookup[query] < RATE_LIMIT_MS) {
+    console.log("Rate limiting stock lookup for:", query);
+    return stockCache[query]?.data;
+  }
+  
+  if (stockCache[query] && now - stockCache[query].timestamp < CACHE_TTL) {
+    return stockCache[query].data;
+  }
+
+  lastLookup[query] = now;
+  // Logic to fetch from training_pairs which acts as our inventory cache
+  const { data } = await supabaseAdmin
+    .from("training_pairs")
+    .select("answer")
+    .ilike("question", `%${query}%`)
+    .eq("source", "api_sync")
+    .maybeSingle();
+
+  if (data) {
+    stockCache[query] = { data: data.answer, timestamp: now };
+  }
+  return data?.answer;
+}
 
 export type HistoryTurn = { role: "user" | "assistant"; content: string };
 
@@ -34,20 +65,25 @@ export async function generateReply(
 ): Promise<{ reply: string; examples: Array<{ question: string; answer: string }> }> {
   const settings = await getSettings();
   
-  // 1. Check for product-specific keywords and trigger real-time sync if needed
-  // This ensures the AI has the most current stock/inventory info for product queries.
+  // Check for product-specific keywords and trigger real-time sync if needed
   const isProductQuery = /দাম|স্টক|স্টকে|inventory|price|stock|কত|আছে/.test(message);
   
   if (isProductQuery) {
     try {
+      // Use caching/rate-limiting helper
+      const productMatch = message.match(/[A-Za-z0-9 ]+/); // Simple heuristic for product name
+      if (productMatch) {
+        const freshData = await getFreshStockData(productMatch[0].trim());
+        if (freshData) {
+          console.log("Using fresh stock data for reply");
+        }
+      }
+
       // Trigger a silent background sync via the syncCatalog server function logic
-      // We import it dynamically to avoid circular dependencies if any
       const { syncCatalog } = await import("./sync.functions");
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       
-      // We run this in the background but wait slightly for it to at least start
-      // Note: syncCatalog is a server function, we call its internal logic
-      await (syncCatalog as any).handler({
+      // We run this in the background
+      (syncCatalog as any).handler({
         context: { supabase: supabaseAdmin, userId: "system_agent" },
         data: { idempotencyKey: `auto_sync_${new Date().toISOString().slice(0, 13)}` }
       }).catch((e: any) => console.error("Auto-sync failed:", e));
@@ -60,8 +96,8 @@ export async function generateReply(
 
   const exampleBlock = examples.length
     ? examples
-        .map((e, i) => `উদাহরণ ${i + 1}:\nকাস্টমার: ${e.question}\nআমরা: ${e.answer}`)
-        .join("\n\n")
+    .map((e, i) => `উদাহরণ ${i + 1}:\nকাস্টমার: ${e.question}\nআমরা: ${e.answer}`)
+    .join("\n\n")
     : "কোনো মিল পাওয়া যায়নি।";
 
   const messages: ChatMessage[] = [

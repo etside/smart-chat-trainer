@@ -36,7 +36,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -48,6 +48,7 @@ const nav: Array<{
   { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle, minRole: "editor" },
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare, minRole: "viewer" },
   { to: "/admin/sync", label: "সিঙ্ক স্ট্যাটাস", icon: Activity, minRole: "viewer" },
+  { to: "/admin/audit-logs", label: "অডিট লগ", icon: History, minRole: "admin" },
   { to: "/admin/progress", label: "ট্রেনিং লাইভ", icon: Activity, minRole: "viewer" },
   { to: "/admin/api-keys", label: "API Keys", icon: KeyRound, minRole: "admin" },
   { to: "/admin/connections", label: "কানেকশন", icon: KeyRound, minRole: "admin" },

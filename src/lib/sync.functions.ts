@@ -40,10 +40,10 @@ export const getSyncSettings = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
-      .select("sync_schedule, last_sync_at")
+      .select("sync_schedule, last_sync_at, last_sync_status, last_sync_details")
       .eq("id", 1)
       .maybeSingle();
-    return data || { sync_schedule: "manual", last_sync_at: null };
+    return data || { sync_schedule: "manual", last_sync_at: null, last_sync_status: null, last_sync_details: null };
   });
 
 export const previewSync = createServerFn({ method: "POST" })
@@ -242,6 +242,29 @@ export const syncCatalog = createServerFn({ method: "POST" })
           })
           .eq("id", run.id);
         
+        // Update agent_settings with fresh sync status
+        await supabaseAdmin
+          .from("agent_settings")
+          .update({
+            last_sync_at: new Date().toISOString(),
+            last_sync_status: "success",
+            last_sync_details: { 
+              run_id: run.id, 
+              items_count: trainingPairs.length,
+              source: data.url
+            }
+          })
+          .eq("id", 1);
+
+        // Audit log for sync trigger
+        await supabaseAdmin.from("audit_logs").insert({
+          actor_id: context.userId,
+          action: 'trigger_sync',
+          entity_type: 'sync_runs',
+          entity_id: run.id,
+          metadata: { endpoint: data.url, status: 'success', items: trainingPairs.length }
+        });
+
         // Trigger training after successful sync
         const { triggerTraining } = await import("./console.functions");
         await triggerTraining({ data: { sync_run_id: run.id } as any });
@@ -261,6 +284,26 @@ export const syncCatalog = createServerFn({ method: "POST" })
             finished_at: new Date().toISOString()
           })
           .eq("id", run.id);
+
+        await supabaseAdmin
+          .from("agent_settings")
+          .update({
+            last_sync_status: "failed",
+            last_sync_details: { 
+              run_id: run.id, 
+              error: err.message,
+              source: data.url
+            }
+          })
+          .eq("id", 1);
+
+        await supabaseAdmin.from("audit_logs").insert({
+          actor_id: context.userId,
+          action: 'trigger_sync',
+          entity_type: 'sync_runs',
+          entity_id: run.id,
+          metadata: { endpoint: data.url, status: 'failed', error: err.message }
+        });
       }
       throw new Error(`API Sync failed: ${err.message}`);
     }

@@ -20,6 +20,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminApiKeysRouteImport } from './routes/admin.api-keys'
+import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminOnboardingRouteImport } from './routes/admin.onboarding'
@@ -90,6 +91,11 @@ const AdminAddRoute = AdminAddRouteImport.update({
 const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
   id: '/api-keys',
   path: '/api-keys',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
+    | '/admin/audit-logs'
     | '/admin/connections'
     | '/admin/logs'
     | '/admin/onboarding'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
+    | '/admin/audit-logs'
     | '/admin/connections'
     | '/admin/logs'
     | '/admin/onboarding'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
+    | '/admin/audit-logs'
     | '/admin/connections'
     | '/admin/logs'
     | '/admin/onboarding'
@@ -443,6 +455,13 @@ declare module '@tanstack/react-router' {
       path: '/api-keys'
       fullPath: '/admin/api-keys'
       preLoaderRoute: typeof AdminApiKeysRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audit-logs': {
+      id: '/admin/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/admin/audit-logs'
+      preLoaderRoute: typeof AdminAuditLogsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/connections': {
@@ -563,6 +582,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAddRoute: typeof AdminAddRoute
   AdminApiKeysRoute: typeof AdminApiKeysRoute
+  AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminOnboardingRoute: typeof AdminOnboardingRoute
@@ -579,6 +599,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAddRoute: AdminAddRoute,
   AdminApiKeysRoute: AdminApiKeysRoute,
+  AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminOnboardingRoute: AdminOnboardingRoute,

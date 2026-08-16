@@ -86,9 +86,20 @@ function SyncStatusPage() {
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             <Activity className="size-8 text-primary" /> প্রোডাক্ট সিঙ্ক স্ট্যাটাস
           </h1>
-          <p className="mt-2 text-muted-foreground">
-            Daddy AI-এর প্রোডাক্ট, স্টক এবং ইনভেন্টরি সিঙ্ক্রোনাইজেশন রিয়েল-টাইমে মনিটর করুন।
-          </p>
+          <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+            <p>Daddy AI-এর প্রোডাক্ট, স্টক এবং ইনভেন্টরি সিঙ্ক্রোনাইজেশন রিয়েল-টাইমে মনিটর করুন।</p>
+            {settings?.last_sync_at && (
+              <div className="flex items-center gap-2 bg-primary/5 px-2 py-1 rounded border border-primary/10">
+                <Clock className="size-3" />
+                <span>সর্বশেষ সিঙ্ক: {new Date(settings.last_sync_at).toLocaleString("bn-BD")}</span>
+                {settings.last_sync_status === 'success' ? (
+                  <span className="text-[10px] text-green-500 font-bold">● FRESH DATA</span>
+                ) : settings.last_sync_status === 'failed' ? (
+                  <span className="text-[10px] text-destructive font-bold">● SYNC FAILED</span>
+                ) : null}
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex gap-3">
           <Button 
