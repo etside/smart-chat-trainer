@@ -22,7 +22,7 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    let textMessage = data.message || "";
+    let textMessage: string = data.message || "";
     let transcriptionResult: string | null = null;
 
     if (data.type === "voice" && data.audio) {
@@ -32,7 +32,8 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
         .eq("id", 1)
         .maybeSingle();
       
-      transcriptionResult = await transcribeAudio(data.audio, data.mimeType || "audio/webm", settings?.lovable_api_key_override);
+      const audioContent: string = data.audio;
+      transcriptionResult = await transcribeAudio(audioContent, data.mimeType || "audio/webm", settings?.lovable_api_key_override);
       textMessage = transcriptionResult;
     }
 
@@ -47,7 +48,7 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
       .insert({
         platform: "webhook_test",
         external_id: data.sender,
-      })
+      } as any)
       .select()
       .single();
 
@@ -55,7 +56,7 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
       await supabaseAdmin.from("messages").insert([
         { conversation_id: conv.id, role: "user", content: textMessage },
         { conversation_id: conv.id, role: "assistant", content: result.reply },
-      ]);
+      ] as any);
     }
 
     return {
