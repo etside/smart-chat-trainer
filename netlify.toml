@@ -17,7 +17,6 @@
 
 [functions]
   directory = "dist/server"
-  directory = "dist/server"
 
 [[headers]]
   for = "/*"
