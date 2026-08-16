@@ -15,7 +15,7 @@ import { getSyncCredentials, updateSyncCredentials, getMetaCredentials, updateMe
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Key, Save, Sparkles, MessageSquare, Info, ShieldCheck, Copy, AlertCircle, Terminal, Globe } from "lucide-react";
+import { Key, Save, Sparkles, MessageSquare, Info, ShieldCheck, Copy, AlertCircle, Terminal, Globe, Zap, Database as DbIcon, Cloud, Music, Server } from "lucide-react";
 import { useEffect, useState } from "react";
 import { verifyMetaConnection, getMetaWebhookConfig } from "@/lib/meta.functions";
 import { toast } from "sonner";
@@ -176,6 +176,9 @@ function SettingsPage() {
   const qc = useQueryClient();
   const fetchSettings = useServerFn(getAgentSettings);
   const save = useServerFn(saveAgentSettings);
+  
+  const fetchExtra = useServerFn(import("@/lib/extra-settings.functions").then(m => m.getExtraSettings));
+  const saveExtra = useServerFn(import("@/lib/extra-settings.functions").then(m => m.updateExtraSettings));
 
   const { data } = useQuery({ queryKey: ["agent-settings"], queryFn: () => fetchSettings() });
 
@@ -183,6 +186,13 @@ function SettingsPage() {
   const [model, setModel] = useState("openai/gpt-5.6-sol");
   const [autoApprove, setAutoApprove] = useState(false);
   const [apiKeyOverride, setApiKeyOverride] = useState("");
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  const [b2bBackblazeKey, setB2bBackblazeKey] = useState("");
+  const [bosonWorkspaceId, setBosonWorkspaceId] = useState("");
+  const [fishAudioApiKey, setFishAudioApiKey] = useState("");
+  const [altApiKeys, setAltApiKeys] = useState<Record<string, string>>({});
+  const [vpsConfig, setVpsConfig] = useState<any>({});
 
   const [syncToken, setSyncToken] = useState("");
   const [syncSecret, setSyncSecret] = useState("");
@@ -202,6 +212,7 @@ function SettingsPage() {
   const verifyMeta = useServerFn(verifyMetaConnection);
   const getWebhookConfig = useServerFn(getMetaWebhookConfig);
 
+  const { data: extraData } = useQuery({ queryKey: ["extra-settings"], queryFn: () => fetchExtra() });
   const { data: syncData } = useQuery({ queryKey: ["sync-credentials"], queryFn: () => fetchSyncCreds() });
   const { data: metaData } = useQuery({ queryKey: ["meta-credentials"], queryFn: () => fetchMetaCreds() });
   const { data: webhookConfig } = useQuery({ queryKey: ["meta-webhook-config"], queryFn: () => getWebhookConfig() });
@@ -226,6 +237,16 @@ function SettingsPage() {
   }, [syncData]);
 
   useEffect(() => {
+    if (!extraData) return;
+    setReduceMotion(extraData.reduceMotion);
+    setB2bBackblazeKey(extraData.b2bBackblazeKey);
+    setBosonWorkspaceId(extraData.bosonWorkspaceId);
+    setFishAudioApiKey(extraData.fishAudioApiKey);
+    setAltApiKeys(extraData.altApiKeys);
+    setVpsConfig(extraData.vpsHostingConfig);
+  }, [extraData]);
+
+  useEffect(() => {
     if (!data) return;
     setPrompt(data.system_prompt ?? "");
     setModel(data.model ?? "openai/gpt-5.6-sol");
@@ -240,10 +261,18 @@ function SettingsPage() {
         model, 
         auto_approve: autoApprove,
         lovable_api_key_override: apiKeyOverride
-      } }),
+      } }).then(() => saveExtra({ data: { 
+        reduceMotion,
+        b2bBackblazeKey,
+        bosonWorkspaceId,
+        fishAudioApiKey,
+        altApiKeys,
+        vpsHostingConfig: vpsConfig
+      } })),
     onSuccess: () => {
       toast.success("সেটিংস সেভ হয়েছে");
       qc.invalidateQueries({ queryKey: ["agent-settings"] });
+      qc.invalidateQueries({ queryKey: ["extra-settings"] });
     },
     onError: () => toast.error("সেভ করা যায়নি।"),
   });

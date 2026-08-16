@@ -55,6 +55,7 @@ function VoicePanel() {
   const [text, setText] = useState("");
   const [pairs, setPairs] = useState<Pair[]>([]);
   const [busy, setBusy] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const extract = useServerFn(extractPairsFromText);
   const save = useServerFn(importPairs);
 
@@ -63,8 +64,12 @@ function VoicePanel() {
     setBusy(true);
     try {
       const { items } = await extract({ data: { text: text.trim() } });
-      if (!items.length) toast.error("কোনো প্রশ্ন-উত্তর বের করা যায়নি, নিজে লিখে দিন।");
-      setPairs(items);
+      if (!items.length) {
+        toast.error("কোনো প্রশ্ন-উত্তর বের করা যায়নি, নিজে লিখে দিন।");
+      } else {
+        setPairs(items);
+        setShowPreview(true);
+      }
     } catch {
       toast.error("প্রসেস করা যায়নি।");
     } finally {
@@ -81,6 +86,7 @@ function VoicePanel() {
       toast.success(`${items.length} টি জোড়া ট্রেনিংয়ে যোগ হয়েছে`);
       setPairs([]);
       setText("");
+      setShowPreview(false);
     } catch {
       toast.error("সেভ করা যায়নি।");
     } finally {
@@ -101,12 +107,14 @@ function VoicePanel() {
           onChange={(e) => setText(e.target.value)}
         />
       </div>
-      <Button onClick={runExtract} disabled={busy || text.trim().length < 3}>
-        {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-        প্রশ্ন-উত্তরে রূপান্তর
-      </Button>
+      {!showPreview && (
+        <Button onClick={runExtract} disabled={busy || text.trim().length < 3}>
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+          প্রশ্ন-উত্তরে রূপান্তর ও প্রিভিউ
+        </Button>
+      )}
 
-      {pairs.length > 0 && (
+      {showPreview && pairs.length > 0 && (
         <div className="space-y-3 border-t border-border pt-4">
           {pairs.map((p, i) => (
             <div key={i} className="rounded-lg bg-secondary/60 p-3">
@@ -139,9 +147,14 @@ function VoicePanel() {
               </Button>
             </div>
           ))}
-          <Button onClick={saveAll} disabled={busy}>
-            সব সেভ করুন
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={saveAll} disabled={busy} className="flex-1">
+              সব চেক করেছি, সেভ করুন
+            </Button>
+            <Button variant="outline" onClick={() => setShowPreview(false)} disabled={busy}>
+              বাতিল
+            </Button>
+          </div>
         </div>
       )}
     </div>
