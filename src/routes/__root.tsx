@@ -158,6 +158,14 @@ function RootComponent() {
         xfbml: true,
         version: metaConfig.apiVersion,
       });
+      
+      // @ts-ignore
+      FB.getLoginStatus(function(response) {
+        console.log("Meta Login Status:", response.status);
+        // Custom event for components to listen to
+        window.dispatchEvent(new CustomEvent('fb-login-status', { detail: response }));
+      });
+
       // @ts-ignore
       FB.AppEvents.logPageView();
     };
