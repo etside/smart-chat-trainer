@@ -8,7 +8,7 @@ import { getWebhookLogs } from "@/lib/webhook-logs.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode, Copy, Download, History } from "lucide-react";
+import { MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode, Copy, Download, History, Activity } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
