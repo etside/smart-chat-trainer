@@ -137,7 +137,8 @@ ${exampleBlock}`,
   await logPerformanceMetric("analysis", analysisDuration, requestId);
 
   const replyStartTime = Date.now();
-  const reply = await chatComplete(messages, "openai/gpt-4o-mini", settings.lovable_api_key_override);
+  const replyResponse = await chatComplete(messages, "openai/gpt-4o-mini", settings.lovable_api_key_override);
+  const reply = typeof replyResponse === 'string' ? replyResponse : 'Streaming response initiated';
   const replyDuration = Date.now() - replyStartTime;
   await logPerformanceMetric("reply", replyDuration, requestId);
   

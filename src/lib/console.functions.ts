@@ -465,6 +465,8 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
       ],
       "openai/gpt-5.6-terra",
     );
+    
+    if (typeof raw !== 'string') throw new Error("Expected string response from AI");
 
     const match = raw.match(/\[[\s\S]*\]/);
     let items: Array<{ question: string; answer: string }> = [];

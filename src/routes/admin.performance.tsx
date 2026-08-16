@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const Route = createFileRoute("/admin/performance")({
-  middleware: [requireSupabaseAuth],
   component: PerformanceDashboard,
 });
 
@@ -134,7 +133,7 @@ function PerformanceDashboard() {
                 <input 
                   type="number" 
                   className="w-full bg-background border rounded-lg px-3 py-2 text-sm font-bold"
-                  value={settings.max_simultaneous_replies}
+                  value={settings.max_simultaneous_replies ?? 5}
                   onChange={(e) => mutation.mutate({ ...settings, max_simultaneous_replies: parseInt(e.target.value) })}
                 />
               </div>
@@ -146,7 +145,7 @@ function PerformanceDashboard() {
                 <input 
                   type="checkbox" 
                   className="size-5 accent-primary"
-                  checked={settings.enable_streaming}
+                  checked={settings.enable_streaming ?? true}
                   onChange={(e) => mutation.mutate({ ...settings, enable_streaming: e.target.checked })}
                 />
               </div>
