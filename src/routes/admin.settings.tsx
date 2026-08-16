@@ -223,6 +223,128 @@ function SettingsPage() {
               নিরাপত্তার স্বার্থে টোকেন এবং সিক্রেট মাস্ক করে দেখানো হচ্ছে। নতুন মান সেভ করলে আগেরগুলো ওভাররাইট হবে।
             </p>
           </div>
+          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Facebook className="size-5 text-[#1877F2]" />
+                <h2 className="text-lg font-bold tracking-tight">Meta বিজনেস কানেকশন</h2>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => verifyMetaMutation.mutate()}
+                  disabled={verifyMetaMutation.isPending || !metaPageId || !metaAccessToken}
+                  className="h-8 text-xs font-semibold"
+                >
+                  {verifyMetaMutation.isPending ? "ভেরিফাই হচ্ছে..." : "কানেকশন টেস্ট"}
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => updateMetaMutation.mutate()}
+                  disabled={updateMetaMutation.isPending}
+                  className="h-8 text-xs font-semibold"
+                >
+                  {updateMetaMutation.isPending ? "সেভ হচ্ছে..." : "Meta আপডেট করুন"}
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">App ID</Label>
+                <Input
+                  placeholder="Meta App ID"
+                  value={metaAppId}
+                  onChange={(e) => setMetaAppId(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">App Secret</Label>
+                <Input
+                  type="password"
+                  placeholder={metaData?.appSecret ? "••••••••" : "Meta App Secret"}
+                  value={metaAppSecret}
+                  onChange={(e) => setMetaAppSecret(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Page ID</Label>
+                <Input
+                  placeholder="Facebook Page ID"
+                  value={metaPageId}
+                  onChange={(e) => setMetaPageId(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">WhatsApp ID (Optional)</Label>
+                <Input
+                  placeholder="WhatsApp Business Account ID"
+                  value={metaWhatsappId}
+                  onChange={(e) => setMetaWhatsappId(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+              <div className="col-span-1 md:col-span-2 space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">System User Access Token</Label>
+                <Input
+                  type="password"
+                  placeholder={metaData?.accessToken ? "••••••••" : "Meta Access Token (Never Expires)"}
+                  value={metaAccessToken}
+                  onChange={(e) => setMetaAccessToken(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+            </div>
+
+            <div className="mt-8 space-y-4">
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                <h3 className="text-sm font-bold flex items-center gap-2 mb-2">
+                  <ShieldCheck className="size-4 text-primary" />
+                  Webhook কনফিগারেশন
+                </h3>
+                <div className="space-y-3 text-xs">
+                  <div className="flex justify-between items-center py-1 border-b border-white/5">
+                    <span className="text-muted-foreground italic">Callback URL:</span>
+                    <code className="text-primary font-mono">{webhookConfig?.callbackUrl || "..."}</code>
+                  </div>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-muted-foreground italic">Verify Token:</span>
+                    <div className="flex items-center gap-2">
+                      <Input 
+                        className="h-6 w-48 text-[10px] bg-background/50 border-white/10"
+                        value={metaVerifyToken}
+                        onChange={(e) => setMetaVerifyToken(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-accent/5 border border-accent/10">
+                <Info className="size-4 text-accent shrink-0 mt-0.5" />
+                <div className="text-xs leading-relaxed">
+                  <p className="font-bold text-accent mb-1">প্রয়োজনীয় পারমিশন:</p>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                    <li><code>pages_messaging</code>, <code>whatsapp_business_messaging</code></li>
+                    <li><code>pages_manage_metadata</code>, <code>pages_read_engagement</code></li>
+                  </ul>
+                  <a 
+                    href="https://developers.facebook.com/docs/messenger-platform/getting-started" 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="mt-2 inline-block text-primary hover:underline font-bold"
+                  >
+                    Meta ডেভেলপার গাইড দেখুন →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
