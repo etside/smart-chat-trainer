@@ -156,15 +156,20 @@ function AdminLayout() {
         </nav>
 
         <div className="mt-auto space-y-4 pt-6 border-t border-border/40">
-          <div className="px-4">
+          <div className="px-4 grid gap-2">
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full justify-start text-[10px] uppercase tracking-widest font-black border-2 border-primary/20 hover:bg-primary/5"
+              className="w-full justify-start text-[10px] uppercase tracking-widest font-black border-2 border-primary/20 hover:bg-primary/5 h-9"
               onClick={() => document.documentElement.classList.toggle('high-contrast')}
             >
               <Activity className="size-3 mr-2 text-primary" /> High Contrast
             </Button>
+            <div className="flex gap-2">
+              <Link to="/privacy" className="text-[9px] text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
+              <Link to="/terms" className="text-[9px] text-muted-foreground hover:text-primary transition-colors">Terms</Link>
+              <Link to="/privacy-request" className="text-[9px] text-muted-foreground hover:text-primary transition-colors">GDPR</Link>
+            </div>
           </div>
           <button
             onClick={async () => {
@@ -173,7 +178,7 @@ function AdminLayout() {
                 navigate({ to: "/auth" });
               }
             }}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-black text-destructive hover:bg-destructive/5 transition-colors border-2 border-transparent hover:border-destructive/20"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-black text-destructive hover:bg-destructive/5 transition-colors border-2 border-transparent hover:border-destructive/20 h-11"
           >
             <LogOut className="size-4.5" /> লগআউট
           </button>

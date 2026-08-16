@@ -1,6 +1,22 @@
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { assertRole } from "./admin.server";
+
+// Auto-log audit on role check failures or unauthorized attempts
+async function logSecurityEvent(supabase: any, userId: string, action: string, metadata: any) {
+  try {
+    await supabase.from("audit_logs").insert({
+      actor_id: userId,
+      action,
+      entity_type: 'security_event',
+      metadata
+    });
+  } catch (e) {
+    console.error("Audit logging failed:", e);
+  }
+}
+
 
 import { generateReply } from "./agent.server";
 import { chatComplete, transcribeAudio } from "./ai.server";
