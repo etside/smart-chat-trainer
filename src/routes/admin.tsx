@@ -89,16 +89,21 @@ function AdminLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-sidebar p-4 text-sidebar-foreground md:flex">
-        <div className="flex items-center gap-3 px-2 py-3 border-b border-sidebar-border mb-4">
-          <img src={logoAsset.url} alt="Daddy AI" className="size-8 rounded-lg" />
+    <div className="flex min-h-screen bg-background selection:bg-primary/20">
+      {/* Enhanced Sidebar */}
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col glass border-r-0 p-6 md:flex relative z-20">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <img src={logoAsset.url} alt="Daddy AI" className="relative size-10 rounded-lg shadow-xl" />
+          </div>
           <div>
-            <p className="font-display text-base font-bold leading-tight">Daddy AI</p>
-            <p className="text-[10px] uppercase tracking-wider text-sidebar-foreground/50 font-bold">Training Console</p>
+            <p className="font-display text-lg font-bold leading-tight tracking-tight">Daddy AI</p>
+            <p className="text-[10px] uppercase tracking-widest text-primary font-black opacity-70">Console v2.0</p>
           </div>
         </div>
-        <nav className="mt-4 flex flex-col gap-1">
+
+        <nav className="flex flex-col gap-1.5 flex-1 overflow-y-auto pr-2 custom-scrollbar">
           {nav.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             return (
@@ -106,27 +111,31 @@ function AdminLayout() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                  "flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 relative group",
                   active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60",
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]"
+                    : "text-muted-foreground hover:bg-primary/5 hover:text-primary",
                 )}
               >
-                <item.icon className="size-4" />
+                <item.icon className={cn("size-4.5", active ? "text-primary-foreground" : "group-hover:scale-110 transition-transform")} />
                 {item.label}
+                {active && <div className="absolute right-2 size-1.5 rounded-full bg-primary-foreground/50" />}
               </Link>
             );
           })}
         </nav>
-        <button
-          onClick={async () => {
-            await supabase.auth.signOut();
-            navigate({ to: "/auth" });
-          }}
-          className="mt-auto flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
-        >
-          <LogOut className="size-4" /> লগআউট
-        </button>
+
+        <div className="mt-6 pt-6 border-t border-border/40">
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate({ to: "/auth" });
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
+          >
+            <LogOut className="size-4.5" /> লগআউট
+          </button>
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

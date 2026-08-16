@@ -46,14 +46,21 @@ function Dashboard() {
         {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nAdvanced sync endpoint configured for Daddy AI. Token and Secret are stored securely."}
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {cards.map((c) => (
-          <div key={c.label} className="panel panel-hover p-6 border-l-4 border-l-primary/30">
-            <c.icon className="size-5 text-primary" />
-            <p className="mt-3 text-2xl font-semibold tabular-nums">
+      <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        {cards.map((c, i) => (
+          <div 
+            key={c.label} 
+            className="panel panel-hover p-6 border-t-2 border-t-primary/20 bg-card/50 backdrop-blur-sm animate-in"
+            style={{ animationDelay: `${i * 100}ms` }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <c.icon className="size-5 text-primary/70" />
+              <div className="size-2 rounded-full bg-success/20 animate-pulse" />
+            </div>
+            <p className="text-3xl font-bold tracking-tight tabular-nums">
               {isLoading ? "—" : c.value}
             </p>
-            <p className="text-xs text-muted-foreground">{c.label}</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mt-1">{c.label}</p>
           </div>
         ))}
       </div>
