@@ -328,6 +328,12 @@ function SettingsPage() {
               Logs & Policy
             </Link>
           </Button>
+          <Button variant="outline" asChild>
+            <Link to="/admin/api-keys">
+              <KeyRound className="mr-2 size-4" />
+              API Keys
+            </Link>
+          </Button>
           <Button 
             size="lg" 
             onClick={() => mutation.mutate()} 
