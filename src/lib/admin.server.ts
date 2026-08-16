@@ -27,30 +27,37 @@ export function generateApiKey() {
   return `wi_${body}`;
 }
 
-export async function verifyWebhookSignature(payload: string, signature: string, secret: string) {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"]
-  );
-  
-  // Strip "sha256=" prefix if present
-  const signatureToVerify = signature.startsWith("sha256=") ? signature.slice(7) : signature;
-  
-  // Convert hex signature back to bytes for comparison
-  const signatureBytes = new Uint8Array(
-    signatureToVerify.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []
-  );
-  
-  const isValid = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    signatureBytes,
-    encoder.encode(payload)
-  );
-  
-  return isValid;
+export async function verifyWebhookSignature(payload: string, signature: string | null, secret: string | undefined) {
+  if (!signature || !secret) return false;
+
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+    
+    // Strip "sha256=" prefix if present
+    const signatureToVerify = signature.startsWith("sha256=") ? signature.slice(7) : signature;
+    
+    // Validate hex format and convert signature back to bytes for comparison
+    if (!/^[0-9a-fA-F]+$/.test(signatureToVerify)) return false;
+    
+    const signatureBytes = new Uint8Array(
+      signatureToVerify.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || []
+    );
+    
+    return await crypto.subtle.verify(
+      "HMAC",
+      key,
+      signatureBytes,
+      encoder.encode(payload)
+    );
+  } catch (err) {
+    console.error("Signature verification error:", err);
+    return false;
+  }
 }

@@ -7,7 +7,12 @@ export const Route = createFileRoute("/api/public/webhooks/couriers/pathao")({
         const token = request.headers.get("X-Webhook-Token") || new URL(request.url).searchParams.get("token");
         const secret = process.env['PATHAO_WEBHOOK_SECRET'];
         
-        if (secret && token !== secret) {
+        if (!secret) {
+          console.error("PATHAO_WEBHOOK_SECRET is not configured.");
+          return new Response("Configuration Error", { status: 500 });
+        }
+
+        if (token !== secret) {
           return new Response("Unauthorized", { status: 401 });
         }
         
