@@ -21,6 +21,12 @@ export type Database = {
           id: number
           last_sync_at: string | null
           lovable_api_key_override: string | null
+          meta_access_token: string | null
+          meta_app_id: string | null
+          meta_app_secret: string | null
+          meta_page_id: string | null
+          meta_webhook_verify_token: string | null
+          meta_whatsapp_business_account_id: string | null
           model: string
           sync_schedule: string | null
           sync_secret: string | null
@@ -34,6 +40,12 @@ export type Database = {
           id?: number
           last_sync_at?: string | null
           lovable_api_key_override?: string | null
+          meta_access_token?: string | null
+          meta_app_id?: string | null
+          meta_app_secret?: string | null
+          meta_page_id?: string | null
+          meta_webhook_verify_token?: string | null
+          meta_whatsapp_business_account_id?: string | null
           model?: string
           sync_schedule?: string | null
           sync_secret?: string | null
@@ -47,6 +59,12 @@ export type Database = {
           id?: number
           last_sync_at?: string | null
           lovable_api_key_override?: string | null
+          meta_access_token?: string | null
+          meta_app_id?: string | null
+          meta_app_secret?: string | null
+          meta_page_id?: string | null
+          meta_webhook_verify_token?: string | null
+          meta_whatsapp_business_account_id?: string | null
           model?: string
           sync_schedule?: string | null
           sync_secret?: string | null
