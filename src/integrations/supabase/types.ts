@@ -364,28 +364,40 @@ export type Database = {
       webhook_logs: {
         Row: {
           created_at: string | null
+          error_details: string | null
           event_type: string | null
           headers: Json | null
           id: string
+          next_retry_at: string | null
           payload: Json | null
+          processing_status: string | null
+          retry_count: number | null
           source: string
           status_code: number | null
         }
         Insert: {
           created_at?: string | null
+          error_details?: string | null
           event_type?: string | null
           headers?: Json | null
           id?: string
+          next_retry_at?: string | null
           payload?: Json | null
+          processing_status?: string | null
+          retry_count?: number | null
           source: string
           status_code?: number | null
         }
         Update: {
           created_at?: string | null
+          error_details?: string | null
           event_type?: string | null
           headers?: Json | null
           id?: string
+          next_retry_at?: string | null
           payload?: Json | null
+          processing_status?: string | null
+          retry_count?: number | null
           source?: string
           status_code?: number | null
         }
@@ -416,7 +428,7 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "editor" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -544,7 +556,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "editor", "viewer"],
     },
   },
 } as const

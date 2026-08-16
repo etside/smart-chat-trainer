@@ -12,7 +12,7 @@ import {
 } from "@/lib/console.functions";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Sparkles, Trash2 } from "lucide-react";
+import { CheckCircle2, Loader2, Sparkles, Terminal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -216,22 +216,46 @@ function ManualPanel() {
 function JsonPanel() {
   const [busy, setBusy] = useState(false);
   const [jsonText, setJsonText] = useState("");
+  const [preview, setPreview] = useState<{ conversations: number; messages: number } | null>(null);
   const importJson = useServerFn(importConversationsJson);
 
-  async function handleImport(content: string) {
+  async function handleValidate() {
+    if (!jsonText.trim()) return;
     setBusy(true);
     try {
-      // Basic validation check before sending to server
-      const parsed = JSON.parse(content);
+      const parsed = JSON.parse(jsonText);
       if (!Array.isArray(parsed)) throw new Error("JSON must be an array of conversations.");
       
-      const result = await importJson({ data: { json: content } });
+      let messageCount = 0;
+      parsed.forEach((conv: any, i: number) => {
+        if (!conv.messages || !Array.isArray(conv.messages)) {
+          throw new Error(`Conversation at index ${i} is missing messages array.`);
+        }
+        messageCount += conv.messages.length;
+      });
+
+      setPreview({ conversations: parsed.length, messages: messageCount });
+      toast.success("JSON সঠিক ফরম্যাটে আছে। প্রিভিউ দেখুন।");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "ভুল JSON ফরম্যাট।");
+      setPreview(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleImport() {
+    if (!jsonText.trim()) return;
+    setBusy(true);
+    try {
+      const result = await importJson({ data: { json: jsonText } });
       toast.success(
         `${result.conversations} কথোপকথন, ${result.pairs} ট্রেনিং জোড়া যোগ হয়েছে`,
       );
       setJsonText("");
+      setPreview(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "আপলোড ব্যর্থ হয়েছে। ফরম্যাট চেক করুন।");
+      toast.error("আপলোড ব্যর্থ হয়েছে।");
     } finally {
       setBusy(false);
     }
@@ -241,8 +265,9 @@ function JsonPanel() {
     const file = e.target.files?.[0];
     if (!file) return;
     const text = await file.text();
-    handleImport(text);
+    setJsonText(text);
     e.target.value = "";
+    toast.info("ফাইল লোড হয়েছে, ভ্যালিডেট বাটনে ক্লিক করুন।");
   }
 
   return (
@@ -254,18 +279,42 @@ function JsonPanel() {
           rows={8} 
           placeholder='[{"conversation_id":"...","messages":[...]}]'
           value={jsonText}
-          onChange={(e) => setJsonText(e.target.value)}
+          onChange={(e) => {
+            setJsonText(e.target.value);
+            setPreview(null);
+          }}
           className="font-mono text-xs"
         />
-        <Button 
-          className="w-full" 
-          size="sm" 
-          disabled={busy || !jsonText.trim()} 
-          onClick={() => handleImport(jsonText)}
-        >
-          {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-          টেক্সট থেকে ইমপোর্ট করুন
-        </Button>
+        
+        {preview ? (
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-xs space-y-1 animate-in slide-in-from-top-2">
+            <p className="font-bold text-primary flex items-center gap-2">
+              <Sparkles className="size-3" /> প্রিভিউ:
+            </p>
+            <p>মোট কথোপকথন: {preview.conversations}</p>
+            <p>মোট মেসেজ: {preview.messages}</p>
+            <Button 
+              className="w-full mt-2" 
+              variant="default"
+              size="sm"
+              disabled={busy} 
+              onClick={handleImport}
+            >
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4 mr-2" />}
+              কনফার্ম ও ইমপোর্ট করুন
+            </Button>
+          </div>
+        ) : (
+          <Button 
+            className="w-full" 
+            size="sm" 
+            disabled={busy || !jsonText.trim()} 
+            onClick={handleValidate}
+          >
+            {busy ? <Loader2 className="size-4 animate-spin" /> : <Terminal className="size-4 mr-2" />}
+            ভ্যালিডেট ও প্রিভিউ
+          </Button>
+        )}
       </div>
 
       <div className="relative">

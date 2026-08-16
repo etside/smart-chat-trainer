@@ -24,6 +24,7 @@ import { Route as AdminProgressRouteImport } from './routes/admin.progress'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSyncRouteImport } from './routes/admin.sync'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
+import { Route as AdminWebhookDlqRouteImport } from './routes/admin.webhook-dlq'
 import { Route as AdminWebhookTestRouteImport } from './routes/admin.webhook-test'
 import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
@@ -107,6 +108,11 @@ const AdminTrainingRoute = AdminTrainingRouteImport.update({
   path: '/training',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminWebhookDlqRoute = AdminWebhookDlqRouteImport.update({
+  id: '/webhook-dlq',
+  path: '/webhook-dlq',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminWebhookTestRoute = AdminWebhookTestRouteImport.update({
   id: '/webhook-test',
   path: '/webhook-test',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/sync'
     | '/admin/training'
+    | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin/'
     | '/api/public/chat'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/sync'
     | '/admin/training'
+    | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin'
     | '/api/public/chat'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/sync'
     | '/admin/training'
+    | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin/'
     | '/api/public/chat'
@@ -410,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTrainingRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/webhook-dlq': {
+      id: '/admin/webhook-dlq'
+      path: '/webhook-dlq'
+      fullPath: '/admin/webhook-dlq'
+      preLoaderRoute: typeof AdminWebhookDlqRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/webhook-test': {
       id: '/admin/webhook-test'
       path: '/webhook-test'
@@ -472,6 +491,7 @@ interface AdminRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSyncRoute: typeof AdminSyncRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
+  AdminWebhookDlqRoute: typeof AdminWebhookDlqRoute
   AdminWebhookTestRoute: typeof AdminWebhookTestRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -486,6 +506,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSyncRoute: AdminSyncRoute,
   AdminTrainingRoute: AdminTrainingRoute,
+  AdminWebhookDlqRoute: AdminWebhookDlqRoute,
   AdminWebhookTestRoute: AdminWebhookTestRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

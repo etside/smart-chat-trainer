@@ -373,6 +373,57 @@ function SettingsPage() {
           <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
+                <Cloud className="size-5 text-primary" />
+                <h2 className="text-lg font-bold tracking-tight">B2B & External Services</h2>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Backblaze B2 Key</Label>
+                <Input
+                  type="password"
+                  placeholder={extraData?.b2bBackblazeKey ? "••••••••" : "API Key"}
+                  value={b2bBackblazeKey}
+                  onChange={(e) => setB2bBackblazeKey(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Boson Workspace ID</Label>
+                <Input
+                  placeholder="ID"
+                  value={bosonWorkspaceId}
+                  onChange={(e) => setBosonWorkspaceId(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Fish Audio API Key</Label>
+                <Input
+                  type="password"
+                  placeholder={extraData?.fishAudioApiKey ? "••••••••" : "API Key"}
+                  value={fishAudioApiKey}
+                  onChange={(e) => setFishAudioApiKey(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">VPS Hosting Server URL</Label>
+                <Input
+                  placeholder="https://..."
+                  value={vpsConfig?.serverUrl || ""}
+                  onChange={(e) => setVpsConfig({ ...vpsConfig, serverUrl: e.target.value })}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+              </div>
+            </div>
+          </div>
+
+
+          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
                 <Key className="size-5 text-primary" />
                 <h2 className="text-lg font-bold tracking-tight">API সিঙ্ক ক্রেডেনশিয়াল</h2>
               </div>

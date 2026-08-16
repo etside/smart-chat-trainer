@@ -1,15 +1,29 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export async function assertAdmin(supabase: SupabaseClient, userId: string) {
+export async function assertRole(supabase: SupabaseClient, userId: string, requiredRole: 'admin' | 'editor' | 'viewer' = 'viewer') {
   const { data } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
-    .eq("role", "admin")
     .maybeSingle();
 
-  if (!data) throw new Error("Forbidden: admin access required");
+  if (!data) throw new Error("Forbidden: access required");
+  
+  const role = data.role as string;
+  const roles = ['viewer', 'editor', 'admin'];
+  const actualIndex = roles.indexOf(role);
+  const requiredIndex = roles.indexOf(requiredRole);
+
+  if (actualIndex < requiredIndex) {
+    throw new Error(`Forbidden: ${requiredRole} access required`);
+  }
+  
   return true;
+}
+
+/** @deprecated Use assertRole instead */
+export async function assertAdmin(supabase: SupabaseClient, userId: string) {
+  return assertRole(supabase, userId, 'admin');
 }
 
 export async function hashApiKey(key: string) {

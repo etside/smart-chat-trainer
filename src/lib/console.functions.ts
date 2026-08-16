@@ -6,16 +6,23 @@ import { generateReply } from "./agent.server";
 import { chatComplete, transcribeAudio } from "./ai.server";
 import { assertAdmin, generateApiKey, hashApiKey } from "./admin.server";
 
-export const amIAdmin = createServerFn({ method: "GET" })
+export const getMyRole = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId)
-      .eq("role", "admin")
       .maybeSingle();
-    return { admin: Boolean(data) };
+    return { role: (data?.role as "admin" | "editor" | "viewer") || "user" };
+  });
+
+/** @deprecated Use getMyRole instead */
+export const amIAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { role } = await getMyRole();
+    return { admin: role === "admin" };
   });
 
 export const getStats = createServerFn({ method: "GET" })

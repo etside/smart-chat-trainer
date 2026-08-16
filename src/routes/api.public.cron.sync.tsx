@@ -19,8 +19,23 @@ export const Route = createFileRoute("/api/public/cron/sync")({
 
         const { syncCatalog } = await import("@/lib/sync.functions");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { processWebhookRetry } = await import("@/routes/api.public.webhook");
 
-        // Fetch settings to check schedule (manual cron would call this, so we check if sync is due)
+        // 1. Process Webhook Retries
+        const { data: pendingWebhooks } = await supabaseAdmin
+          .from("webhook_logs")
+          .select("id")
+          .eq("processing_status", "pending")
+          .lte("next_retry_at", new Date().toISOString());
+
+        if (pendingWebhooks && pendingWebhooks.length > 0) {
+          console.log(`Processing ${pendingWebhooks.length} webhook retries...`);
+          for (const hook of pendingWebhooks) {
+            await processWebhookRetry(hook.id);
+          }
+        }
+
+        // 2. Process Catalog Sync
         const { data: settings } = await supabaseAdmin
           .from("agent_settings")
           .select("sync_schedule, last_sync_at")
@@ -28,7 +43,7 @@ export const Route = createFileRoute("/api/public/cron/sync")({
           .maybeSingle();
 
         if (settings?.sync_schedule === "manual") {
-          return new Response(JSON.stringify({ status: "skipped", reason: "Manual sync only" }), {
+          return new Response(JSON.stringify({ status: "done", webhooksProcessed: pendingWebhooks?.length || 0, sync: "skipped" }), {
             headers: { "Content-Type": "application/json" }
           });
         }
@@ -47,7 +62,7 @@ export const Route = createFileRoute("/api/public/cron/sync")({
 
           await supabaseAdmin.from("agent_settings").update({ last_sync_at: new Date().toISOString() }).eq("id", 1);
 
-          return new Response(JSON.stringify(result), {
+          return new Response(JSON.stringify({ ...result, webhooksProcessed: pendingWebhooks?.length || 0 }), {
             headers: { "Content-Type": "application/json" }
           });
         } catch (error: any) {
