@@ -46,7 +46,7 @@ function Dashboard() {
         '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add a webhook test panel so I can send a sample voice/message payload and immediately verify transcription, training triggers, and the stored response logs.
+                                            Add clear webhook request/response schema documentation and copy-pastable sample payloads to the admin webhook test page. https://wearimpressive.com/api/meta-catalog?format=csv ensure to connect the  data and get more product data sync and improve the training
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

@@ -21,8 +21,30 @@ function WebhookTest() {
   const [message, setMessage] = useState("");
   const [sender, setSender] = useState("tester_123");
   const [logs, setLogs] = useState<any[]>([]);
+  const queryClient = useQueryClient();
 
   const testFn = useServerFn(testWebhookPayload);
+  const syncFn = useServerFn(syncCatalog);
+
+  const syncMutation = useMutation({
+    mutationFn: () => syncFn(),
+    onSuccess: (res) => {
+      toast.success(res.message);
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const textPayload = JSON.stringify({
+    type: "text",
+    message: "ডেলিভারি চার্জ কত?",
+    sender: "user_123"
+  }, null, 2);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("ক্লিপবোর্ডে কপি হয়েছে");
+  };
 
   const mutation = useMutation({
     mutationFn: async (payload: { type: "text" | "voice"; message?: string; audio?: string; mimeType?: string }) => {
@@ -190,6 +212,55 @@ function WebhookTest() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-12 grid gap-6 lg:grid-cols-2">
+        <div className="panel p-5">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <RefreshCw className="size-4 text-primary" /> প্রোডাক্ট ক্যাটালগ সিঙ্ক
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            wearimpressive.com থেকে সরাসরি প্রোডাক্ট ডেটা সিঙ্ক করে AI ট্রেনিং উন্নত করুন।
+          </p>
+          <div className="rounded-md bg-secondary/30 p-3 mb-4 text-xs font-mono break-all">
+            URL: https://wearimpressive.com/api/meta-catalog?format=csv
+          </div>
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => syncMutation.mutate()}
+            disabled={syncMutation.isPending}
+          >
+            {syncMutation.isPending ? "সিঙ্ক হচ্ছে..." : "এখনই সিঙ্ক করুন"}
+          </Button>
+        </div>
+
+        <div className="panel p-5">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileCode className="size-4 text-primary" /> API স্কিমা ও পেলোড
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs font-medium">টেক্সট পেলোড উদাহরণ (JSON POST)</span>
+                <button onClick={() => copyToClipboard(textPayload)} className="text-primary hover:underline text-[10px] flex items-center gap-1">
+                  <Copy className="size-3" /> কপি করুন
+                </button>
+              </div>
+              <pre className="bg-slate-900 text-slate-300 p-3 rounded text-[10px] overflow-x-auto">
+                {textPayload}
+              </pre>
+            </div>
+            <div className="text-xs space-y-2">
+              <p className="font-medium">রেসপন্স স্কিমা:</p>
+              <ul className="list-disc list-inside text-muted-foreground">
+                <li><code>reply</code>: AI দ্বারা জেনারেটেড টেক্সট উত্তর।</li>
+                <li><code>transcription</code>: (শুধুমাত্র ভয়েস) অডিওর টেক্সট রূপ।</li>
+                <li><code>status</code>: 'success' অথবা 'error'।</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
