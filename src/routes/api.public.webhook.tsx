@@ -145,7 +145,7 @@ export const Route = createFileRoute("/api/public/webhook")({
               answer,
               source: 'webhook',
               status: 'pending',
-              metadata: { context: trainingContext, webhook_payload: body }
+              metadata: { context: trainingContext, webhook_payload: body } as any
             });
 
             if (!insertError) {
@@ -160,7 +160,7 @@ export const Route = createFileRoute("/api/public/webhook")({
                   status: "running",
                   processed_count: 0,
                   retry_count: 0
-                });
+                } as any);
               }
             }
           }

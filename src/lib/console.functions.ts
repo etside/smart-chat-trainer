@@ -441,57 +441,6 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
     return { items };
   });
 
-export const listApiKeys = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin
-      .from("api_keys")
-      .select("*")
-      .order("created_at", { ascending: false });
-    return data ?? [];
-  });
-
-export const createApiKey = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => z.object({ name: z.string().min(1).max(100) }).parse(d))
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { generateApiKey, hashApiKey } = await import("./admin.server");
-    
-    const rawKey = generateApiKey();
-    const hashed = await hashApiKey(rawKey);
-    
-    const { data: row, error } = await supabaseAdmin
-      .from("api_keys")
-      .insert({
-        name: data.name,
-        key_hash: hashed,
-        key_prefix: rawKey.substring(0, 7),
-        revoked: false
-      })
-      .select("id")
-      .single();
-
-    if (error) throw new Error(error.message);
-    return { id: row.id, key: rawKey };
-  });
-
-export const revokeApiKey = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin
-      .from("api_keys")
-      .update({ revoked: true })
-      .eq("id", data.id);
-    return { success: true };
-  });
-
 export const getTrainingJobDetail = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ id: z.string() }).parse(d))
   .middleware([requireSupabaseAuth])
@@ -511,5 +460,5 @@ export const getTrainingJobDetail = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(5);
 
-    return { job, samples };
+    return { job: job as any, samples: samples as any[] };
   });
