@@ -39,13 +39,9 @@ function WebhookTest() {
     mutationFn: async () => {
       return triggerSync();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setTestResponse(data);
-      if (data.success) {
-        toast.success(`Sync completed: ${data.count} items processed`);
-      } else {
-        toast.error(`Sync failed: ${data.message}`);
-      }
+      toast.success(`Sync finished: ${data.message || "Operation completed"}`);
       queryClient.invalidateQueries({ queryKey: ["webhook-db-logs"] });
     },
     onError: (error: any) => {
