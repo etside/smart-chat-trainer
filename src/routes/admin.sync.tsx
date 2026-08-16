@@ -94,9 +94,9 @@ function SyncStatusPage() {
                 <span>সর্বশেষ সিঙ্ক: {new Date(settings.last_sync_at).toLocaleString("bn-BD")}</span>
                 {settings.last_sync_status === 'success' ? (
                   <span className="text-[10px] text-green-500 font-bold">● FRESH DATA</span>
-                ) : (
+                ) : settings.last_sync_status === 'failed' ? (
                   <span className="text-[10px] text-destructive font-bold">● SYNC FAILED</span>
-                )}
+                ) : null}
               </div>
             )}
           </div>
