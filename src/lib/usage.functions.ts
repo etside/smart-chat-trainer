@@ -60,12 +60,21 @@ export const saveUsageAlert = createServerFn({ method: "POST" })
     await assertAdmin(ctx.supabase, ctx.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
+    const payload = {
+      threshold_credits: data.threshold_credits,
+      threshold_usd: data.threshold_usd,
+      threshold_bdt: data.threshold_bdt,
+      type: data.type,
+      is_active: data.is_active
+    };
+
     if (data.id) {
-      await supabaseAdmin.from("usage_alerts").update(data).eq("id", data.id);
+      await supabaseAdmin.from("usage_alerts").update(payload).eq("id", data.id);
     } else {
-      await supabaseAdmin.from("usage_alerts").insert(data);
+      await supabaseAdmin.from("usage_alerts").insert(payload);
     }
     return { ok: true };
+
   });
 
 export const deleteUsageAlert = createServerFn({ method: "POST" })
