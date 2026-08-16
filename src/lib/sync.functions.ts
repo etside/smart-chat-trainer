@@ -180,6 +180,7 @@ export const syncCatalog = createServerFn({ method: "POST" })
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
           "X-AI-Signature": `sha256=${await (async () => {
             const encoder = new TextEncoder();
