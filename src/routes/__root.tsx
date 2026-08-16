@@ -164,7 +164,9 @@ function InnerRoot() {
           });
         }
       })
-      .catch((err) => console.error("Meta config fetch failed (likely unauthorized/public page):", err.message));
+      .catch((err) => {
+        // We expect this on public pages since getMetaCredentials has requireSupabaseAuth
+      });
   }, [fetchMetaCreds]);
 
   useEffect(() => {
