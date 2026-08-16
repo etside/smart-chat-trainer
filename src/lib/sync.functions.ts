@@ -3,98 +3,129 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { assertAdmin } from "./admin.server";
 
+const DEFAULT_SYNC_URL = "https://api.v2.wearimpressive.com/api/ai/webhook";
+
+export const getSyncRuns = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("sync_runs")
+      .select("*")
+      .order("started_at", { ascending: false })
+      .limit(10);
+    return data ?? [];
+  });
+
+export const previewSync = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({ url: z.string().url().default(DEFAULT_SYNC_URL) }).parse(d || {})
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    
+    const token = process.env.SYNC_TOKEN;
+    const secret = process.env.SYNC_SECRET;
+
+    if (!token || !secret) {
+      throw new Error("Sync credentials not configured in environment variables.");
+    }
+
+    try {
+      const syncRes = await fetch(data.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "X-Secret": secret
+        },
+        body: JSON.stringify({ action: "get_all_info", limit: 5 }) // Small limit for preview
+      });
+      
+      if (!syncRes.ok) throw new Error(`Preview failed: ${syncRes.statusText}`);
+      const apiData = await syncRes.json();
+      const items = Array.isArray(apiData) ? apiData : (apiData.products || []);
+      
+      return { 
+        preview: items.slice(0, 5).map((item: any) => ({
+          name: item.name || item.title || "Unknown",
+          price: item.price || "N/A",
+          stock: item.stock_status || item.inventory || "N/A",
+          isValid: Boolean(item.name || item.title) && Boolean(item.price)
+        }))
+      };
+    } catch (err: any) {
+      throw new Error(`Preview failed: ${err.message}`);
+    }
+  });
+
+async function fetchWithRetry(url: string, options: any, retries = 3, backoff = 1000): Promise<Response> {
+  try {
+    const res = await fetch(url, options);
+    if (res.ok) return res;
+    if (retries > 0 && res.status >= 500) {
+      await new Promise(resolve => setTimeout(resolve, backoff));
+      return fetchWithRetry(url, options, retries - 1, backoff * 2);
+    }
+    return res;
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, backoff));
+      return fetchWithRetry(url, options, retries - 1, backoff * 2);
+    }
+    throw err;
+  }
+}
+
 export const syncCatalog = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
-    z
-      .object({
-        url: z.string().url().default("https://wearimpressive.com/api/meta-catalog?format=csv"),
-      })
-      .parse(d || {}),
+    z.object({ url: z.string().url().default(DEFAULT_SYNC_URL) }).parse(d || {})
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Check if the URL is the new API endpoint
-    if (data.url.includes("api.v2.wearimpressive.com")) {
-      try {
-        const syncRes = await fetch(data.url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer 10f036a1730c407a7b060447f08543ac9f21ef1e0f9ef0f75f2b8ff474b2d7c4`,
-            "X-Secret": "c7188d3e68a3a58ebd4adfb0209630b26922aebe619f14fb4e080742208fbed2"
-          },
-          body: JSON.stringify({ action: "get_all_info" })
-        });
-        
-        if (!syncRes.ok) throw new Error(`API sync failed: ${syncRes.statusText}`);
-        
-        const apiData = await syncRes.json();
-        // Assuming the API returns an array of products/info
-        // If the API returns a different format, we might need to adjust this
-        const items = Array.isArray(apiData) ? apiData : (apiData.products || []);
-        
-        const trainingPairs = items.map((item: any) => ({
+    const token = process.env.SYNC_TOKEN;
+    const secret = process.env.SYNC_SECRET;
+
+    if (!token || !secret) {
+      throw new Error("Sync credentials (SYNC_TOKEN/SYNC_SECRET) not configured.");
+    }
+
+    // Create run record
+    const { data: run } = await supabaseAdmin
+      .from("sync_runs")
+      .insert({ status: "processing", source: "api_sync" })
+      .select()
+      .single();
+
+    try {
+      const syncRes = await fetchWithRetry(data.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "X-Secret": secret
+        },
+        body: JSON.stringify({ action: "get_all_info" })
+      });
+      
+      if (!syncRes.ok) throw new Error(`API sync failed: ${syncRes.statusText} (${syncRes.status})`);
+      
+      const apiData = await syncRes.json();
+      const items = Array.isArray(apiData) ? apiData : (apiData.products || []);
+      
+      const trainingPairs = items
+        .filter((item: any) => (item.name || item.title) && item.price)
+        .map((item: any) => ({
           question: `${item.name || item.title} এর স্টক বা দাম কত?`,
           answer: `${item.name || item.title} এর দাম ${item.price} টাকা। স্টক: ${item.stock_status || item.inventory || 'Available'}। বিবরণ: ${item.description || ''}`,
           status: 'approved' as const,
           source: 'api_sync'
-        })).slice(0, 1000);
-
-        const { error } = await supabaseAdmin
-          .from("training_pairs")
-          .upsert(trainingPairs, { onConflict: 'question' });
-
-        if (error) throw error;
-
-        return { 
-          count: trainingPairs.length, 
-          message: `Successfully synced ${trainingPairs.length} items from API.` 
-        };
-      } catch (err: any) {
-        console.error("API Sync error:", err);
-        throw new Error(`API Sync failed: ${err.message}`);
-      }
-    }
-
-    try {
-      const res = await fetch(data.url);
-      if (!res.ok) throw new Error(`Failed to fetch catalog: ${res.statusText}`);
-      const csvText = await res.text();
-
-      const lines = csvText.split("\n").filter(l => l.trim());
-      if (lines.length < 2) return { count: 0, message: "Catalog is empty" };
-
-      const firstLine = lines[0];
-      if (!firstLine) return { count: 0, message: "Empty headers" };
-      const headers = firstLine.split(",").map(h => h.trim().replace(/^"|"$/g, ''));
-      
-      const items = lines.slice(1).map(line => {
-        const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ''));
-        const obj: Record<string, string> = {};
-        headers.forEach((h, i) => { 
-          if (h) {
-            obj[h] = values[i] || "";
-          }
-        });
-        return obj;
-      });
-
-      const trainingPairs = items.map(item => {
-        const title = item['title'] || item['name'] || "Product";
-        const price = item['price'] || "Contact for price";
-        const link = item['link'] || item['url'] || "";
-        const description = item['description'] || "";
-        
-        return {
-          question: `${title} এর দাম কত? (How much is ${title}?)`,
-          answer: `${title} এর মূল্য ${price} টাকা। ${description ? `বিবরণ: ${description}` : ''} আপনি এখান থেকে কিনতে পারেন: ${link}`,
-          status: 'approved' as const,
-          source: 'catalog_sync'
-        };
-      }).slice(0, 1000);
+        })).slice(0, 2000);
 
       const { error } = await supabaseAdmin
         .from("training_pairs")
@@ -102,12 +133,32 @@ export const syncCatalog = createServerFn({ method: "POST" })
 
       if (error) throw error;
 
+      if (run) {
+        await supabaseAdmin
+          .from("sync_runs")
+          .update({ 
+            status: "completed", 
+            items_count: trainingPairs.length,
+            finished_at: new Date().toISOString()
+          })
+          .eq("id", run.id);
+      }
+
       return { 
         count: trainingPairs.length, 
-        message: `Successfully synced ${trainingPairs.length} products from catalog.` 
+        message: `Successfully synced ${trainingPairs.length} items from API.` 
       };
     } catch (err: any) {
-      console.error("Sync error:", err);
-      throw new Error(`Sync failed: ${err.message}`);
+      if (run) {
+        await supabaseAdmin
+          .from("sync_runs")
+          .update({ 
+            status: "failed", 
+            error_message: err.message,
+            finished_at: new Date().toISOString()
+          })
+          .eq("id", run.id);
+      }
+      throw new Error(`API Sync failed: ${err.message}`);
     }
   });
