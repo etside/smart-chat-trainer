@@ -232,14 +232,16 @@
 
 
 @keyframes vertical-scroll {
-  0%, 20% { transform: translateY(0); }
-  33%, 53% { transform: translateY(-80px); }
-  66%, 86% { transform: translateY(-160px); }
-  100% { transform: translateY(0); }
+  0% { transform: translateY(0); }
+  100% { transform: translateY(calc(-50% - 1rem)); }
 }
 
 .animate-vertical-scroll {
-  animation: vertical-scroll 9s infinite;
+  animation: vertical-scroll 30s linear infinite;
+}
+
+.animate-vertical-scroll:hover {
+  animation-play-state: paused;
 }
 
 .custom-scrollbar-hide::-webkit-scrollbar {
