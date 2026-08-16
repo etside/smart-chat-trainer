@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { amIAdmin } from "@/lib/console.functions";
+import { amIAdmin, getMyRole } from "@/lib/console.functions";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
