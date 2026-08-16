@@ -194,7 +194,13 @@ export const syncCatalog = createServerFn({ method: "POST" })
         body: bodyStr
       });
       
-      if (!syncRes.ok) throw new Error(`API sync failed: ${syncRes.statusText} (${syncRes.status})`);
+      if (!syncRes.ok) {
+        let errorBody = "";
+        try {
+          errorBody = await syncRes.text();
+        } catch (e) {}
+        throw new Error(`API sync failed: ${syncRes.statusText} (${syncRes.status}) - ${errorBody.slice(0, 500)}`);
+      }
       
       const apiData = await syncRes.json();
       const items = apiData.success && apiData.data?.products ? apiData.data.products : (Array.isArray(apiData) ? apiData : []);
