@@ -26,7 +26,7 @@ function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-3">3. GDPR Compliance</h2>
-            <p>Under GDPR, you have the right to access, rectify, or erase your personal data. You can request a full data export or deletion through the admin console.</p>
+            <p>Under GDPR, you have the right to access, rectify, or erase your personal data. You can submit a formal request via our <Link to="/privacy-request" className="text-primary hover:underline font-bold">Privacy Request Portal</Link>.</p>
           </section>
         </div>
       </div>

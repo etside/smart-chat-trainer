@@ -15,12 +15,14 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as DataDeletionRouteImport } from './routes/data-deletion'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PrivacyRequestRouteImport } from './routes/privacy-request'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminApiKeysRouteImport } from './routes/admin.api-keys'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminOnboardingRouteImport } from './routes/admin.onboarding'
 import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
 import { Route as AdminProgressRouteImport } from './routes/admin.progress'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -65,6 +67,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRequestRoute = PrivacyRequestRouteImport.update({
+  id: '/privacy-request',
+  path: '/privacy-request',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -93,6 +100,11 @@ const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
 const AdminLogsRoute = AdminLogsRouteImport.update({
   id: '/logs',
   path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOnboardingRoute = AdminOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPlaygroundRoute = AdminPlaygroundRouteImport.update({
@@ -168,11 +180,13 @@ export interface FileRoutesByFullPath {
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -194,11 +208,13 @@ export interface FileRoutesByTo {
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -222,11 +238,13 @@ export interface FileRoutesById {
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -251,11 +269,13 @@ export interface FileRouteTypes {
     | '/connect'
     | '/data-deletion'
     | '/privacy'
+    | '/privacy-request'
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
     | '/admin/connections'
     | '/admin/logs'
+    | '/admin/onboarding'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -277,11 +297,13 @@ export interface FileRouteTypes {
     | '/connect'
     | '/data-deletion'
     | '/privacy'
+    | '/privacy-request'
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
     | '/admin/connections'
     | '/admin/logs'
+    | '/admin/onboarding'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -304,11 +326,13 @@ export interface FileRouteTypes {
     | '/connect'
     | '/data-deletion'
     | '/privacy'
+    | '/privacy-request'
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
     | '/admin/connections'
     | '/admin/logs'
+    | '/admin/onboarding'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -332,6 +356,7 @@ export interface RootRouteChildren {
   ConnectRoute: typeof ConnectRoute
   DataDeletionRoute: typeof DataDeletionRoute
   PrivacyRoute: typeof PrivacyRoute
+  PrivacyRequestRoute: typeof PrivacyRequestRoute
   TermsRoute: typeof TermsRoute
   ApiPublicChatRoute: typeof ApiPublicChatRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
@@ -385,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy-request': {
+      id: '/privacy-request'
+      path: '/privacy-request'
+      fullPath: '/privacy-request'
+      preLoaderRoute: typeof PrivacyRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -425,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/logs'
       fullPath: '/admin/logs'
       preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/onboarding': {
+      id: '/admin/onboarding'
+      path: '/onboarding'
+      fullPath: '/admin/onboarding'
+      preLoaderRoute: typeof AdminOnboardingRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/playground': {
@@ -526,6 +565,7 @@ interface AdminRouteChildren {
   AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
   AdminLogsRoute: typeof AdminLogsRoute
+  AdminOnboardingRoute: typeof AdminOnboardingRoute
   AdminPlaygroundRoute: typeof AdminPlaygroundRoute
   AdminProgressRoute: typeof AdminProgressRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -541,6 +581,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminApiKeysRoute: AdminApiKeysRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
   AdminLogsRoute: AdminLogsRoute,
+  AdminOnboardingRoute: AdminOnboardingRoute,
   AdminPlaygroundRoute: AdminPlaygroundRoute,
   AdminProgressRoute: AdminProgressRoute,
   AdminSettingsRoute: AdminSettingsRoute,
@@ -560,6 +601,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConnectRoute: ConnectRoute,
   DataDeletionRoute: DataDeletionRoute,
   PrivacyRoute: PrivacyRoute,
+  PrivacyRequestRoute: PrivacyRequestRoute,
   TermsRoute: TermsRoute,
   ApiPublicChatRoute: ApiPublicChatRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,

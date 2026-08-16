@@ -2,7 +2,7 @@ import { getStats, exportTrainingData } from "@/lib/console.functions";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Clock, Database, MessageSquare, Users, Download, Activity, Terminal } from "lucide-react";
+import { CheckCircle2, Clock, Database, MessageSquare, Users, Download, Activity, Terminal, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -122,6 +122,16 @@ Actions: catalog, product, stock, categories, cart_add, order_place`}
           <h2 className="mt-3 font-semibold">ট্রেনিং প্রগ্রেস</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             অটোমেটিক ট্রেনিং জব এবং স্ট্যাটাস দেখুন।
+          </p>
+        </Link>
+        <Link
+          to="/admin/onboarding"
+          className="panel panel-hover block p-6 border-accent/20 bg-accent/5 shadow-accent/5"
+        >
+          <PlusCircle className="size-5 text-accent" />
+          <h2 className="mt-3 font-semibold">অনবোর্ডিং উইজার্ড</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            নতুন প্ল্যাটফর্ম কানেক্ট করার গাইডলাইন এবং সেটআপ।
           </p>
         </Link>
       </div>

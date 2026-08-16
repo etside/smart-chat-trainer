@@ -35,13 +35,14 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding";
   label: string;
   icon: typeof Database;
   exact?: boolean;
   minRole?: "admin" | "editor" | "viewer";
 }> = [
   { to: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true, minRole: "viewer" },
+  { to: "/admin/onboarding", label: "অনবোর্ডিং উইজার্ড", icon: PlusCircle, minRole: "admin" },
   { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database, minRole: "viewer" },
   { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle, minRole: "editor" },
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare, minRole: "viewer" },
