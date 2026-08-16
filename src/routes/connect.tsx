@@ -33,14 +33,19 @@ function ConnectPage() {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20">
       <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-            <img src={logoAsset.url} alt="Daddy AI" className="size-8 rounded-lg" />
-            <span className="font-display text-xl font-bold tracking-tight">Daddy AI Connect</span>
+        <div className="container mx-auto flex h-20 items-center justify-between px-6">
+          <Link to="/" className="flex items-center gap-3 group">
+            <img src={logoAsset.url} alt="Daddy AI" className="size-10 rounded-xl shadow-xl transition-transform group-hover:scale-110" />
+            <span className="font-display text-2xl font-bold tracking-tight">Daddy AI <span className="text-primary italic">Connect</span></span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/admin" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hidden sm:block">
+              Dashboard
+            </Link>
+            <Button asChild variant="outline" size="sm" className="rounded-full border-primary/20 hover:bg-primary/5">
+              <Link to="/">Back to Home</Link>
+            </Button>
           </div>
-          <a href="/" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-            Back to App
-          </a>
         </div>
       </header>
 
