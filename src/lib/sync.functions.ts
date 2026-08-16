@@ -284,6 +284,26 @@ export const syncCatalog = createServerFn({ method: "POST" })
             finished_at: new Date().toISOString()
           })
           .eq("id", run.id);
+
+        await supabaseAdmin
+          .from("agent_settings")
+          .update({
+            last_sync_status: "failed",
+            last_sync_details: { 
+              run_id: run.id, 
+              error: err.message,
+              source: data.url
+            }
+          })
+          .eq("id", 1);
+
+        await supabaseAdmin.from("audit_logs").insert({
+          actor_id: context.userId,
+          action: 'trigger_sync',
+          entity_type: 'sync_runs',
+          entity_id: run.id,
+          metadata: { endpoint: data.url, status: 'failed', error: err.message }
+        });
       }
       throw new Error(`API Sync failed: ${err.message}`);
     }

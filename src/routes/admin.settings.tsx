@@ -19,6 +19,7 @@ import { Key, KeyRound, Save, Sparkles, MessageSquare, Info, ShieldCheck, Copy, 
 import { getExtraSettings, updateExtraSettings } from "@/lib/extra-settings.functions";
 import { useEffect, useState } from "react";
 import { verifyMetaConnection, getMetaWebhookConfig } from "@/lib/meta.functions";
+import { rotateSyncCredentials, rollbackSyncCredentials } from "@/lib/audit.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/settings")({
@@ -314,6 +315,19 @@ function SettingsPage() {
     onError: (err: any) => toast.error(err.message || "ভেরিফিকেশন ব্যর্থ হয়েছে।"),
   });
 
+  const rotateSyncMutation = useMutation({
+    mutationFn: () => useServerFn(rotateSyncCredentials)(),
+    onSuccess: () => toast.success("ক্রেডেনশিয়াল রোটেট হয়েছে"),
+  });
+
+  const rollbackSyncMutation = useMutation({
+    mutationFn: (creds: { token: string, secret: string }) => useServerFn(rollbackSyncCredentials)({ data: creds }),
+    onSuccess: () => {
+      toast.success("রোলব্যাক সফল হয়েছে");
+      qc.invalidateQueries({ queryKey: ["sync-credentials"] });
+    },
+  });
+
   return (
     <div className="mx-auto max-w-4xl pb-20">
       <div className="flex items-center justify-between mb-8">
@@ -346,6 +360,45 @@ function SettingsPage() {
         </div>
       </div>
 
+      <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl mb-8 border-primary/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <KeyRound className="size-6 text-primary" />
+            <div>
+              <h2 className="text-lg font-bold">সিঙ্ক ক্রেডেনশিয়াল রোটেশন (Secret Rotation)</h2>
+              <p className="text-xs text-muted-foreground italic">নিরাপত্তার জন্য নিয়মিত Webhook Secret এবং API Token পরিবর্তন করুন।</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={async () => {
+                if (confirm("আপনি কি নিশ্চিতভাবে ক্রেডেনশিয়াল রোলব্যাক করতে চান?")) {
+                  const old = JSON.parse(localStorage.getItem('prev_sync_creds') || '{}');
+                  if (!old.token) return toast.error("কোন ব্যাকআপ পাওয়া যায়নি");
+                  await rollbackSyncMutation.mutateAsync(old);
+                }
+              }}
+            >
+              রোলব্যাক (Rollback)
+            </Button>
+            <Button 
+              size="sm"
+              onClick={async () => {
+                if (confirm("ক্রেডেনশিয়াল রোটেশন করলে পুরাতন টোকেনগুলো আর কাজ করবে না। চালিয়ে যেতে চান?")) {
+                  const res = await rotateSyncMutation.mutateAsync();
+                  localStorage.setItem('prev_sync_creds', JSON.stringify({ token: syncToken, secret: syncSecret }));
+                  setSyncToken(res.token);
+                  setSyncSecret(res.secret);
+                }
+              }}
+            >
+              নতুন ক্রেডেনশিয়াল জেনারেট করুন
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
