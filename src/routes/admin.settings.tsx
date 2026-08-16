@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -36,17 +37,24 @@ function SettingsPage() {
   const [prompt, setPrompt] = useState("");
   const [model, setModel] = useState("openai/gpt-5.6-sol");
   const [autoApprove, setAutoApprove] = useState(false);
+  const [apiKeyOverride, setApiKeyOverride] = useState("");
 
   useEffect(() => {
     if (!data) return;
     setPrompt(data.system_prompt ?? "");
     setModel(data.model ?? "openai/gpt-5.6-sol");
     setAutoApprove(Boolean(data.auto_approve));
+    setApiKeyOverride(data.lovable_api_key_override ?? "");
   }, [data]);
 
   const mutation = useMutation({
     mutationFn: () =>
-      save({ data: { system_prompt: prompt, model, auto_approve: autoApprove } }),
+      save({ data: { 
+        system_prompt: prompt, 
+        model, 
+        auto_approve: autoApprove,
+        lovable_api_key_override: apiKeyOverride
+      } }),
     onSuccess: () => {
       toast.success("সেটিংস সেভ হয়েছে");
       qc.invalidateQueries({ queryKey: ["agent-settings"] });
@@ -87,6 +95,20 @@ function SettingsPage() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="api-key">Custom AI API Key (Optional)</Label>
+          <Input
+            id="api-key"
+            type="password"
+            placeholder="sk-..."
+            value={apiKeyOverride}
+            onChange={(e) => setApiKeyOverride(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            আপনার নিজের OpenAI বা Lovable API Key ব্যবহার করতে চাইলে এখানে দিন।
+          </p>
         </div>
 
         <div className="flex items-center justify-between gap-4 rounded-lg bg-secondary/60 p-4">

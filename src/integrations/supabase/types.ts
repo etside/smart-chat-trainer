@@ -17,21 +17,27 @@ export type Database = {
       agent_settings: {
         Row: {
           auto_approve: boolean
+          credit_usage: number | null
           id: number
+          lovable_api_key_override: string | null
           model: string
           system_prompt: string
           updated_at: string
         }
         Insert: {
           auto_approve?: boolean
+          credit_usage?: number | null
           id?: number
+          lovable_api_key_override?: string | null
           model?: string
           system_prompt?: string
           updated_at?: string
         }
         Update: {
           auto_approve?: boolean
+          credit_usage?: number | null
           id?: number
+          lovable_api_key_override?: string | null
           model?: string
           system_prompt?: string
           updated_at?: string
@@ -47,6 +53,7 @@ export type Database = {
           last_used_at: string | null
           name: string
           revoked: boolean
+          version_id: string | null
         }
         Insert: {
           created_at?: string
@@ -56,6 +63,7 @@ export type Database = {
           last_used_at?: string | null
           name: string
           revoked?: boolean
+          version_id?: string | null
         }
         Update: {
           created_at?: string
@@ -65,8 +73,17 @@ export type Database = {
           last_used_at?: string | null
           name?: string
           revoked?: boolean
+          version_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "training_versions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
@@ -130,6 +147,33 @@ export type Database = {
           },
         ]
       }
+      training_jobs: {
+        Row: {
+          created_at: string | null
+          error_log: string | null
+          finished_at: string | null
+          id: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_log?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string | null
+          status: string
+        }
+        Update: {
+          created_at?: string | null
+          error_log?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       training_pairs: {
         Row: {
           answer: string
@@ -173,6 +217,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      training_versions: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          snapshot_data: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          snapshot_data?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          snapshot_data?: Json | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
