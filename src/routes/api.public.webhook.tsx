@@ -6,6 +6,7 @@ const WebhookSchema = z.object({
   message: z.string().optional(),
   sender: z.string().optional(),
   conversation_id: z.string().optional(),
+  idempotency_key: z.string().optional(),
   payload: z.any().optional(),
   // For training pipeline ingestion
   training_data: z.object({
@@ -33,8 +34,9 @@ export const Route = createFileRoute("/api/public/webhook")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
       POST: async ({ request }) => {
-        const apiKey = request.headers.get("x-api-key");
-        const signature = request.headers.get("x-webhook-signature");
+        const apiKey = request.headers.get("x-api-key") || request.headers.get("Authorization")?.replace("Bearer ", "");
+        const signature = request.headers.get("x-webhook-signature") || request.headers.get("x-ai-signature");
+        const idempotencyKey = request.headers.get("x-idempotency-key");
 
         const { hashApiKey, verifyWebhookSignature } = await import("@/lib/admin.server");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -97,7 +99,31 @@ export const Route = createFileRoute("/api/public/webhook")({
 
 
         const parsed = WebhookSchema.safeParse(body);
-        if (!parsed.success) return json({ error: "Invalid webhook payload" }, 400);
+        if (!parsed.success) {
+          await supabaseAdmin.from("webhook_logs").insert({
+            source: 'custom',
+            event_type: 'validation_error',
+            payload: { error: parsed.error.format(), body },
+            headers: Object.fromEntries(request.headers.entries()),
+            status_code: 400
+          });
+          return json({ error: "Invalid webhook payload", details: parsed.error.format() }, 400);
+        }
+
+        const finalIdempotencyKey = idempotencyKey || parsed.data.idempotency_key;
+
+        if (finalIdempotencyKey) {
+          const { data: existing } = await supabaseAdmin
+            .from("webhook_logs")
+            .select("id, status_code, payload")
+            .eq("headers->>x-idempotency-key", finalIdempotencyKey)
+            .eq("status_code", 200)
+            .maybeSingle();
+
+          if (existing) {
+             return json({ status: "idempotent", message: "Request already processed" });
+          }
+        }
 
         const { generateReply, logConversation } = await import("@/lib/agent.server");
 
