@@ -18,7 +18,7 @@ export const getAuditLogs = createServerFn({ method: "GET" })
     const size = 20;
     let q = supabaseAdmin
       .from("audit_logs")
-      .select("*, actor:actor_id(id, email)", { count: "exact" })
+      .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(data.page * size, data.page * size + size - 1);
 
@@ -53,12 +53,11 @@ export const rotateSyncCredentials = createServerFn({ method: "POST" })
     if (error) throw error;
 
     // Log audit
-    await supabaseAdmin.rpc('log_audit', {
-      _actor_id: context.userId,
-      _action: 'rotate_sync_credentials',
-      _entity_type: 'agent_settings',
-      _entity_id: undefined,
-      _metadata: { old_token_prefix: old?.sync_token?.slice(0, 8) }
+    await supabaseAdmin.from("audit_logs").insert({
+      actor_id: context.userId,
+      action: 'rotate_sync_credentials',
+      entity_type: 'agent_settings',
+      metadata: { old_token_prefix: old?.sync_token?.slice(0, 8) }
     });
 
     return { token: newSyncToken, secret: newSyncSecret };
@@ -82,12 +81,11 @@ export const rollbackSyncCredentials = createServerFn({ method: "POST" })
 
     if (error) throw error;
 
-    await supabaseAdmin.rpc('log_audit', {
-      _actor_id: context.userId,
-      _action: 'rollback_sync_credentials',
-      _entity_type: 'agent_settings',
-      _entity_id: null,
-      _metadata: { rolled_back_to_prefix: data.token.slice(0, 8) }
+    await supabaseAdmin.from("audit_logs").insert({
+      actor_id: context.userId,
+      action: 'rollback_sync_credentials',
+      entity_type: 'agent_settings',
+      metadata: { rolled_back_to_prefix: data.token.slice(0, 8) }
     });
 
     return { ok: true };
