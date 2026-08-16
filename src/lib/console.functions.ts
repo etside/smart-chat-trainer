@@ -370,6 +370,7 @@ export const triggerTraining = createServerFn({ method: "POST" })
           .from("training_jobs")
           .update({
             status: "completed",
+            account_id: job.id, // Not using job.id as account_id usually, but let's stick to status
             finished_at: new Date().toISOString()
           } as any)
           .eq("id", job.id);
@@ -535,8 +536,8 @@ export const exportTrainingRunLogs = createServerFn({ method: "POST" })
 
     const { data: samples } = await supabaseAdmin
       .from("training_pairs")
-      .select("question, answer, created_at, status")
-      .order("created_at", { ascending: false });
+      .select("*")
+      .limit(1000);
 
     const exportData = {
       job_id: job.id,
@@ -591,3 +592,65 @@ export const getFaqs = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+export const getWebhookLogs = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) =>
+    z.object({
+      status: z.enum(["all", "pending", "success", "failed", "dead_letter"]).default("all"),
+      page: z.number().int().min(0).default(0),
+      limit: z.number().int().min(1).max(100).default(20)
+    }).parse(d || {})
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    let q = supabaseAdmin
+      .from("webhook_logs")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(data.page * data.limit, (data.page + 1) * data.limit - 1);
+
+    if (data.status !== "all") {
+      q = q.eq("processing_status", data.status);
+    }
+
+    const { data: rows, count } = await q;
+    return { rows: rows ?? [], total: count ?? 0 };
+  });
+
+export const retryWebhook = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { processWebhookRetry } = await import("@/routes/api.public.webhook");
+    await processWebhookRetry(data.id);
+    return { ok: true };
+  });
+
+export const getIngestionStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [lastSync, deliveryCounts, retryHistory] = await Promise.all([
+      supabaseAdmin.from("sync_runs").select("*").order("started_at", { ascending: false }).limit(1).maybeSingle(),
+      supabaseAdmin.from("webhook_logs").select("processing_status").then(({ data }) => {
+        const counts = { total: data?.length || 0, success: 0, failed: 0, pending: 0, dead_letter: 0 };
+        data?.forEach(log => {
+          const status = log.processing_status as keyof typeof counts;
+          if (counts[status] !== undefined) counts[status]++;
+        });
+        return counts;
+      }),
+      supabaseAdmin.from("webhook_logs").select("id, retry_count, processing_status").gt("retry_count", 0).order("created_at", { ascending: false }).limit(10)
+    ]);
+
+    return {
+      lastSync: lastSync.data,
+      deliveryCounts,
+      retryHistory: retryHistory.data || []
+    };
+  });

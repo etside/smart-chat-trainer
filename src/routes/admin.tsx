@@ -10,6 +10,7 @@ import logoAsset from "@/assets/daddy-ai-logo.png.asset.json";
 import {
   Activity,
   Database,
+  History,
   KeyRound,
   LayoutDashboard,
   LogOut,
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -52,7 +53,8 @@ const nav: Array<{
   { to: "/admin/connections", label: "কানেকশন", icon: KeyRound, minRole: "admin" },
   { to: "/admin/webhook-test", label: "টেস্ট প্যানেল", icon: Terminal, minRole: "editor" },
   { to: "/admin/settings", label: "সেটিংস", icon: Settings, minRole: "admin" },
-  { to: "/admin/webhook-dlq", label: "DLQ", icon: Terminal, minRole: "editor" },
+  { to: "/admin/webhook-dlq", label: "Webhook & DLQ", icon: Terminal, minRole: "editor" },
+  { to: "/admin/logs", label: "ইভেন্ট লগ ও পলিসি", icon: History, minRole: "admin" },
   { to: "/connect", label: "AI কানেক্ট", icon: Terminal, minRole: "viewer" },
 ];
 

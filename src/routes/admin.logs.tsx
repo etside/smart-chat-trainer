@@ -105,14 +105,15 @@ function AdminLogsPage() {
                     <th className="pb-3 font-medium">সোর্স</th>
                     <th className="pb-3 font-medium">ইভেন্ট</th>
                     <th className="pb-3 font-medium">স্ট্যাটাস</th>
+                    <th className="pb-3 font-medium">রিট্রাই</th>
                     <th className="pb-3 font-medium">পেলোড / এরর</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {logsLoading ? (
-                    <tr><td colSpan={5} className="py-8 text-center text-muted-foreground">লোড হচ্ছে...</td></tr>
+                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">লোড হচ্ছে...</td></tr>
                   ) : logs?.length === 0 ? (
-                    <tr><td colSpan={5} className="py-8 text-center text-muted-foreground">কোনো লগ পাওয়া যায়নি</td></tr>
+                    <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">কোনো লগ পাওয়া যায়নি</td></tr>
                   ) : logs?.map((log: any) => (
                     <tr key={log.id} className="hover:bg-white/5 transition-colors">
                       <td className="py-4 text-xs font-mono">{new Date(log.created_at).toLocaleString('bn-BD')}</td>
@@ -130,6 +131,9 @@ function AdminLogsPage() {
                         }`}>
                           {log.status_code}
                         </span>
+                      </td>
+                      <td className="py-4">
+                        <span className="text-[10px] font-mono">{log.retry_count || 0}</span>
                       </td>
                       <td className="py-4 max-w-xs truncate font-mono text-[10px] text-muted-foreground" title={JSON.stringify(log.payload)}>
                         {log.status_code >= 400 && log.payload?.error ? (
