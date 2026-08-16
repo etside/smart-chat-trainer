@@ -65,18 +65,44 @@ function Playground() {
           </p>
         )}
         {messages.map((m, i) => (
-          <div
-            key={i}
-            className={cn(
-              "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap",
-              m.role === "user"
-                ? "self-end bg-primary text-primary-foreground"
-                : "self-start bg-secondary text-secondary-foreground",
+          <div key={i} className={cn("flex flex-col gap-2", m.role === "user" ? "items-end" : "items-start")}>
+            <div
+              className={cn(
+                "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap shadow-sm transition-all",
+                m.role === "user"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card/60 backdrop-blur-md border border-white/5 text-foreground",
+              )}
+            >
+              {m.content}
+            </div>
+            
+            {m.role === "assistant" && m.examples && m.examples.length > 0 && (
+              <div className="flex flex-col gap-2 w-full max-w-[90%]">
+                <button 
+                  onClick={() => toggleSources(i)}
+                  className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors ml-2 uppercase tracking-widest font-bold"
+                >
+                  <Database className="size-3" />
+                  RAG Sources
+                  {showSources[i] ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
+                </button>
+                
+                {showSources[i] && (
+                  <div className="grid gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                    {m.examples.map((ex, idx) => (
+                      <div key={idx} className="bg-primary/5 border border-primary/10 rounded-xl p-3 text-[11px] space-y-1">
+                        <div className="font-bold text-primary/80">প্রশ্ন: {ex.question}</div>
+                        <div className="text-muted-foreground">উত্তর: {ex.answer}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
-          >
-            {m.content}
           </div>
         ))}
+
         {busy && (
           <div className="self-start rounded-2xl bg-secondary px-4 py-2.5">
             <Loader2 className="size-4 animate-spin text-muted-foreground" />
