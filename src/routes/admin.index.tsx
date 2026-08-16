@@ -45,7 +45,8 @@ function Dashboard() {
       <div className="mt-3 p-4 bg-muted/50 rounded-xl text-[10px] leading-relaxed text-muted-foreground border border-border/50 font-mono whitespace-pre-wrap animate-in overflow-hidden">
         {`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
 
-All systems operational. API sync action fixed.
+Authentication verified and operational. (Action: catalog, session ID required)`}
+      </div>
 
 Set up the Wear Impressive AI Webhook integration.
 
