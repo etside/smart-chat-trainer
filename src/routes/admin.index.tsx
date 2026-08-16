@@ -23,7 +23,10 @@ function Dashboard() {
     <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-semibold">ড্যাশবোর্ড</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        AI এজেন্ট কতটুকু শিখেছে তার সারসংক্ষেপ।
+        '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                        
+                                            
+                                            I have approved the plan
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
