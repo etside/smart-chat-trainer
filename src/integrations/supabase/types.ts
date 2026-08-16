@@ -42,6 +42,7 @@ export type Database = {
           sync_token: string | null
           system_prompt: string
           updated_at: string
+          usage_config: Json | null
           vps_hosting_config: Json | null
         }
         Insert: {
@@ -71,6 +72,7 @@ export type Database = {
           sync_token?: string | null
           system_prompt?: string
           updated_at?: string
+          usage_config?: Json | null
           vps_hosting_config?: Json | null
         }
         Update: {
@@ -100,6 +102,7 @@ export type Database = {
           sync_token?: string | null
           system_prompt?: string
           updated_at?: string
+          usage_config?: Json | null
           vps_hosting_config?: Json | null
         }
         Relationships: []
@@ -373,6 +376,39 @@ export type Database = {
           id?: string
           name?: string
           snapshot_data?: Json | null
+        }
+        Relationships: []
+      }
+      usage_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          cost_bdt: number
+          cost_usd: number
+          created_at: string
+          credits_used: number
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          cost_bdt?: number
+          cost_usd?: number
+          created_at?: string
+          credits_used?: number
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          cost_bdt?: number
+          cost_usd?: number
+          created_at?: string
+          credits_used?: number
+          id?: string
+          metadata?: Json | null
         }
         Relationships: []
       }
