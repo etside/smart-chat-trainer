@@ -46,7 +46,8 @@ function TrainingProgress() {
           </p>
         </div>
         <Button 
-          onClick={() => mutation.mutate()} 
+          onClick={() => mutation.mutate(undefined)} 
+
           disabled={mutation.isPending || jobs?.some((j: any) => j.status === 'processing')}
         >
           {mutation.isPending ? (
@@ -121,7 +122,7 @@ function TrainingProgress() {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          onClick={() => mutation.mutate()}
+                          onClick={() => mutation.mutate(undefined)}
                           disabled={mutation.isPending}
                           className="h-9"
                         >
