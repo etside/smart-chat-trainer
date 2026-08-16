@@ -16,9 +16,13 @@ export type Database = {
     Tables: {
       agent_settings: {
         Row: {
+          alt_api_keys: Json | null
           auto_approve: boolean
+          b2b_backblaze_key: string | null
+          boson_workspace_id: string | null
           credit_usage: number | null
           data_policy_content: string | null
+          fish_audio_api_key: string | null
           id: number
           last_sync_at: string | null
           lovable_api_key_override: string | null
@@ -30,16 +34,22 @@ export type Database = {
           meta_webhook_verify_token: string | null
           meta_whatsapp_business_account_id: string | null
           model: string
+          reduce_motion: boolean | null
           sync_schedule: string | null
           sync_secret: string | null
           sync_token: string | null
           system_prompt: string
           updated_at: string
+          vps_hosting_config: Json | null
         }
         Insert: {
+          alt_api_keys?: Json | null
           auto_approve?: boolean
+          b2b_backblaze_key?: string | null
+          boson_workspace_id?: string | null
           credit_usage?: number | null
           data_policy_content?: string | null
+          fish_audio_api_key?: string | null
           id?: number
           last_sync_at?: string | null
           lovable_api_key_override?: string | null
@@ -51,16 +61,22 @@ export type Database = {
           meta_webhook_verify_token?: string | null
           meta_whatsapp_business_account_id?: string | null
           model?: string
+          reduce_motion?: boolean | null
           sync_schedule?: string | null
           sync_secret?: string | null
           sync_token?: string | null
           system_prompt?: string
           updated_at?: string
+          vps_hosting_config?: Json | null
         }
         Update: {
+          alt_api_keys?: Json | null
           auto_approve?: boolean
+          b2b_backblaze_key?: string | null
+          boson_workspace_id?: string | null
           credit_usage?: number | null
           data_policy_content?: string | null
+          fish_audio_api_key?: string | null
           id?: number
           last_sync_at?: string | null
           lovable_api_key_override?: string | null
@@ -72,11 +88,13 @@ export type Database = {
           meta_webhook_verify_token?: string | null
           meta_whatsapp_business_account_id?: string | null
           model?: string
+          reduce_motion?: boolean | null
           sync_schedule?: string | null
           sync_secret?: string | null
           sync_token?: string | null
           system_prompt?: string
           updated_at?: string
+          vps_hosting_config?: Json | null
         }
         Relationships: []
       }
