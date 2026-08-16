@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import crypto from 'crypto';
 
 test.describe('Training Pipeline End-to-End', () => {
   const WEBHOOK_URL = 'http://localhost:8080/api/public/webhook';
@@ -24,7 +25,6 @@ test.describe('Training Pipeline End-to-End', () => {
     const bodyToSign = `${timestamp}.${bodyStr}`;
 
     // Helper to generate HMAC in Node environment for the test
-    const crypto = require('crypto');
     const signature = crypto
       .createHmac('sha256', WEBHOOK_SECRET)
       .update(bodyToSign)
