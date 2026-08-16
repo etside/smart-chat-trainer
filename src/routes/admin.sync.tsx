@@ -100,7 +100,7 @@ function SyncStatusPage() {
             ম্যাপিং প্রিভিউ
           </Button>
           <Button 
-            onClick={() => syncMutation.mutate()} 
+            onClick={() => syncMutation.mutate(undefined)} 
             disabled={syncMutation.isPending || runs?.some((r: any) => r.status === 'processing')}
           >
             {syncMutation.isPending ? (
