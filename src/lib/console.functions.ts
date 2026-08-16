@@ -442,7 +442,13 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
   });
 
 export const getTrainingJobDetail = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => z.object({ id: z.string() }).parse(d))
+  .inputValidator((d: unknown) => 
+    z.object({ 
+      id: z.string(), 
+      search: z.string().optional(),
+      page: z.number().int().default(0)
+    }).parse(d)
+  )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
@@ -454,11 +460,57 @@ export const getTrainingJobDetail = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .single();
       
+    const pageSize = 10;
+    let query = supabaseAdmin
+      .from("training_pairs")
+      .select("id, question, answer, created_at, status", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(data.page * pageSize, (data.page + 1) * pageSize - 1);
+
+    if (data.search) {
+      query = query.or(`question.ilike.%${data.search}%,answer.ilike.%${data.search}%`);
+    }
+
+    const { data: samples, count } = await query;
+
+    return { 
+      job: job as any, 
+      samples: samples ?? [], 
+      totalSamples: count ?? 0,
+      pageSize 
+    };
+  });
+
+export const exportTrainingRunLogs = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { data: job } = await supabaseAdmin
+      .from("training_jobs")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+
+    if (!job) throw new Error("Job not found");
+
     const { data: samples } = await supabaseAdmin
       .from("training_pairs")
-      .select("question, answer, created_at")
-      .order("created_at", { ascending: false })
-      .limit(5);
+      .select("question, answer, created_at, status")
+      .order("created_at", { ascending: false });
 
-    return { job: job as any, samples: samples as any[] };
+    const exportData = {
+      job_id: job.id,
+      status: job.status,
+      created_at: job.created_at,
+      finished_at: job.finished_at,
+      processed_count: (job as any).processed_count,
+      retry_count: (job as any).retry_count,
+      error_log: job.error_log,
+      samples: samples || []
+    };
+
+    return { json: JSON.stringify(exportData, null, 2) };
   });
