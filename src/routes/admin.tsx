@@ -35,7 +35,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -49,6 +49,7 @@ const nav: Array<{
   { to: "/admin/connections", label: "কানেকশন", icon: KeyRound },
   { to: "/admin/webhook-test", label: "টেস্ট প্যানেল", icon: Terminal },
   { to: "/admin/settings", label: "সেটিংস", icon: Settings },
+  { to: "/connect", label: "AI কানেক্ট", icon: Terminal },
 ];
 
 function AdminLayout() {
