@@ -98,13 +98,17 @@ function VoicePanel() {
     <div className="panel space-y-4 p-5">
       <VoiceRecorder onText={(t) => setText((prev) => (prev ? prev + " " + t : t))} />
       <div className="space-y-1.5">
-        <Label htmlFor="voice-text">ট্রান্সক্রিপ্ট</Label>
+        <Label htmlFor="voice-text" className="font-bold tracking-tight">ট্রান্সক্রিপ্ট প্রিভিউ (Confirm/Edit Transcript)</Label>
         <Textarea
           id="voice-text"
           rows={6}
           placeholder="ভয়েস রেকর্ড করলে এখানে লেখা আসবে — চাইলে এডিটও করতে পারবেন।"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            if (showPreview) setShowPreview(false); // Reset preview if text changes manually
+          }}
+          className="bg-card/40 focus:bg-background transition-colors"
         />
       </div>
       {!showPreview && (

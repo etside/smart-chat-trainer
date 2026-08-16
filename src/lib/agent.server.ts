@@ -124,6 +124,8 @@ export async function generateReply(
       role: "system",
       content: `${settings.system_prompt}
 
+Language Priority: Respond in the language used by the customer (Bengali or English). If the customer uses Banglish (Bengali in Latin script), respond in standard Bengali or high-quality Banglish based on their preference.
+
 নিচে আমাদের আগের আসল কথোপকথন থেকে সবচেয়ে মিল থাকা উদাহরণ দেওয়া হলো। এই টোন, ভাষা ও তথ্য অনুসরণ করে উত্তর দাও। উত্তর ছোট রাখো (১-৩ লাইন), ঠিক যেভাবে পেজ থেকে রিপ্লাই দেওয়া হয়।
 
 ${exampleBlock}`,

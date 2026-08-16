@@ -10,10 +10,12 @@ const WebhookSchema = z.object({
   payload: z.any().optional(),
   // For training pipeline ingestion
   training_data: z.object({
-    question: z.string(),
-    answer: z.string(),
+    question: z.string().min(1),
+    answer: z.string().min(1),
     context: z.string().optional(),
   }).optional(),
+  // Multi-role/Tenant context
+  tenant_id: z.string().uuid().optional(),
 });
 
 const corsHeaders = {
