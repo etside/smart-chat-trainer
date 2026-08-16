@@ -138,6 +138,11 @@ export const Route = createFileRoute("/api/public/webhook")({
 
           const { generateReply, logConversation } = await import("@/lib/agent.server");
 
+          // For generic messages, ensure we use current catalog info for stock/inventory info
+          // by passing the secret and token in headers if available for the inner sync logic
+          // Note: syncCatalog logic is now automatically triggered inside generateReply for product queries.
+
+
           // 3. Handle Training Ingestion
           if (parsed.data.training_data) {
             const { question, answer, context: trainingContext } = parsed.data.training_data;
