@@ -163,15 +163,23 @@ function AdminLayout() {
       <div className="flex min-w-0 flex-1 flex-col h-screen overflow-y-auto">
         <nav className="flex gap-1 overflow-x-auto bg-sidebar px-3 py-2 text-sidebar-foreground lg:hidden shrink-0 border-b border-border/20 sticky top-0 z-30 glass">
 
-          {filteredNav.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="whitespace-nowrap rounded-md px-3 py-1.5 text-xs hover:bg-black/10 active:bg-black active:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {filteredNav.map((item) => {
+            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "whitespace-nowrap rounded-md px-3 py-1.5 text-xs transition-colors",
+                  active
+                    ? "bg-black text-white"
+                    : "text-muted-foreground hover:bg-black/10 hover:text-black"
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
         <main className="min-w-0 flex-1 p-5 md:p-8 page-transition" key={pathname}>
           <Outlet />
