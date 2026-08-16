@@ -333,7 +333,6 @@ export const triggerTraining = createServerFn({ method: "POST" })
           .from("training_jobs")
           .update({
             status: "completed",
-            processed_count: approved?.length || 0,
             finished_at: new Date().toISOString()
           } as any)
           .eq("id", job.id);
