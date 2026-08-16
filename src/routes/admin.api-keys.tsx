@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createApiKey, listApiKeys, revokeApiKey } from "@/lib/console.functions";
+import { createApiKey, listApiKeys, revokeApiKey, rotateApiKey } from "@/lib/console.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Key, Loader2, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { Copy, Key, Loader2, Plus, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -18,6 +18,7 @@ function ApiKeysPage() {
   const fetchKeys = useServerFn(listApiKeys);
   const create = useServerFn(createApiKey);
   const revoke = useServerFn(revokeApiKey);
+  const rotate = useServerFn(rotateApiKey);
 
   const [newName, setNewName] = useState("");
   const [newKey, setNewKey] = useState<string | null>(null);
@@ -41,6 +42,15 @@ function ApiKeysPage() {
     mutationFn: (id: string) => revoke({ data: { id } }),
     onSuccess: () => {
       toast.success("API Key বাতিল করা হয়েছে");
+      qc.invalidateQueries({ queryKey: ["api-keys"] });
+    },
+  });
+
+  const rotateMutation = useMutation({
+    mutationFn: (id: string) => rotate({ data: { id } }),
+    onSuccess: (res) => {
+      setNewKey(res.key);
+      toast.success("API Key রোটেট করা হয়েছে");
       qc.invalidateQueries({ queryKey: ["api-keys"] });
     },
   });
@@ -143,15 +153,28 @@ function ApiKeysPage() {
                   </p>
                 </div>
                 {!key.revoked && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-destructive hover:bg-destructive/10"
-                    onClick={() => revokeMutation.mutate(key.id)}
-                    disabled={revokeMutation.isPending}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-primary hover:bg-primary/10"
+                      onClick={() => rotateMutation.mutate(key.id)}
+                      disabled={rotateMutation.isPending}
+                      title="Rotate Key"
+                    >
+                      <RefreshCw className={`size-4 ${rotateMutation.isPending ? 'animate-spin' : ''}`} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-destructive hover:bg-destructive/10"
+                      onClick={() => revokeMutation.mutate(key.id)}
+                      disabled={revokeMutation.isPending}
+                      title="Revoke Key"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
                 )}
                 {key.revoked && (
                   <span className="text-[10px] bg-destructive/10 text-destructive px-2 py-0.5 rounded uppercase font-bold">বাতিল</span>

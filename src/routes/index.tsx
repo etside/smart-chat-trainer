@@ -41,6 +41,9 @@ function Landing() {
             <Link to="/auth" className="text-sm font-medium hover:text-primary transition-colors">
               Pricing
             </Link>
+            <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors">
+              Documentation
+            </Link>
             <Button asChild size="sm" className="rounded-full px-6">
               <Link to={session ? "/admin" : "/auth"}>
                 {session ? "Dashboard" : "Get Started"}
@@ -108,58 +111,84 @@ function Landing() {
         </div>
       </section>
 
-      {/* Bento Grid Features */}
+      {/* Features Showcase */}
       <section className="py-24 px-6 lg:px-8 bg-card relative z-10">
         <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Core Technology</h2>
+            <p className="text-muted-foreground text-lg italic">Beyond basic chatbots — enterprise intelligence.</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bento-item md:col-span-2 h-[400px]">
+            <div className="bento-item md:col-span-2 h-[450px] group">
               <div className="max-w-md">
-                <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Mic className="size-7 text-primary" />
                 </div>
-                <h3 className="text-3xl font-bold mb-4">Voice-to-Training</h3>
+                <h3 className="text-3xl font-bold mb-4 italic">Adaptive Voice Training</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Train your agent by just speaking. Our high-fidelity transcription converts your voice into structured Q&A pairs instantly.
+                  Train your agent with zero coding. Speak naturally, and our AI extracts structured sales knowledge, including complex multi-step instructions and brand nuances.
                 </p>
+                <Link to="/admin" className="text-primary font-bold mt-6 inline-flex items-center gap-2 hover:gap-3 transition-all">
+                  Open Voice Console <ArrowRight className="size-4" />
+                </Link>
               </div>
-              <div className="absolute right-[-10%] bottom-[-10%] opacity-20 rotate-12">
+              <div className="absolute right-[-10%] bottom-[-10%] opacity-20 rotate-12 transition-transform group-hover:rotate-0">
                  <Mic className="size-64 text-primary" />
               </div>
             </div>
 
-            <div className="bento-item h-[400px]">
-               <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6">
+            <div className="bento-item h-[450px] group">
+               <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Zap className="size-7 text-accent" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Auto-Sync Engine</h3>
+                <h3 className="text-2xl font-bold mb-4 italic">Real-time Stock Sync</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Real-time synchronization with your product catalog, stocks, and inventory across all channels.
+                  Direct integration with your ERP and catalog. Your AI never suggests an out-of-stock item or an outdated price, maintaining absolute customer trust.
                 </p>
+                <div className="mt-8 pt-8 border-t border-white/10 w-full">
+                  <div className="flex justify-between items-center text-xs font-mono text-muted-foreground mb-2">
+                    <span>API SYNC</span>
+                    <span className="text-success">ACTIVE</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-success w-full animate-pulse" />
+                  </div>
+                </div>
             </div>
 
-            <div className="bento-item h-[400px]">
-               <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+            <div className="bento-item h-[450px] group">
+               <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Globe className="size-7 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Multi-Platform</h3>
+                <h3 className="text-2xl font-bold mb-4 italic">Omnichannel Presence</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  One agent, everywhere. Connect to Messenger, WhatsApp, and Telegram with a single API key.
+                  One single brain for your entire business. Connect to WhatsApp, Instagram, Facebook, and your Website with a unified training pipeline.
                 </p>
+                <div className="flex gap-4 mt-8 opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                  <MessageSquareText className="size-6" />
+                  <Users className="size-6" />
+                  <Globe className="size-6" />
+                </div>
             </div>
 
-            <div className="bento-item md:col-span-2 h-[400px]">
+            <div className="bento-item md:col-span-2 h-[450px] group">
               <div className="max-w-md">
-                <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6">
+                <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <ShieldCheck className="size-7 text-accent" />
                 </div>
-                <h3 className="text-3xl font-bold mb-4">Enterprise Guardrails</h3>
+                <h3 className="text-3xl font-bold mb-4 italic">Privacy First by Design</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Built-in safety layers ensure your AI stays on brand, never hallucinates prices, and protects user data.
+                  Fully GDPR and CCPA compliant. Your training data is encrypted at rest and in transit, and you maintain complete ownership of your proprietary datasets.
                 </p>
+                <div className="flex gap-3 mt-6">
+                  <span className="text-[10px] border border-success/20 bg-success/10 text-success px-2 py-1 rounded-full font-bold">GDPR COMPLIANT</span>
+                  <span className="text-[10px] border border-primary/20 bg-primary/10 text-primary px-2 py-1 rounded-full font-bold">256-BIT ENCRYPTION</span>
+                </div>
               </div>
               <div className="absolute right-10 top-10 flex gap-4">
-                 <div className="size-20 glass rounded-full flex items-center justify-center animate-bounce">
-                    <ShieldCheck className="size-10 text-success" />
+                 <div className="size-24 glass rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ShieldCheck className="size-12 text-success shadow-[0_0_20px_rgba(34,197,94,0.3)]" />
                  </div>
               </div>
             </div>
@@ -167,16 +196,67 @@ function Landing() {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-24 border-y border-border/40">
-         <div className="mx-auto max-w-7xl px-6 text-center">
-            <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-               <div className="flex items-center gap-2 text-2xl font-bold">Impressive</div>
-               <div className="flex items-center gap-2 text-2xl font-bold">Usenodi.ai</div>
-               <div className="flex items-center gap-2 text-2xl font-bold">ElevenLabs</div>
-               <div className="flex items-center gap-2 text-2xl font-bold">RetailNext</div>
+      {/* Cost Comparison Section */}
+      <section className="py-32 px-6 lg:px-8 relative overflow-hidden">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Value Proposition</h2>
+            <p className="text-muted-foreground text-lg">Why leading businesses switch to Daddy AI.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="glass p-10 rounded-[2.5rem] border-primary/20 shadow-2xl relative overflow-hidden group">
+               <div className="absolute top-0 right-0 p-6">
+                 <div className="bg-primary/20 text-primary px-4 py-1 rounded-full text-sm font-bold animate-pulse">ROI: 800%</div>
+               </div>
+               <h3 className="text-3xl font-bold mb-8 italic">Daddy AI Console</h3>
+               <div className="space-y-6">
+                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
+                   <span className="text-muted-foreground">Human Labor (Monthly)</span>
+                   <span className="text-2xl font-bold line-through opacity-50">$4,500</span>
+                 </div>
+                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
+                   <span className="text-muted-foreground">Daddy AI (Monthly)</span>
+                   <span className="text-4xl font-bold text-primary">$49</span>
+                 </div>
+                 <p className="text-sm text-muted-foreground italic mt-8 leading-relaxed">
+                   * Based on 24/7 availability across 3 platforms, processing 5,000+ messages monthly with full inventory sync.
+                 </p>
+               </div>
+               <div className="absolute -bottom-10 -right-10 size-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all" />
             </div>
-         </div>
+
+            <div className="space-y-8 pl-0 md:pl-12">
+               <div className="flex gap-6 items-start">
+                 <div className="size-12 rounded-2xl bg-success/10 flex items-center justify-center shrink-0">
+                   <Zap className="size-6 text-success" />
+                 </div>
+                 <div>
+                   <h4 className="text-xl font-bold mb-2 italic">Zero Hallucinations</h4>
+                   <p className="text-muted-foreground">Unlike generic LLMs, our RAG-first approach ensures 100% price and stock accuracy.</p>
+                 </div>
+               </div>
+               <div className="flex gap-6 items-start">
+                 <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                   <Users className="size-6 text-primary" />
+                 </div>
+                 <div>
+                   <h4 className="text-xl font-bold mb-2 italic">Infinite Scalability</h4>
+                   <p className="text-muted-foreground">Handle 1 or 1,000,000 concurrent chats without increasing headcount.</p>
+                 </div>
+               </div>
+               <div className="flex gap-6 items-start">
+                 <div className="size-12 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
+                   <ShieldCheck className="size-6 text-accent" />
+                 </div>
+                 <div>
+                   <h4 className="text-xl font-bold mb-2 italic">GDPR Compliant</h4>
+                   <p className="text-muted-foreground">Enterprise-grade data protection and local hosting options for complete privacy.</p>
+                 </div>
+               </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* CTA Section */}
@@ -202,9 +282,9 @@ function Landing() {
             <span className="font-bold text-lg tracking-tight">Daddy AI</span>
           </div>
           <div className="flex gap-8 text-sm text-muted-foreground">
-             <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-             <a href="#" className="hover:text-primary transition-colors">Terms</a>
-             <a href="#" className="hover:text-primary transition-colors">Documentation</a>
+             <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+             <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+             <Link to="/admin" className="hover:text-primary transition-colors">Documentation</Link>
           </div>
           <p className="text-sm text-muted-foreground">
             © 2026 Daddy AI. All rights reserved.
