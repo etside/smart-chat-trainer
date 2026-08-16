@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode, useState } from "react";
+import { useEffect, type ReactNode, useState, useMemo } from "react";
 import { getMetaCredentials } from "../lib/settings.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { getExtraSettings } from "../lib/extra-settings.functions";
@@ -126,6 +126,7 @@ function RootComponent() {
       <body>
         <QueryClientProvider client={queryClient}>
           <InnerRoot />
+          <Toaster position="top-center" richColors />
         </QueryClientProvider>
         <Scripts />
       </body>
@@ -165,7 +166,7 @@ function InnerRoot() {
         }
       })
       .catch((err) => {
-        // We expect this on public pages since getMetaCredentials has requireSupabaseAuth
+        // Expected on public pages
       });
   }, [fetchMetaCreds]);
 
@@ -204,10 +205,5 @@ function InnerRoot() {
     })(document, "script", "facebook-jssdk");
   }, [metaConfig]);
 
-  return (
-    <>
-      <Outlet />
-      <Toaster position="top-center" richColors />
-    </>
-  );
+  return <Outlet />;
 }
