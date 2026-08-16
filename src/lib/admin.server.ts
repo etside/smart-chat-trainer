@@ -26,3 +26,22 @@ export function generateApiKey() {
     .join("");
   return `wi_${body}`;
 }
+
+export async function verifyWebhookSignature(payload: string, signature: string, secret: string) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
+  const expected = Array.from(new Uint8Array(signed))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+    
+  // Simple check for equality
+  return expected === signature;
+}
