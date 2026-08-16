@@ -103,36 +103,36 @@ function UsageDashboardPage() {
       </div>
 
       {/* Main Stats - 3 Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="panel p-6 bg-primary/5 border-primary/20 relative overflow-hidden group">
-          <Zap className="absolute -right-4 -bottom-4 size-24 text-primary/10 group-hover:scale-110 transition-transform" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="panel p-8 bg-primary/5 border-primary/20 relative overflow-hidden group shadow-2xl shadow-primary/5">
+          <Zap className="absolute -right-4 -bottom-4 size-32 text-primary/10 group-hover:scale-110 transition-transform" />
           <div className="relative z-10">
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">মোট ক্রেডিট</p>
-            <h3 className="text-4xl font-black tabular-nums">{stats.total_credits.toLocaleString()}</h3>
-            <div className="mt-4 flex items-center text-xs text-primary font-bold">
-              <TrendingUp className="mr-1 size-3" /> LIFETIME USAGE
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 opacity-70">মোট ক্রেডিট (Total Credits)</p>
+            <h3 className="text-5xl font-black tracking-tighter tabular-nums">{stats.total_credits.toLocaleString()}</h3>
+            <div className="mt-6 flex items-center text-[10px] text-primary font-black tracking-widest uppercase bg-primary/10 w-fit px-3 py-1 rounded-full border border-primary/20">
+              <TrendingUp className="mr-1.5 size-3" /> Lifetime Usage
             </div>
           </div>
         </div>
 
-        <div className="panel p-6 bg-accent/5 border-accent/20 relative overflow-hidden group">
-          <DollarSign className="absolute -right-4 -bottom-4 size-24 text-accent/10 group-hover:scale-110 transition-transform" />
+        <div className="panel p-8 bg-accent/5 border-accent/20 relative overflow-hidden group shadow-2xl shadow-accent/5">
+          <DollarSign className="absolute -right-4 -bottom-4 size-32 text-accent/10 group-hover:scale-110 transition-transform" />
           <div className="relative z-10">
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">মোট খরচ (USD)</p>
-            <h3 className="text-4xl font-black tabular-nums">${stats.total_usd.toFixed(4)}</h3>
-            <div className="mt-4 flex items-center text-xs text-accent font-bold">
-              <Activity className="mr-1 size-3" /> ESTIMATED COST
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 opacity-70">মোট খরচ (USD Cost)</p>
+            <h3 className="text-5xl font-black tracking-tighter tabular-nums">${stats.total_usd.toFixed(4)}</h3>
+            <div className="mt-6 flex items-center text-[10px] text-accent font-black tracking-widest uppercase bg-accent/10 w-fit px-3 py-1 rounded-full border border-accent/20">
+              <Activity className="mr-1.5 size-3" /> Estimated Burn
             </div>
           </div>
         </div>
 
-        <div className="panel p-6 bg-green-500/5 border-green-500/20 relative overflow-hidden group">
-          <TrendingUp className="absolute -right-4 -bottom-4 size-24 text-green-500/10 group-hover:scale-110 transition-transform" />
+        <div className="panel p-8 bg-success/5 border-success/20 relative overflow-hidden group shadow-2xl shadow-success/5 md:col-span-2 lg:col-span-1">
+          <TrendingUp className="absolute -right-4 -bottom-4 size-32 text-success/10 group-hover:scale-110 transition-transform" />
           <div className="relative z-10">
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">মোট খরচ (BDT)</p>
-            <h3 className="text-4xl font-black tabular-nums">৳{stats.total_bdt.toFixed(2)}</h3>
-            <div className="mt-4 flex items-center text-xs text-green-500 font-bold">
-              <Zap className="mr-1 size-3" /> CONVERTED VALUE
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 opacity-70">মোট খরচ (BDT Equivalent)</p>
+            <h3 className="text-5xl font-black tracking-tighter tabular-nums">৳{stats.total_bdt.toFixed(2)}</h3>
+            <div className="mt-6 flex items-center text-[10px] text-success font-black tracking-widest uppercase bg-success/10 w-fit px-3 py-1 rounded-full border border-success/20">
+              <Zap className="mr-1.5 size-3" /> Converted Local
             </div>
           </div>
         </div>

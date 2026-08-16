@@ -48,7 +48,10 @@ export function VoiceRecorder({ onText, onAudioBlob }: { onText: (text: string) 
         setBusy(true);
         try {
           const { text } = await transcribe({
-            data: { audio: await blobToBase64(blob), mimeType: blob.type || "audio/webm" },
+            data: { 
+              audio: await blobToBase64(blob), 
+              mimeType: blob.type || (recorder.mimeType === 'audio/x-m4a' ? 'audio/mp4' : 'audio/webm') 
+            },
           });
           if (text.trim()) onText(text.trim());
           else toast.error("কোনো কথা শোনা যায়নি।");

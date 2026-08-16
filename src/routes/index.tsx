@@ -37,17 +37,19 @@ function Landing() {
             <img src={logoUrl} alt="Daddy AI" className="h-8 w-auto" />
             <span className="font-bold text-xl tracking-tight hidden sm:block">Daddy AI</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
-              Features
-            </Link>
-            <Link to="/connect" className="text-sm font-medium hover:text-primary transition-colors">
-              Integrations
-            </Link>
-            <Link to="/privacy" className="text-sm font-medium hover:text-primary transition-colors">
-              Legal
-            </Link>
-            <Button asChild size="sm" className="rounded-full px-6">
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-6">
+              <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+                Features
+              </Link>
+              <Link to="/connect" className="text-sm font-medium hover:text-primary transition-colors">
+                Integrations
+              </Link>
+              <Link to="/privacy" className="text-sm font-medium hover:text-primary transition-colors">
+                Legal
+              </Link>
+            </div>
+            <Button asChild size="sm" className="rounded-full px-6 shadow-xl shadow-primary/20">
               <Link to={session ? "/admin" : "/auth"}>
                 {session ? "Dashboard" : "Get Started"}
               </Link>

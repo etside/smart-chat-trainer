@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { generateReply } from "./agent.server";
 import { chatComplete, transcribeAudio } from "./ai.server";
-import { assertAdmin, generateApiKey, hashApiKey } from "./admin.server";
+import { assertRole, generateApiKey, hashApiKey } from "./admin.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const getMyRole = createServerFn({ method: "GET" })
@@ -29,7 +29,7 @@ export const amIAdmin = createServerFn({ method: "GET" })
 export const getStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const pairCount = async (status: "approved" | "pending" | "rejected") => {
@@ -71,7 +71,7 @@ export const listPairs = createServerFn({ method: "GET" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const size = 25;
@@ -105,7 +105,7 @@ export const savePair = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (data.id) {
@@ -136,7 +136,7 @@ export const setPairStatus = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("training_pairs").update({ status: data.status }).in("id", data.ids);
     return { ok: true };
@@ -146,7 +146,7 @@ export const deletePair = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("training_pairs").delete().eq("id", data.id);
     return { ok: true };
@@ -167,7 +167,7 @@ export const importPairs = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("training_pairs").insert(
       data.items.map((i) => ({
@@ -184,7 +184,7 @@ export const importConversationsJson = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ json: z.string().min(2).max(4_000_000) }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { importConversationExport } = await import("./import.server");
     return importConversationExport(data.json);
   });
@@ -192,7 +192,7 @@ export const importConversationsJson = createServerFn({ method: "POST" })
 export const getAgentSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
@@ -223,7 +223,7 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
       .from("agent_settings")
@@ -241,7 +241,7 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
 export const listApiKeys = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("api_keys")
@@ -254,7 +254,7 @@ export const createApiKey = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ name: z.string().min(1).max(60), version_id: z.string().uuid().optional() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const key = generateApiKey();
     await supabaseAdmin.from("api_keys").insert({
@@ -270,7 +270,7 @@ export const revokeApiKey = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("api_keys").delete().eq("id", data.id);
     return { ok: true };
@@ -280,7 +280,7 @@ export const rotateApiKey = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
     const { data: oldKey } = await supabaseAdmin
@@ -308,7 +308,7 @@ export const rotateApiKey = createServerFn({ method: "POST" })
 export const getTrainingJobs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("training_jobs")
@@ -321,7 +321,7 @@ export const getTrainingJobs = createServerFn({ method: "GET" })
 export const getTrainingVersions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("training_versions")
@@ -339,7 +339,7 @@ export const triggerTraining = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Create a new job record
@@ -396,7 +396,7 @@ export const exportTrainingData = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ type: z.enum(["training_pairs", "conversations"]) }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows } = await supabaseAdmin.from(data.type).select("*");
     return { json: JSON.stringify(rows ?? [], null, 2) };
@@ -416,7 +416,7 @@ export const playgroundReply = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     return generateReply(data.message, data.history);
   });
 
@@ -431,7 +431,7 @@ export const transcribeVoice = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: settings } = await supabaseAdmin
       .from("agent_settings")
@@ -453,7 +453,7 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ text: z.string().min(2).max(12000) }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const raw = await chatComplete(
       [
         {
@@ -497,7 +497,7 @@ export const getTrainingJobDetail = createServerFn({ method: "GET" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
     const { data: job } = await supabaseAdmin
@@ -531,7 +531,7 @@ export const exportTrainingRunLogs = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
     const { data: job } = await supabaseAdmin
@@ -610,7 +610,7 @@ export const getWebhookLogs = createServerFn({ method: "GET" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let q = supabaseAdmin
@@ -631,7 +631,7 @@ export const retryWebhook = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { processWebhookRetry } = await import("@/routes/api.public.webhook");
     await processWebhookRetry(data.id);
     return { ok: true };
@@ -640,7 +640,7 @@ export const retryWebhook = createServerFn({ method: "POST" })
 export const getIngestionStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const [lastSync, deliveryCounts, retryHistory] = await Promise.all([

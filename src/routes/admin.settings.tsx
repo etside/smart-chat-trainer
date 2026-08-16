@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { getAgentSettings, saveAgentSettings } from "@/lib/console.functions";
+import { getAgentSettings, saveAgentSettings, getMyRole } from "@/lib/console.functions";
+import { useAuth } from "@/hooks/useAuth";
 import { getSyncCredentials, updateSyncCredentials, getMetaCredentials, updateMetaCredentials } from "@/lib/settings.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -176,11 +177,16 @@ function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
 
 function SettingsPage() {
   const qc = useQueryClient();
+  const { session } = useAuth();
   const fetchSettings = useServerFn(getAgentSettings);
   const save = useServerFn(saveAgentSettings);
   
   const fetchExtra = useServerFn(getExtraSettings);
   const saveExtra = useServerFn(updateExtraSettings);
+  const fetchMyRole = useServerFn(getMyRole);
+
+  const { data: roleData } = useQuery({ queryKey: ["my-role", session?.user.id], queryFn: () => fetchMyRole(), enabled: !!session });
+  const isAdmin = roleData?.role === 'admin';
 
   const { data } = useQuery({ queryKey: ["agent-settings"], queryFn: () => fetchSettings() });
 
@@ -559,7 +565,8 @@ function SettingsPage() {
                   placeholder="Meta App ID"
                   value={metaAppId}
                   onChange={(e) => setMetaAppId(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  disabled={!isAdmin}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="space-y-2">
@@ -569,7 +576,8 @@ function SettingsPage() {
                   placeholder={metaData?.appSecret ? "••••••••" : "Meta App Secret"}
                   value={metaAppSecret}
                   onChange={(e) => setMetaAppSecret(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  disabled={!isAdmin}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="space-y-2">
@@ -578,7 +586,8 @@ function SettingsPage() {
                   placeholder="Facebook Page ID"
                   value={metaPageId}
                   onChange={(e) => setMetaPageId(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  disabled={!isAdmin}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="space-y-2">
@@ -587,7 +596,8 @@ function SettingsPage() {
                   placeholder="WhatsApp Business Account ID"
                   value={metaWhatsappId}
                   onChange={(e) => setMetaWhatsappId(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  disabled={!isAdmin}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="space-y-2">
@@ -596,7 +606,8 @@ function SettingsPage() {
                   placeholder="v19.0"
                   value={metaApiVersion}
                   onChange={(e) => setMetaApiVersion(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  disabled={!isAdmin}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="col-span-1 md:col-span-2 space-y-2">
@@ -606,7 +617,8 @@ function SettingsPage() {
                   placeholder={metaData?.accessToken ? "••••••••" : "Meta Access Token (Never Expires)"}
                   value={metaAccessToken}
                   onChange={(e) => setMetaAccessToken(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  disabled={!isAdmin}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
             </div>
