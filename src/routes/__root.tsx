@@ -14,6 +14,7 @@ import { getExtraSettings } from "../lib/extra-settings.functions";
 import { useQuery } from "@tanstack/react-query";
 
 import { Toaster } from "../components/ui/sonner";
+import { SupportModal } from "../components/SupportModal";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -127,6 +128,7 @@ function RootComponent() {
         <QueryClientProvider client={queryClient}>
           <InnerRoot />
           <Toaster position="top-center" richColors />
+          <SupportModal />
         </QueryClientProvider>
         <Scripts />
       </body>
