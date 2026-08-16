@@ -158,18 +158,20 @@ function AdminLayout() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full justify-start text-[10px] uppercase tracking-widest font-bold"
+              className="w-full justify-start text-[10px] uppercase tracking-widest font-black border-2 border-primary/20 hover:bg-primary/5"
               onClick={() => document.documentElement.classList.toggle('high-contrast')}
             >
-              <Activity className="size-3 mr-2" /> High Contrast
+              <Activity className="size-3 mr-2 text-primary" /> High Contrast
             </Button>
           </div>
           <button
             onClick={async () => {
-              await supabase.auth.signOut();
-              navigate({ to: "/auth" });
+              if (confirm("লগআউট করতে চান?")) {
+                await supabase.auth.signOut();
+                navigate({ to: "/auth" });
+              }
             }}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-black text-destructive hover:bg-destructive/5 transition-colors border-2 border-transparent hover:border-destructive/20"
           >
             <LogOut className="size-4.5" /> লগআউট
           </button>
