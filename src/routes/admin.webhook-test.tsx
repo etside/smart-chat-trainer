@@ -24,13 +24,34 @@ function WebhookTest() {
   const [localLogs, setLocalLogs] = useState<any[]>([]);
   const queryClient = useQueryClient();
 
+  const [testResponse, setTestResponse] = useState<any>(null);
   const testFn = useServerFn(testWebhookPayload);
   const fetchLogs = useServerFn(getWebhookLogs);
+  const triggerSync = useServerFn(syncCatalog);
 
   const { data: dbLogs } = useQuery({
     queryKey: ["webhook-db-logs"],
     queryFn: () => fetchLogs(),
     refetchInterval: 10000
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      return triggerSync();
+    },
+    onSuccess: (data) => {
+      setTestResponse(data);
+      if (data.success) {
+        toast.success(`Sync completed: ${data.count} items processed`);
+      } else {
+        toast.error(`Sync failed: ${data.message}`);
+      }
+      queryClient.invalidateQueries({ queryKey: ["webhook-db-logs"] });
+    },
+    onError: (error: any) => {
+      setTestResponse({ error: error.message || "Failed to trigger sync" });
+      toast.error("Failed to trigger sync");
+    },
   });
 
   const textPayload = JSON.stringify({
