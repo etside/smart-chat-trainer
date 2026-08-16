@@ -19,6 +19,7 @@ import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
 import { Route as AdminProgressRouteImport } from './routes/admin.progress'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
+import { Route as AdminWebhookTestRouteImport } from './routes/admin.webhook-test'
 import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
 
@@ -72,6 +73,11 @@ const AdminTrainingRoute = AdminTrainingRouteImport.update({
   path: '/training',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminWebhookTestRoute = AdminWebhookTestRouteImport.update({
+  id: '/webhook-test',
+  path: '/webhook-test',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicChatRoute = ApiPublicChatRouteImport.update({
   id: '/api/public/chat',
   path: '/api/public/chat',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/admin/progress'
     | '/admin/settings'
     | '/admin/training'
+    | '/admin/webhook-test'
     | '/admin/'
     | '/api/public/chat'
     | '/api/public/webhook'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/admin/progress'
     | '/admin/settings'
     | '/admin/training'
+    | '/admin/webhook-test'
     | '/admin'
     | '/api/public/chat'
     | '/api/public/webhook'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/admin/progress'
     | '/admin/settings'
     | '/admin/training'
+    | '/admin/webhook-test'
     | '/admin/'
     | '/api/public/chat'
     | '/api/public/webhook'
@@ -249,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTrainingRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/webhook-test': {
+      id: '/admin/webhook-test'
+      path: '/webhook-test'
+      fullPath: '/admin/webhook-test'
+      preLoaderRoute: typeof AdminWebhookTestRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/chat': {
       id: '/api/public/chat'
       path: '/api/public/chat'
@@ -273,6 +292,7 @@ interface AdminRouteChildren {
   AdminProgressRoute: typeof AdminProgressRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
+  AdminWebhookTestRoute: typeof AdminWebhookTestRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -283,6 +303,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminProgressRoute: AdminProgressRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminTrainingRoute: AdminTrainingRoute,
+  AdminWebhookTestRoute: AdminWebhookTestRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
