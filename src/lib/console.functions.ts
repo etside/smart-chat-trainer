@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { generateReply } from "./agent.server";
 import { chatComplete, transcribeAudio } from "./ai.server";
-import { assertAdmin, generateApiKey, hashApiKey } from "./admin.server";
+import { assertRole, generateApiKey, hashApiKey } from "./admin.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const getMyRole = createServerFn({ method: "GET" })
@@ -29,7 +29,7 @@ export const amIAdmin = createServerFn({ method: "GET" })
 export const getStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const pairCount = async (status: "approved" | "pending" | "rejected") => {
@@ -71,7 +71,7 @@ export const listPairs = createServerFn({ method: "GET" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const size = 25;
@@ -105,7 +105,7 @@ export const savePair = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (data.id) {
@@ -136,7 +136,7 @@ export const setPairStatus = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("training_pairs").update({ status: data.status }).in("id", data.ids);
     return { ok: true };
@@ -146,7 +146,7 @@ export const deletePair = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("training_pairs").delete().eq("id", data.id);
     return { ok: true };
@@ -167,7 +167,7 @@ export const importPairs = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("training_pairs").insert(
       data.items.map((i) => ({
@@ -184,7 +184,7 @@ export const importConversationsJson = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ json: z.string().min(2).max(4_000_000) }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const { importConversationExport } = await import("./import.server");
     return importConversationExport(data.json);
   });
@@ -431,7 +431,7 @@ export const transcribeVoice = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "viewer");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: settings } = await supabaseAdmin
       .from("agent_settings")
@@ -453,7 +453,7 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ text: z.string().min(2).max(12000) }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertRole(context.supabase, context.userId, "editor");
     const raw = await chatComplete(
       [
         {
