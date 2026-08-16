@@ -45,7 +45,7 @@ function Dashboard() {
       <div className="mt-3 p-4 bg-muted/50 rounded-xl text-[10px] leading-relaxed text-muted-foreground border border-border/50 font-mono whitespace-pre-wrap animate-in overflow-hidden">
         {`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
 
-All systems operational. API sync action fixed.
+Authentication verified and operational. (Action: catalog, session ID required)
 
 Set up the Wear Impressive AI Webhook integration.
 
@@ -79,7 +79,7 @@ Every request body is JSON with a mandatory "action" field:
 ### Single product detail
 { "action": "product", "id": 123 }
 // or by slug:
-{ "action": "product", "slug": \"blue-shirt\" }
+{ "action": "product", "slug": "blue-shirt" }
 
 ### Check stock
 { "action": "stock", "product_ids": [1, 2, 3] }
@@ -120,7 +120,7 @@ Success: { "success": true, "action": "catalog", "data": { ... } }
 Error:   { "success": false, "error": "message" }
 
 ## Notes
-- Orders are placed as COD and auto-confirmed (status = \"confirmed\")
+- Orders are placed as COD and auto-confirmed (status = "confirmed")
 - Delivery is NOT assigned automatically — store handles fulfillment manually
 - Cart is session-scoped and expires after 30 minutes of inactivity
 - Currency is BDT

@@ -62,7 +62,7 @@ export const previewSync = createServerFn({ method: "POST" })
     }
 
     try {
-      const payload = { action: "catalog", per_page: 5 };
+      const payload = { action: "catalog", per_page: 5, session: "preview_sync" };
       const bodyStr = JSON.stringify(payload);
       
       const syncRes = await fetch(data.url, {
@@ -173,7 +173,7 @@ export const syncCatalog = createServerFn({ method: "POST" })
       .single();
 
     try {
-      const payload = { action: "catalog", per_page: 50 }; // Changed from get_all_info to catalog
+      const payload = { action: "catalog", per_page: 50, session: `sync_${run?.id || Date.now()}` }; // Added session ID
       const bodyStr = JSON.stringify(payload);
       
       const syncRes = await fetchWithRetry(data.url, {
