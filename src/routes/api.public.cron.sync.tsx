@@ -13,7 +13,8 @@ export const Route = createFileRoute("/api/public/cron/sync")({
           return new Response("Configuration Error", { status: 500 });
         }
         
-        if (authHeader !== `Bearer ${cronSecret}`) {
+        // Support both literal match and Bearer format for flexibility
+        if (authHeader !== `Bearer ${cronSecret}` && authHeader !== cronSecret) {
           return new Response("Unauthorized", { status: 401 });
         }
 

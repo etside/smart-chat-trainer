@@ -1,37 +1,49 @@
-# Netlify Environment Variables Checklist
+# Netlify Deployment Checklist & Environment Variables
 
-To ensure your Daddy AI application functions correctly on Netlify, please configure the following environment variables in your Netlify Site Settings (**Site configuration > Environment variables**).
+To ensure your Daddy AI application functions correctly on Netlify with complete end-to-end sync, RBAC, and Meta integration, configure these variables in your Netlify Site Settings.
 
-### 1. Supabase (Database & Auth)
-These are required for database connectivity and authentication.
-- `VITE_SUPABASE_URL`: Your Supabase Project URL.
-- `VITE_SUPABASE_ANON_KEY`: Your Supabase Anonymous API Key.
-- `SUPABASE_SERVICE_ROLE_KEY`: **(Server-side only)** Required for admin operations and bypasses RLS in server functions.
+## Required Core Variables
 
-### 2. Daddy AI Sync & Webhooks
-Required for the automated training pipeline and catalog synchronization.
-- `SYNC_TOKEN`: The Bearer token for authenticating with `api.v2.wearimpressive.com`.
-- `SYNC_SECRET`: The shared secret for HMAC signature verification.
-- `WEBHOOK_SECRET`: A secret key used to secure your incoming webhook endpoint.
+| Variable | Description | Source |
+| :--- | :--- | :--- |
+| `VITE_SUPABASE_URL` | Your Supabase Project URL | Lovable Cloud |
+| `VITE_SUPABASE_ANON_KEY` | Your Supabase Anonymous API Key | Lovable Cloud |
+| `SUPABASE_SERVICE_ROLE_KEY` | Required for admin operations (bypasses RLS) | Lovable Cloud |
+| `VITE_PUBLIC_APP_URL` | Your production URL (e.g., `https://daddyai.lovable.app`) | Netlify |
 
-### 3. Meta Business Integration
+## API Sync & Webhooks (End-to-End)
+
+These are required for the automated training pipeline and catalog synchronization.
+
+| Variable | Description | Source |
+| :--- | :--- | :--- |
+| `SYNC_TOKEN` | Bearer token for authenticating with `api.v2.wearimpressive.com` | Partner API |
+| `SYNC_SECRET` | Shared secret for HMAC signature verification | Partner API |
+| `WEBHOOK_SECRET` | Secret key used to secure your incoming webhook endpoint | Custom String |
+| `CRON_SECRET` | Secret for scheduled sync jobs (pass as Bearer token) | Custom String |
+
+## Meta Business Integration
+
 Required for WhatsApp, Facebook, and Instagram messaging features.
-- `VITE_META_APP_ID`: Your Meta App ID.
-- `META_APP_SECRET`: Your Meta App Secret.
-- `META_WEBHOOK_VERIFY_TOKEN`: The token you define in Meta Developer portal for webhook verification.
 
-### 4. B2B & External Services
-Optional but recommended for full feature support.
-- `B2B_BACKBLAZE_KEY`: Backblaze B2 Application Key.
-- `BOSON_WORKSPACE_ID`: Your Boson Workspace identifier.
-- `FISH_AUDIO_API_KEY`: API key for Fish Audio transcription/synthesis.
-- `VPS_HOSTING_CONFIG`: **(JSON String)** Optional configuration for VPS hosting (e.g. `{"host": "1.2.3.4", "user": "admin"}`).
+| Variable | Description | Source |
+| :--- | :--- | :--- |
+| `VITE_META_APP_ID` | Your Meta App ID | Meta Developers |
+| `META_APP_SECRET` | Your Meta App Secret | Meta Developers |
+| `META_WEBHOOK_VERIFY_TOKEN` | Token for Meta webhook verification | Custom String |
 
-### 5. Deployment Info
+## B2B & External Services
+
+| Variable | Description |
+| :--- | :--- |
+| `B2B_BACKBLAZE_KEY` | Backblaze B2 Application Key |
+| `BOSON_WORKSPACE_ID` | Your Boson Workspace identifier |
+| `FISH_AUDIO_API_KEY` | API key for Fish Audio transcription/synthesis |
+
+## Deployment Configuration
+
 - `NODE_VERSION`: `20`
 - `BUN_VERSION`: `latest`
-- `CRON_SECRET`: Secret for scheduled sync jobs.
-
 
 ---
-*Note: After adding these variables, you may need to trigger a new deploy for changes to take effect.*
+**Note:** After adding these variables, trigger a new deploy. The `netlify.toml` in the root already handles the build and redirect logic.
