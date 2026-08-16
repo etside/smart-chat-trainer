@@ -62,11 +62,6 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook
    - Secret: c05d89defdc77a396b6543c85bce957bb5a12394a0828c54825817d51b3cd58a
    - Format header as: X-AI-Signature: sha256=<hex_digest>
 
-   Example (TypeScript):
-   import { createHmac } from 'crypto';
-   const body = JSON.stringify(payload);
-   const sig = 'sha256=' + createHmac('sha256', SECRET).update(body).digest('hex');
-
 ## Request format
 Every request body is JSON with a mandatory "action" field:
 { "action": "...", "session": "unique-session-id", ...other fields }
@@ -96,35 +91,29 @@ Every request body is JSON with a mandatory "action" field:
 ### Clear cart
 { "action": "cart_clear", "session": "sess-abc" }
 
-### Place order (COD, auto-confirmed — no admin approval needed)
+### Place order (COD, auto-confirmed)
 {
   "action": "order_place",
   "session": "sess-abc",
   "payment_method": "cod",
   "shipping_address": {
-    "full_name": "Rahim Uddin",
-    "phone": "01711000000",
-    "address_line_1": "123 Main St",
+    "full_name": "Customer Name",
+    "phone": "017XXXXXXXX",
+    "address_line_1": "Delivery Address",
     "division": "Dhaka",
     "district": "Dhaka",
     "thana": "Mirpur"
-  },
-  "notes": "Optional delivery note"
+  }
 }
-
-### Track order
-{ "action": "order_status", "order_number": "WI-260816-XXXXX" }
 
 ## Response format
 Success: { "success": true, "action": "catalog", "data": { ... } }
 Error:   { "success": false, "error": "message" }
 
 ## Notes
-- Orders are placed as COD and auto-confirmed (status = "confirmed")
-- Delivery is NOT assigned automatically — store handles fulfillment manually
-- Cart is session-scoped and expires after 30 minutes of inactivity
-- Currency is BDT
-- Store is automatically resolved — no store_id needed`}
+- Integration scope covers discovery to order placement.
+- Orders are placed as COD and auto-confirmed.
+- Currency is BDT.`}
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
