@@ -69,12 +69,12 @@ export const previewSync = createServerFn({ method: "POST" })
           "Authorization": `Bearer ${token}`,
           "X-Secret": secret
         },
-        body: JSON.stringify({ action: "get_all_info", limit: 5 }) // Small limit for preview
+        body: JSON.stringify({ action: "catalog", per_page: 5 }) // Changed from get_all_info to catalog
       });
       
       if (!syncRes.ok) throw new Error(`Preview failed: ${syncRes.statusText}`);
       const apiData = await syncRes.json();
-      const items = Array.isArray(apiData) ? apiData : (apiData.products || []);
+      const items = apiData.success && apiData.data?.products ? apiData.data.products : (Array.isArray(apiData) ? apiData : []);
       
       return { 
         preview: items.slice(0, 5).map((item: any) => ({
@@ -164,6 +164,9 @@ export const syncCatalog = createServerFn({ method: "POST" })
       .single();
 
     try {
+      const payload = { action: "catalog", per_page: 50 }; // Changed from get_all_info to catalog
+      const bodyStr = JSON.stringify(payload);
+      
       const syncRes = await fetchWithRetry(data.url, {
         method: "POST",
         headers: {
@@ -172,19 +175,19 @@ export const syncCatalog = createServerFn({ method: "POST" })
           "X-AI-Signature": `sha256=${await (async () => {
             const encoder = new TextEncoder();
             const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-            const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(JSON.stringify({ action: "get_all_info" })));
+            const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(bodyStr));
             return Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, "0")).join("");
           })()}`,
           "X-Secret": secret,
           "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`
         },
-        body: JSON.stringify({ action: "get_all_info" })
+        body: bodyStr
       });
       
       if (!syncRes.ok) throw new Error(`API sync failed: ${syncRes.statusText} (${syncRes.status})`);
       
       const apiData = await syncRes.json();
-      const items = Array.isArray(apiData) ? apiData : (apiData.products || []);
+      const items = apiData.success && apiData.data?.products ? apiData.data.products : (Array.isArray(apiData) ? apiData : []);
       
       const trainingPairs = items
         .filter((item: any) => (item.name || item.title) && item.price)
