@@ -253,8 +253,142 @@ function TrainingProgress() {
             </AnimatePresence>
           </div>
         )}
-      </div>
-    </div>
+      <Dialog open={!!selectedJobId} onOpenChange={(open) => !open && setSelectedJobId(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>জব ডিটেইলস (#{selectedJobId?.slice(0, 8)})</span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleExport(selectedJobId!, 'json')}>
+                  <Download className="mr-2 size-4" /> JSON
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleExport(selectedJobId!, 'csv')}>
+                  <Download className="mr-2 size-4" /> CSV
+                </Button>
+              </div>
+            </DialogTitle>
+            <DialogDescription>
+              ট্রেনিং রান স্ট্যাটাস, স্যাম্পল এবং লগস।
+            </DialogDescription>
+          </DialogHeader>
 
+          {isDetailLoading ? (
+            <div className="flex justify-center p-12">
+              <Loader2 className="size-8 animate-spin text-primary" />
+            </div>
+          ) : detailData ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl bg-card border border-white/5">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">স্ট্যাটাস</p>
+                  <Badge variant={detailData.job.status === 'completed' ? 'default' : detailData.job.status === 'failed' ? 'destructive' : 'secondary'} className="mt-1">
+                    {detailData.job.status}
+                  </Badge>
+                </div>
+                <div className="p-4 rounded-xl bg-card border border-white/5">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">আইটেম</p>
+                  <p className="text-xl font-bold">{detailData.job.processed_count || 0}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-card border border-white/5">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">রিট্রাই</p>
+                  <p className="text-xl font-bold">{detailData.job.retry_count || 0}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-card border border-white/5">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">সময়</p>
+                  <p className="text-xs mt-1">{new Date(detailData.job.created_at).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {detailData.job.error_log && (
+                <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+                  <p className="text-xs font-bold text-destructive uppercase mb-2">Error Log</p>
+                  <code className="text-xs">{detailData.job.error_log}</code>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <MessageSquare className="size-4" />
+                    ট্রান্সক্রিপশন স্যাম্পল
+                  </h3>
+                  <div className="relative w-64">
+                    <Search className="absolute left-2 top-2.5 size-4 text-muted-foreground" />
+                    <Input
+                      placeholder="সার্চ স্যাম্পল..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setPage(0);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%]">প্রশ্ন (Question)</TableHead>
+                        <TableHead className="w-[40%]">উত্তর (Answer)</TableHead>
+                        <TableHead>স্ট্যাটাস</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {detailData.samples.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                            কোন স্যাম্পল পাওয়া যায়নি।
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        detailData.samples.map((sample: any, idx: number) => (
+                          <TableRow key={idx}>
+                            <TableCell className="text-xs max-h-24 overflow-y-auto">{sample.question}</TableCell>
+                            <TableCell className="text-xs max-h-24 overflow-y-auto">{sample.answer}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-[10px] uppercase">
+                                {sample.status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {detailData.totalSamples > detailData.pageSize && (
+                  <div className="flex items-center justify-end space-x-2 py-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(p => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                    >
+                      <ChevronLeft className="size-4 mr-2" />
+                      পূর্ববর্তী
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      পেজ {page + 1} / {Math.ceil(detailData.totalSamples / detailData.pageSize)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={(page + 1) * detailData.pageSize >= detailData.totalSamples}
+                    >
+                      পরবর্তী
+                      <ChevronRight className="size-4 ml-2" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
