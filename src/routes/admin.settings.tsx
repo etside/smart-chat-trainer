@@ -30,7 +30,7 @@ const MODELS = [
   { id: "openai/gpt-5.6-luna", label: "Daddy Fast & Light (GPT-5.6 Luna)" },
 ];
 
-function MetaLoginButton() {
+function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
   const [status, setStatus] = useState<string>("unknown");
   const [user, setUser] = useState<any>(null);
 
@@ -338,7 +338,7 @@ function SettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="col-span-full mb-4">
-                <MetaLoginButton />
+                <MetaLoginButton metaAppId={metaAppId} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">App ID</Label>
