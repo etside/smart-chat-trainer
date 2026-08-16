@@ -5,10 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { testWebhookPayload } from "@/lib/webhook-test.functions";
 import { getWebhookLogs } from "@/lib/webhook-logs.functions";
+import { syncCatalog } from "@/lib/sync.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode, Copy, Download, History, Activity } from "lucide-react";
+import { MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode, Copy, Download, History, Activity, ShieldCheck, PlayCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -23,14 +24,35 @@ function WebhookTest() {
   const [localLogs, setLocalLogs] = useState<any[]>([]);
   const queryClient = useQueryClient();
 
+  const [testResponse, setTestResponse] = useState<any>(null);
   const testFn = useServerFn(testWebhookPayload);
   const fetchLogs = useServerFn(getWebhookLogs);
+  const triggerSync = useServerFn(syncCatalog);
 
   const { data: dbLogs } = useQuery({
     queryKey: ["webhook-db-logs"],
     queryFn: () => fetchLogs(),
     refetchInterval: 10000
   });
+
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      return triggerSync();
+    },
+    onSuccess: (data: any) => {
+      setTestResponse(data);
+      toast.success(`Sync finished: ${data.message || "Operation completed"}`);
+      queryClient.invalidateQueries({ queryKey: ["webhook-db-logs"] });
+    },
+    onError: (error: any) => {
+      setTestResponse({ error: error.message || "Failed to trigger sync" });
+      toast.error("Failed to trigger sync");
+    },
+  });
+
+  const handleTestSync = () => {
+    syncMutation.mutate();
+  };
 
   const textPayload = JSON.stringify({
     type: "text",
@@ -185,7 +207,65 @@ function WebhookTest() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
+          <div className="panel p-5">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <ShieldCheck className="size-4 text-primary" /> API Webhook টেস্টার
+            </h2>
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Wear Impressive API Endpoint</span>
+                  <span className="text-[10px] uppercase bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">HMAC-SHA256 Secured</span>
+                </div>
+                <code className="text-xs break-all block p-2 bg-background rounded border">
+                  POST https://api.v2.wearimpressive.com/api/ai/webhook
+                </code>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={() => window.open('https://api.v2.wearimpressive.com/api/ai/webhook', '_blank')}
+                  className="gap-2"
+                >
+                  <Activity className="size-4" /> স্ট্যাটাস চেক
+                </Button>
+                <Button 
+                  onClick={handleTestSync}
+                  disabled={syncMutation.isPending}
+                  className="gap-2"
+                >
+                  {syncMutation.isPending ? (
+                    <RefreshCw className="size-4 animate-spin" />
+                  ) : (
+                    <PlayCircle className="size-4" />
+                  )}
+                  টেস্ট রান শুরু করুন
+                </Button>
+              </div>
+
+              {testResponse && (
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground font-bold">সার্ভার রেসপন্স</Label>
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${testResponse.error ? 'bg-destructive/20 text-destructive' : 'bg-green-500/20 text-green-500'}`}>
+                      {testResponse.error ? 'FAILED' : 'SUCCESS'}
+                    </span>
+                  </div>
+                  <pre className="p-3 bg-slate-950 text-slate-300 text-[10px] font-mono rounded-lg border border-white/5 overflow-x-auto max-h-[200px]">
+                    {JSON.stringify(testResponse, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              <div className="text-[10px] text-muted-foreground italic">
+                * এটি একটি রিয়েল-টাইম সাইনড পেলোড পাঠাবে এবং আপনার শপ থেকে ডাটা সিঙ্ক করার চেষ্টা করবে।
+              </div>
+            </div>
+          </div>
+
+
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Terminal className="size-4" /> আউটপুট লগ
           </h2>
@@ -260,6 +340,27 @@ function WebhookTest() {
                 {textPayload}
               </pre>
             </div>
+            
+            <div className="rounded border border-primary/20 bg-primary/5 p-3">
+              <span className="text-xs font-bold text-primary block mb-2 uppercase tracking-tighter">AI Sync Webhook (Backend Integration)</span>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] text-muted-foreground">Catalog Sync Payload</span>
+                <button 
+                  onClick={() => copyToClipboard(JSON.stringify({action: "catalog", per_page: 50, session: "sync_12345"}, null, 2))} 
+                  className="text-primary hover:underline text-[10px] flex items-center gap-1"
+                >
+                  <Copy className="size-3" /> কপি করুন
+                </button>
+              </div>
+              <pre className="bg-slate-900/50 text-slate-400 p-2 rounded text-[9px] overflow-x-auto">
+                {JSON.stringify({
+                  action: "catalog",
+                  per_page: 50,
+                  session: "sync_12345"
+                }, null, 2)}
+              </pre>
+            </div>
+
             <div className="text-xs space-y-2">
               <p className="font-medium">রেসপন্স স্কিমা:</p>
               <ul className="list-disc list-inside text-muted-foreground">
