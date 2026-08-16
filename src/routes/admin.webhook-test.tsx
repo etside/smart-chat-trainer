@@ -203,7 +203,65 @@ function WebhookTest() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
+          <div className="panel p-5">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <ShieldCheck className="size-4 text-primary" /> API Webhook টেস্টার
+            </h2>
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Wear Impressive API Endpoint</span>
+                  <span className="text-[10px] uppercase bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">HMAC-SHA256 Secured</span>
+                </div>
+                <code className="text-xs break-all block p-2 bg-background rounded border">
+                  POST https://api.v2.wearimpressive.com/api/ai/webhook
+                </code>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={() => window.open('https://api.v2.wearimpressive.com/api/ai/webhook', '_blank')}
+                  className="gap-2"
+                >
+                  <Activity className="size-4" /> স্ট্যাটাস চেক
+                </Button>
+                <Button 
+                  onClick={handleTestSync}
+                  disabled={syncMutation.isPending}
+                  className="gap-2"
+                >
+                  {syncMutation.isPending ? (
+                    <RefreshCw className="size-4 animate-spin" />
+                  ) : (
+                    <PlayCircle className="size-4" />
+                  )}
+                  টেস্ট রান শুরু করুন
+                </Button>
+              </div>
+
+              {testResponse && (
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground font-bold">সার্ভার রেসপন্স</Label>
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${testResponse.error ? 'bg-destructive/20 text-destructive' : 'bg-green-500/20 text-green-500'}`}>
+                      {testResponse.error ? 'FAILED' : 'SUCCESS'}
+                    </span>
+                  </div>
+                  <pre className="p-3 bg-slate-950 text-slate-300 text-[10px] font-mono rounded-lg border border-white/5 overflow-x-auto max-h-[200px]">
+                    {JSON.stringify(testResponse, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              <div className="text-[10px] text-muted-foreground italic">
+                * এটি একটি রিয়েল-টাইম সাইনড পেলোড পাঠাবে এবং আপনার শপ থেকে ডাটা সিঙ্ক করার চেষ্টা করবে।
+              </div>
+            </div>
+          </div>
+
+
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Terminal className="size-4" /> আউটপুট লগ
           </h2>
