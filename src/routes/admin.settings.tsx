@@ -80,7 +80,7 @@ function SettingsPage() {
   });
 
   const updateCredsMutation = useMutation({
-    mutationFn: () => saveSyncCreds({ token: syncToken, secret: syncSecret }),
+    mutationFn: () => saveSyncCreds({ data: { token: syncToken, secret: syncSecret } }),
     onSuccess: () => {
       toast.success("সিঙ্ক ক্রেডেনশিয়াল সেভ হয়েছে");
       qc.invalidateQueries({ queryKey: ["sync-credentials"] });
