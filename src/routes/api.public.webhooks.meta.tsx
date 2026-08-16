@@ -15,7 +15,8 @@ export const Route = createFileRoute('/api/public/webhooks/meta')({
           const { data: settings } = await supabaseAdmin
             .from('agent_settings')
             .select('meta_webhook_verify_token')
-            .single()
+            .eq('id', 1)
+            .maybeSingle()
 
           if (token === settings?.meta_webhook_verify_token) {
             return new Response(challenge)
@@ -25,13 +26,13 @@ export const Route = createFileRoute('/api/public/webhooks/meta')({
       },
       POST: async ({ request }) => {
         try {
-          const body = await request.json()
+          const body = await request.json() as any
           
           // Log incoming webhook for visibility
           await supabaseAdmin.from('webhook_logs').insert({
             event_type: body.object || 'meta_webhook',
             payload: body,
-            status: 'received'
+            source: 'meta'
           })
 
           // Handle Messenger/WhatsApp messages
@@ -45,16 +46,20 @@ export const Route = createFileRoute('/api/public/webhooks/meta')({
               
               if (senderId && messageText) {
                 // Generate AI reply using RAG
-                const reply = await generateReply(messageText, { sessionId: senderId })
+                const { reply } = await generateReply(messageText, [])
                 
-                // Here you would call Meta API to send message back
-                // For now we log it to conversations
-                await supabaseAdmin.from('conversations').insert({
+                // For now we log it to conversations as a placeholder for Meta reply action
+                const { data: conv } = await supabaseAdmin.from('conversations').insert({
                   external_id: senderId,
-                  message: messageText,
-                  reply: reply,
-                  platform: body.object === 'page' ? 'messenger' : 'whatsapp'
-                })
+                  source: body.object === 'page' ? 'messenger' : 'whatsapp'
+                }).select('id').single()
+
+                if (conv) {
+                  await supabaseAdmin.from('messages').insert([
+                    { conversation_id: conv.id, role: 'user', content: messageText, seq: 0 },
+                    { conversation_id: conv.id, role: 'assistant', content: reply, seq: 1 }
+                  ])
+                }
               }
             }
           }

@@ -15,7 +15,7 @@ import { getSyncCredentials, updateSyncCredentials, getMetaCredentials, updateMe
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Key, Save, Sparkles, Facebook, MessageSquare, Info, ShieldCheck, Copy, AlertCircle, Terminal } from "lucide-react";
+import { Key, Save, Sparkles, MessageSquare, Info, ShieldCheck, Copy, AlertCircle, Terminal, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 import { verifyMetaConnection, getMetaWebhookConfig } from "@/lib/meta.functions";
 import { toast } from "sonner";
@@ -125,7 +125,7 @@ function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
             </Button>
           ) : (
             <Button size="sm" onClick={() => handleLogin()} className="h-8 bg-[#1877F2] hover:bg-[#1877F2]/90">
-              <Facebook className="mr-2 size-4" />
+              <Globe className="mr-2 size-4" />
               Meta লগইন
             </Button>
           )}
@@ -380,7 +380,7 @@ function SettingsPage() {
           <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <Facebook className="size-5 text-[#1877F2]" />
+                <Globe className="size-5 text-[#1877F2]" />
                 <h2 className="text-lg font-bold tracking-tight">Meta বিজনেস কানেকশন</h2>
               </div>
               <div className="flex gap-2">
