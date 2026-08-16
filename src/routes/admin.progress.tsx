@@ -63,7 +63,6 @@ function TrainingProgress() {
     refetchInterval: 5000,
   });
 
-  // Watch for job status changes to show notifications
   useEffect(() => {
     if (jobs && previousJobsRef.current.length > 0) {
       jobs.forEach((job: any) => {
@@ -137,7 +136,6 @@ function TrainingProgress() {
     onError: () => toast.error("ট্রেনিং শুরু করা যায়নি"),
   });
 
-
   return (
     <div className="mx-auto max-w-5xl">
       <div className="flex items-center justify-between">
@@ -149,8 +147,7 @@ function TrainingProgress() {
         </div>
         <Button 
           onClick={() => mutation.mutate(undefined)} 
-
-          disabled={mutation.isPending || jobs?.some((j: any) => j.status === 'processing')}
+          disabled={mutation.isPending || jobs?.some((j: any) => j.status === 'running')}
         >
           {mutation.isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -232,7 +229,10 @@ function TrainingProgress() {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          onClick={() => mutation.mutate(undefined)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            mutation.mutate(undefined);
+                          }}
                           disabled={mutation.isPending}
                           className="h-9"
                         >
@@ -255,6 +255,7 @@ function TrainingProgress() {
         )}
       </div>
 
+      <Dialog open={!!selectedJobId} onOpenChange={(open) => !open && setSelectedJobId(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
@@ -346,8 +347,8 @@ function TrainingProgress() {
                       ) : (
                         detailData.samples.map((sample: any, idx: number) => (
                           <TableRow key={idx}>
-                            <TableCell className="text-xs max-h-24 overflow-y-auto">{sample.question}</TableCell>
-                            <TableCell className="text-xs max-h-24 overflow-y-auto">{sample.answer}</TableCell>
+                            <TableCell className="text-xs">{sample.question}</TableCell>
+                            <TableCell className="text-xs">{sample.answer}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-[10px] uppercase">
                                 {sample.status}
