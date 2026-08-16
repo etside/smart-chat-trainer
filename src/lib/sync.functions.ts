@@ -62,17 +62,26 @@ export const previewSync = createServerFn({ method: "POST" })
     }
 
     try {
+      const payload = { action: "catalog", per_page: 5 };
+      const bodyStr = JSON.stringify(payload);
+      
       const syncRes = await fetch(data.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+          "X-AI-Signature": `sha256=${await (async () => {
+            const encoder = new TextEncoder();
+            const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+            const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(bodyStr));
+            return Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, "0")).join("");
+          })()}`,
           "X-Secret": secret
         },
-        body: JSON.stringify({ action: "catalog", per_page: 5 }) // Changed from get_all_info to catalog
+        body: bodyStr
       });
       
-      if (!syncRes.ok) throw new Error(`Preview failed: ${syncRes.statusText}`);
+      if (!syncRes.ok) throw new Error(`Preview failed: ${syncRes.statusText} (${syncRes.status})`);
       const apiData = await syncRes.json();
       const items = apiData.success && apiData.data?.products ? apiData.data.products : (Array.isArray(apiData) ? apiData : []);
       
@@ -81,7 +90,7 @@ export const previewSync = createServerFn({ method: "POST" })
           name: item.name || item.title || "Unknown",
           price: item.price || "N/A",
           stock: item.stock_status || item.inventory || "N/A",
-          isValid: Boolean(item.name || item.title) && Boolean(item.price)
+          isValid: Boolean(item.name || item.title) && (item.price !== undefined)
         }))
       };
     } catch (err: any) {
