@@ -23,6 +23,7 @@ import { Route as AdminTrainingRouteImport } from './routes/admin.training'
 import { Route as AdminWebhookTestRouteImport } from './routes/admin.webhook-test'
 import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
+import { Route as ApiPublicCronSyncRouteImport } from './routes/api.public.cron.sync'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -94,6 +95,11 @@ const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   path: '/api/public/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronSyncRoute = ApiPublicCronSyncRouteImport.update({
+  id: '/api/public/cron/sync',
+  path: '/api/public/cron/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/api/public/chat'
     | '/api/public/webhook'
+    | '/api/public/cron/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/public/chat'
     | '/api/public/webhook'
+    | '/api/public/cron/sync'
   id:
     | '__root__'
     | '/'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/api/public/chat'
     | '/api/public/webhook'
+    | '/api/public/cron/sync'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -199,6 +211,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiPublicChatRoute: typeof ApiPublicChatRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
+  ApiPublicCronSyncRoute: typeof ApiPublicCronSyncRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -301,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/sync': {
+      id: '/api/public/cron/sync'
+      path: '/api/public/cron/sync'
+      fullPath: '/api/public/cron/sync'
+      preLoaderRoute: typeof ApiPublicCronSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -336,6 +356,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiPublicChatRoute: ApiPublicChatRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
+  ApiPublicCronSyncRoute: ApiPublicCronSyncRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -28,24 +28,38 @@ export const Route = createFileRoute("/api/public/webhook")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
       POST: async ({ request }) => {
-        // We support both x-api-key (standard) and custom signatures if needed
         const apiKey = request.headers.get("x-api-key");
-        if (!apiKey) return json({ error: "Missing x-api-key header" }, 401);
+        const signature = request.headers.get("x-webhook-signature");
+        const idempotencyKey = request.headers.get("x-idempotency-key");
 
-        const { hashApiKey } = await import("@/lib/admin.server");
+        const { hashApiKey, verifyWebhookSignature } = await import("@/lib/admin.server");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        const { data: keyRow } = await supabaseAdmin
-          .from("api_keys")
-          .select("id, revoked")
-          .eq("key_hash", await hashApiKey(apiKey))
-          .maybeSingle();
+        // Use API Key or Signature verification
+        let isAuthorized = false;
+        if (apiKey) {
+          const { data: keyRow } = await supabaseAdmin
+            .from("api_keys")
+            .select("id, revoked")
+            .eq("key_hash", await hashApiKey(apiKey))
+            .maybeSingle();
+          if (keyRow && !keyRow.revoked) isAuthorized = true;
+        }
 
-        if (!keyRow || keyRow.revoked) return json({ error: "Invalid API key" }, 401);
+        const rawBody = await request.text();
+        const secret = process.env['SYNC_SECRET'];
+        
+        if (!isAuthorized && signature && secret) {
+          if (await verifyWebhookSignature(rawBody, signature, secret)) {
+            isAuthorized = true;
+          }
+        }
+
+        if (!isAuthorized) return json({ error: "Unauthorized" }, 401);
 
         let body;
         try {
-          body = await request.json();
+          body = JSON.parse(rawBody);
         } catch {
           return json({ error: "Invalid JSON body" }, 400);
         }
@@ -60,13 +74,25 @@ export const Route = createFileRoute("/api/public/webhook")({
           try {
             const { reply } = await generateReply(parsed.data.message, []);
             
-            await supabaseAdmin
+            // Log activity to first valid API key for tracking if possible
+            const { data: firstKey } = await supabaseAdmin
               .from("api_keys")
-              .update({ last_used_at: new Date().toISOString() })
-              .eq("id", keyRow.id);
+              .select("id")
+              .eq("revoked", false)
+              .limit(1)
+              .maybeSingle();
+
+            if (firstKey) {
+              await supabaseAdmin
+                .from("api_keys")
+                .update({ last_used_at: new Date().toISOString() })
+                .eq("id", firstKey.id);
+            }
+
 
             await logConversation(
               parsed.data.conversation_id || parsed.data.sender || null,
+
               "webhook",
               [
                 { role: "user", content: parsed.data.message },
