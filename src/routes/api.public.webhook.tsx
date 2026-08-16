@@ -108,7 +108,7 @@ export const Route = createFileRoute("/api/public/webhook")({
 
           const finalIdempotencyKey = idempotencyKey || parsed.data.idempotency_key;
 
-          if (finalIdempotencyKey) {
+          if (finalIdempotencyKey && logId) {
             const { data: existing } = await supabaseAdmin
               .from("webhook_logs")
               .select("id, status_code, payload")
@@ -118,7 +118,7 @@ export const Route = createFileRoute("/api/public/webhook")({
               .maybeSingle();
 
             if (existing) {
-               if (logId) await supabaseAdmin.from("webhook_logs").delete().eq('id', logId);
+               await supabaseAdmin.from("webhook_logs").delete().eq('id', logId);
                return json({ status: "idempotent", message: "Request already processed" });
             }
           }
@@ -218,7 +218,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           console.error("Webhook processing error:", error);
           if (logId) {
             const backoffMinutes = [1, 5, 30, 120, 720];
-            const nextRetryMinutes = backoffMinutes[0]; 
+            const nextRetryMinutes = backoffMinutes[0] || 1; 
             const nextRetryAt = new Date();
             nextRetryAt.setMinutes(nextRetryAt.getMinutes() + nextRetryMinutes);
 
@@ -279,8 +279,9 @@ export async function processWebhookRetry(logId: string) {
         error_details: `Max retries exhausted: ${error.message}`
       }).eq('id', logId);
     } else {
+      const nextRetryMinutes = backoffMinutes[retryCount] || 60;
       const nextRetryAt = new Date();
-      nextRetryAt.setMinutes(nextRetryAt.getMinutes() + backoffMinutes[retryCount]);
+      nextRetryAt.setMinutes(nextRetryAt.getMinutes() + nextRetryMinutes);
       await supabaseAdmin.from("webhook_logs").update({
         processing_status: 'pending',
         retry_count: retryCount,
