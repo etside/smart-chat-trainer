@@ -44,10 +44,17 @@ function Connections() {
   });
 
   const endpoint = `${origin}/api/public/chat`;
+  const webhookEndpoint = `${origin}/api/public/webhook`;
+  
   const snippet = `curl -X POST ${endpoint} \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: YOUR_API_KEY" \\
   -d '{"message":"ডেলিভারি চার্জ কত?","channel":"messenger"}'`;
+
+  const webhookSnippet = `curl -X POST ${webhookEndpoint} \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  -d '{"message":"আপনার শপ কোথায়?","sender":"customer_123"}'`;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -121,9 +128,15 @@ function Connections() {
       </div>
 
       <div className="panel mt-6 p-5">
-        <h2 className="text-base font-semibold">কীভাবে যুক্ত করবেন</h2>
-        <pre className="mt-3 overflow-x-auto rounded-lg bg-secondary p-3 text-xs">{snippet}</pre>
-        <p className="mt-3 text-sm text-muted-foreground">
+        <h2 className="text-base font-semibold">API ইন্টিগ্রেশন</h2>
+        <p className="mt-1 text-xs text-muted-foreground">সরাসরি রিপ্লাই পাওয়ার জন্য এই এন্ডপয়েন্ট ব্যবহার করুন:</p>
+        <pre className="mt-2 overflow-x-auto rounded-lg bg-secondary p-3 text-xs">{snippet}</pre>
+        
+        <h2 className="mt-6 text-base font-semibold">ওয়েবহুক (Webhook) ইন্টিগ্রেশন</h2>
+        <p className="mt-1 text-xs text-muted-foreground">অন্য প্লাটফর্ম থেকে ইভেন্ট পাঠানোর জন্য এই এন্ডপয়েন্ট ব্যবহার করুন:</p>
+        <pre className="mt-2 overflow-x-auto rounded-lg bg-secondary p-3 text-xs">{webhookSnippet}</pre>
+
+        <p className="mt-4 text-sm text-muted-foreground">
           উত্তর আসবে <code>{`{"reply": "..."}`}</code> আকারে। প্রতিটি কল ট্রেনিং ডেটা দেখে উত্তর
           দেয় এবং কথোপকথন সেভ করে রাখে।
         </p>

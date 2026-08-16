@@ -1,19 +1,33 @@
-import { getTrainingJobs } from "@/lib/console.functions";
-import { useQuery } from "@tanstack/react-query";
+import { getTrainingJobs, triggerTraining } from "@/lib/console.functions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertCircle, CheckCircle2, Clock, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Loader2, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/progress")({
   component: TrainingProgress,
 });
 
 function TrainingProgress() {
+  const qc = useQueryClient();
   const fetchJobs = useServerFn(getTrainingJobs);
+  const startTraining = useServerFn(triggerTraining);
+
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["training-jobs"],
     queryFn: () => fetchJobs(),
     refetchInterval: 5000,
+  });
+
+  const mutation = useMutation({
+    mutationFn: () => startTraining({ data: {} }),
+    onSuccess: () => {
+      toast.success("ট্রেনিং শুরু হয়েছে");
+      qc.invalidateQueries({ queryKey: ["training-jobs"] });
+    },
+    onError: () => toast.error("ট্রেনিং শুরু করা যায়নি"),
   });
 
   return (
@@ -25,6 +39,17 @@ function TrainingProgress() {
             অটোমেটিক ট্রেনিং জব এবং ডেটা প্রসেসিং স্ট্যাটাস।
           </p>
         </div>
+        <Button 
+          onClick={() => mutation.mutate()} 
+          disabled={mutation.isPending || jobs?.some((j: any) => j.status === 'processing')}
+        >
+          {mutation.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Play className="mr-2 h-4 w-4" />
+          )}
+          ম্যানুয়াল রিট্রেন (Manual Retrain)
+        </Button>
       </div>
 
       <div className="mt-8">

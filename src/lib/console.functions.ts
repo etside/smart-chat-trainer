@@ -293,6 +293,45 @@ export const getTrainingVersions = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+export const triggerTraining = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ version_id: z.string().uuid().optional() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Create a new job record
+    const { data: job, error } = await supabaseAdmin
+      .from("training_jobs")
+      .insert({
+        status: "processing",
+        processed_count: 0,
+      } as any)
+      .select()
+      .single();
+
+    if (error) throw new Error("Failed to start training job");
+
+    // Mocking an immediate background process update for demo purposes
+    setTimeout(async () => {
+      const { data: approved } = await supabaseAdmin
+        .from("training_pairs")
+        .select("id")
+        .eq("status", "approved");
+      
+      await supabaseAdmin
+        .from("training_jobs")
+        .update({
+          status: "completed",
+          processed_count: approved?.length || 0,
+          finished_at: new Date().toISOString()
+        } as any)
+        .eq("id", job.id);
+    }, 2000);
+
+    return { job_id: job.id };
+  });
+
 export const exportTrainingData = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ type: z.enum(["training_pairs", "conversations"]) }).parse(d))
   .middleware([requireSupabaseAuth])
