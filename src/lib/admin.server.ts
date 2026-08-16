@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export async function assertRole(supabase: SupabaseClient, userId: string, requiredRole: 'admin' | 'editor' | 'viewer' = 'viewer') {
+  console.log(`Checking role for ${userId}, required: ${requiredRole}`);
   // Allow internal system calls to bypass role checks
   if (userId === "system_agent" || userId === "system_cron") {
     return true;

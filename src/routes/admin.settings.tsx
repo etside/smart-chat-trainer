@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { getAgentSettings, saveAgentSettings } from "@/lib/console.functions";
+import { getAgentSettings, saveAgentSettings, getMyRole } from "@/lib/console.functions";
+import { useAuth } from "@/hooks/useAuth";
 import { getSyncCredentials, updateSyncCredentials, getMetaCredentials, updateMetaCredentials } from "@/lib/settings.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -176,13 +177,15 @@ function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
 
 function SettingsPage() {
   const qc = useQueryClient();
+  const { session } = useAuth();
   const fetchSettings = useServerFn(getAgentSettings);
   const save = useServerFn(saveAgentSettings);
   
   const fetchExtra = useServerFn(getExtraSettings);
   const saveExtra = useServerFn(updateExtraSettings);
+  const fetchMyRole = useServerFn(getMyRole);
 
-  const { data: roleData } = useQuery({ queryKey: ["my-role", session?.user.id], queryFn: () => useServerFn(getMyRole)(), enabled: !!session });
+  const { data: roleData } = useQuery({ queryKey: ["my-role", session?.user.id], queryFn: () => fetchMyRole(), enabled: !!session });
   const isAdmin = roleData?.role === 'admin';
 
   const { data } = useQuery({ queryKey: ["agent-settings"], queryFn: () => fetchSettings() });
