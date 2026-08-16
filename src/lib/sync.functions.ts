@@ -81,7 +81,12 @@ async function fetchWithRetry(url: string, options: any, retries = 3, backoff = 
 
 export const syncCatalog = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
-    z.object({ url: z.string().url().default(DEFAULT_SYNC_URL) }).parse(d || {})
+    z.object({ 
+      url: z.string().url().default(DEFAULT_SYNC_URL),
+      idempotencyKey: z.string().optional(),
+      signature: z.string().optional(),
+      rawBody: z.string().optional()
+    }).parse(d || {})
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
@@ -95,10 +100,38 @@ export const syncCatalog = createServerFn({ method: "POST" })
       throw new Error("Sync credentials (SYNC_TOKEN/SYNC_SECRET) not configured.");
     }
 
+    // Check idempotency
+    if (data.idempotencyKey) {
+      const { data: existing } = await supabaseAdmin
+        .from("sync_runs")
+        .select("id, status, items_count, error_message")
+        .eq("idempotency_key", data.idempotencyKey)
+        .maybeSingle();
+      
+      if (existing) {
+        return { 
+          count: existing.items_count, 
+          message: `Idempotent result: Sync was already ${existing.status}.`,
+          status: existing.status
+        };
+      }
+    }
+
+    // Verify signature if provided
+    if (data.signature && data.rawBody) {
+      const { verifyWebhookSignature } = await import("./admin.server");
+      const isValid = await verifyWebhookSignature(data.rawBody, data.signature, secret);
+      if (!isValid) throw new Error("Invalid webhook signature.");
+    }
+
     // Create run record
     const { data: run } = await supabaseAdmin
       .from("sync_runs")
-      .insert({ status: "processing", source: "api_sync" })
+      .insert({ 
+        status: "processing", 
+        source: "api_sync",
+        idempotency_key: data.idempotencyKey || null
+      })
       .select()
       .single();
 
@@ -108,7 +141,8 @@ export const syncCatalog = createServerFn({ method: "POST" })
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
-          "X-Secret": secret
+          "X-Secret": secret,
+          "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`
         },
         body: JSON.stringify({ action: "get_all_info" })
       });
@@ -142,11 +176,15 @@ export const syncCatalog = createServerFn({ method: "POST" })
             finished_at: new Date().toISOString()
           })
           .eq("id", run.id);
+        
+        // Trigger training after successful sync
+        const { triggerTraining } = await import("./console.functions");
+        await triggerTraining({ data: { sync_run_id: run.id } as any });
       }
 
       return { 
         count: trainingPairs.length, 
-        message: `Successfully synced ${trainingPairs.length} items from API.` 
+        message: `Successfully synced ${trainingPairs.length} items from API and triggered training.` 
       };
     } catch (err: any) {
       if (run) {
