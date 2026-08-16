@@ -94,17 +94,39 @@ function TrainingProgress() {
     enabled: !!selectedJobId,
   });
 
-  const { data: jobs, isLoading } = useQuery({
-    queryKey: ["training-jobs"],
-    queryFn: () => fetchJobs(),
-    refetchInterval: 5000,
-  });
+  const handleExport = async (id: string, format: 'json' | 'csv') => {
+    try {
+      const { json } = await exportLogs({ data: { id } });
+      const data = JSON.parse(json);
+      
+      let blob;
+      let filename = `training-logs-${id.slice(0, 8)}`;
 
-  const { data: jobDetail, isLoading: isDetailLoading } = useQuery({
-    queryKey: ["training-job-detail", selectedJobId],
-    queryFn: () => selectedJobId ? fetchJobDetail({ data: { id: selectedJobId } }) : null,
-    enabled: !!selectedJobId,
-  });
+      if (format === 'csv') {
+        const headers = ["Question", "Answer", "Status", "Created At"];
+        const rows = data.samples.map((s: any) => [
+          `"${s.question.replace(/"/g, '""')}"`,
+          `"${s.answer.replace(/"/g, '""')}"`,
+          s.status,
+          s.created_at
+        ]);
+        const csvContent = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
+        blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        filename += ".csv";
+      } else {
+        blob = new Blob([json], { type: "application/json" });
+        filename += ".json";
+      }
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      toast.success("Log export successful");
+    } catch (err) {
+      toast.error("Export failed");
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: (versionId?: string) => startTraining({ data: { version_id: versionId } }),
