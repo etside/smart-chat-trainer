@@ -3,7 +3,6 @@ import { Shield, CheckCircle, Info } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
 import { getDataPolicy } from '@/lib/admin-extra.functions';
-import ReactMarkdown from 'react-markdown';
 
 export const Route = createFileRoute('/data-deletion')({
   component: DataDeletionStatus,
@@ -57,7 +56,7 @@ function DataDeletionStatus() {
 
         <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl text-left prose prose-invert max-w-none">
           {policyContent ? (
-            <ReactMarkdown>{policyContent}</ReactMarkdown>
+            <div className="whitespace-pre-wrap">{policyContent}</div>
           ) : (
             <p className="text-center text-muted-foreground py-8">Loading policy content...</p>
           )}
