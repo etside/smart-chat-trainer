@@ -26,7 +26,11 @@ export const Route = createFileRoute('/api/public/meta/deletion')({
             return new Response('Server configuration error', { status: 500 });
           }
 
-          const [encodedSig, payload] = signedRequest.split('.');
+          const parts = signedRequest.split('.');
+          if (parts.length !== 2) {
+            return new Response('Invalid signed_request format', { status: 400 });
+          }
+          const [encodedSig, payload] = parts;
           
           // Decode data
           const sig = Buffer.from(encodedSig.replace(/-/g, '+').replace(/_/g, '/'), 'base64');

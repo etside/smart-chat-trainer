@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ConnectRouteImport } from './routes/connect'
+import { Route as DataDeletionRouteImport } from './routes/data-deletion'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
@@ -25,6 +27,7 @@ import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
 import { Route as ApiPublicAiSyncStatusRouteImport } from './routes/api/public/ai-sync/status'
 import { Route as ApiPublicCronSyncRouteImport } from './routes/api.public.cron.sync'
+import { Route as ApiPublicMetaDeletionRouteImport } from './routes/api.public.meta.deletion'
 import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api.public.webhooks.meta'
 
 const IndexRoute = IndexRouteImport.update({
@@ -40,6 +43,16 @@ const AdminRoute = AdminRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataDeletionRoute = DataDeletionRouteImport.update({
+  id: '/data-deletion',
+  path: '/data-deletion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -107,6 +120,11 @@ const ApiPublicCronSyncRoute = ApiPublicCronSyncRouteImport.update({
   path: '/api/public/cron/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicMetaDeletionRoute = ApiPublicMetaDeletionRouteImport.update({
+  id: '/api/public/meta/deletion',
+  path: '/api/public/meta/deletion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksMetaRoute = ApiPublicWebhooksMetaRouteImport.update({
   id: '/api/public/webhooks/meta',
   path: '/api/public/webhooks/meta',
@@ -117,6 +135,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/connect': typeof ConnectRoute
+  '/data-deletion': typeof DataDeletionRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
@@ -130,11 +150,14 @@ export interface FileRoutesByFullPath {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
+  '/api/public/meta/deletion': typeof ApiPublicMetaDeletionRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/connect': typeof ConnectRoute
+  '/data-deletion': typeof DataDeletionRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
@@ -148,6 +171,7 @@ export interface FileRoutesByTo {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
+  '/api/public/meta/deletion': typeof ApiPublicMetaDeletionRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
 }
 export interface FileRoutesById {
@@ -155,6 +179,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/connect': typeof ConnectRoute
+  '/data-deletion': typeof DataDeletionRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
@@ -168,6 +194,7 @@ export interface FileRoutesById {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
+  '/api/public/meta/deletion': typeof ApiPublicMetaDeletionRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
 }
 export interface FileRouteTypes {
@@ -176,6 +203,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/connect'
+    | '/data-deletion'
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
@@ -189,11 +218,14 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
+    | '/api/public/meta/deletion'
     | '/api/public/webhooks/meta'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/connect'
+    | '/data-deletion'
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
@@ -207,12 +239,15 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
+    | '/api/public/meta/deletion'
     | '/api/public/webhooks/meta'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
+    | '/connect'
+    | '/data-deletion'
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
@@ -226,6 +261,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
+    | '/api/public/meta/deletion'
     | '/api/public/webhooks/meta'
   fileRoutesById: FileRoutesById
 }
@@ -233,10 +269,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ConnectRoute: typeof ConnectRoute
+  DataDeletionRoute: typeof DataDeletionRoute
   ApiPublicChatRoute: typeof ApiPublicChatRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicAiSyncStatusRoute: typeof ApiPublicAiSyncStatusRoute
   ApiPublicCronSyncRoute: typeof ApiPublicCronSyncRoute
+  ApiPublicMetaDeletionRoute: typeof ApiPublicMetaDeletionRoute
   ApiPublicWebhooksMetaRoute: typeof ApiPublicWebhooksMetaRoute
 }
 
@@ -261,6 +300,20 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-deletion': {
+      id: '/data-deletion'
+      path: '/data-deletion'
+      fullPath: '/data-deletion'
+      preLoaderRoute: typeof DataDeletionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -354,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/meta/deletion': {
+      id: '/api/public/meta/deletion'
+      path: '/api/public/meta/deletion'
+      fullPath: '/api/public/meta/deletion'
+      preLoaderRoute: typeof ApiPublicMetaDeletionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/meta': {
       id: '/api/public/webhooks/meta'
       path: '/api/public/webhooks/meta'
@@ -394,10 +454,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  ConnectRoute: ConnectRoute,
+  DataDeletionRoute: DataDeletionRoute,
   ApiPublicChatRoute: ApiPublicChatRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicAiSyncStatusRoute: ApiPublicAiSyncStatusRoute,
   ApiPublicCronSyncRoute: ApiPublicCronSyncRoute,
+  ApiPublicMetaDeletionRoute: ApiPublicMetaDeletionRoute,
   ApiPublicWebhooksMetaRoute: ApiPublicWebhooksMetaRoute,
 }
 export const routeTree = rootRouteImport
