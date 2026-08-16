@@ -53,7 +53,7 @@ function Dashboard() {
           <Button variant="ghost" size="sm" className="h-6 px-2 text-[9px] hover:bg-white/10 text-muted-foreground" onClick={() => {
             navigator.clipboard.writeText(`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
 
-I can't see the navigation buttons`);
+IImprove the active route highlight by adding a clearer underline/icon indicator instead of relying only on background color.Add a high-contrast mode toggle in the admin interface so navigation remains readable for everyone. Verify that the navigation buttons are fully visible on mobile screens in both light and dark states.ncrease the size and spacing of navigation buttons so they are easy to tap and cannot look hidden on small devices.`);
             toast.success("ডকুমেন্টেশন কপি হয়েছে");
           }}>
             <Terminal className="size-3 mr-1" /> Copy Script
@@ -63,7 +63,7 @@ I can't see the navigation buttons`);
           <span className="text-primary/80">$</span> daddy-ai --status check-sync
           {"\n"}<span className="text-white/40">{`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
 
-I can't see the navigation buttons`}</span>
+IImprove the active route highlight by adding a clearer underline/icon indicator instead of relying only on background color.Add a high-contrast mode toggle in the admin interface so navigation remains readable for everyone. Verify that the navigation buttons are fully visible on mobile screens in both light and dark states.ncrease the size and spacing of navigation buttons so they are easy to tap and cannot look hidden on small devices.`}</span>
         </div>
       </div>
 
