@@ -15,7 +15,7 @@
   status = 200
 
 [functions]
-  node_version = "20"
+  directory = "dist/server"
   directory = "dist/server"
 
 [[headers]]
