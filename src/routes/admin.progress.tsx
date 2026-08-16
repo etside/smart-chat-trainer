@@ -1,29 +1,98 @@
-import { getTrainingJobs, triggerTraining } from "@/lib/console.functions";
+import { getTrainingJobs, triggerTraining, getTrainingJobDetail, exportTrainingRunLogs } from "@/lib/console.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertCircle, CheckCircle2, Clock, Loader2, Play, RotateCcw, ExternalLink, Database, MessageSquare } from "lucide-react";
+import { 
+  AlertCircle, 
+  CheckCircle2, 
+  Clock, 
+  Loader2, 
+  Play, 
+  RotateCcw, 
+  ExternalLink, 
+  Database, 
+  MessageSquare,
+  Download,
+  Search,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableHead, 
+  TableRow, 
+  TableCell 
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { getTrainingJobDetail } from "@/lib/console.functions";
-import { useState } from "react";
-
-
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/progress")({
   component: TrainingProgress,
 });
 
-
 function TrainingProgress() {
   const qc = useQueryClient();
   const fetchJobs = useServerFn(getTrainingJobs);
   const startTraining = useServerFn(triggerTraining);
   const fetchJobDetail = useServerFn(getTrainingJobDetail);
+  const exportLogs = useServerFn(exportTrainingRunLogs);
+
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(0);
+  const previousJobsRef = useRef<any[]>([]);
+
+  const { data: jobs, isLoading } = useQuery({
+    queryKey: ["training-jobs"],
+    queryFn: () => fetchJobs(),
+    refetchInterval: 5000,
+  });
+
+  // Watch for job status changes to show notifications
+  useEffect(() => {
+    if (jobs && previousJobsRef.current.length > 0) {
+      jobs.forEach((job: any) => {
+        const prevJob = previousJobsRef.current.find(pj => pj.id === job.id);
+        if (prevJob && prevJob.status === 'running' && job.status !== 'running') {
+          if (job.status === 'completed') {
+            toast.success(`জব #${job.id.slice(0, 8)} সফলভাবে শেষ হয়েছে।`, {
+              description: `${job.processed_count || 0} আইটেম প্রসেস করা হয়েছে।`,
+              duration: 5000,
+            });
+          } else if (job.status === 'failed') {
+            toast.error(`জব #${job.id.slice(0, 8)} ব্যর্থ হয়েছে।`, {
+              description: job.error_log || "অজানা ত্রুটি",
+              duration: 8000,
+            });
+          }
+        }
+      });
+    }
+    if (jobs) {
+      previousJobsRef.current = jobs;
+    }
+  }, [jobs]);
+
+  const { data: detailData, isLoading: isDetailLoading } = useQuery({
+    queryKey: ["training-job-detail", selectedJobId, searchTerm, page],
+    queryFn: () => selectedJobId ? fetchJobDetail({ data: { id: selectedJobId, search: searchTerm, page } }) : null,
+    enabled: !!selectedJobId,
+  });
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["training-jobs"],
