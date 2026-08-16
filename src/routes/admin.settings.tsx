@@ -113,6 +113,32 @@ function SettingsPage() {
     onError: (err: any) => toast.error(err.message || "সেভ করা যায়নি।"),
   });
 
+  const updateMetaMutation = useMutation({
+    mutationFn: () => saveMetaCreds({ 
+      data: { 
+        appId: metaAppId, 
+        appSecret: metaAppSecret, 
+        accessToken: metaAccessToken,
+        pageId: metaPageId,
+        whatsappId: metaWhatsappId,
+        verifyToken: metaVerifyToken
+      } 
+    }),
+    onSuccess: () => {
+      toast.success("Meta ক্রেডেনশিয়াল সেভ হয়েছে");
+      qc.invalidateQueries({ queryKey: ["meta-credentials"] });
+    },
+    onError: (err: any) => toast.error(err.message || "সেভ করা যায়নি।"),
+  });
+
+  const verifyMetaMutation = useMutation({
+    mutationFn: () => verifyMeta(),
+    onSuccess: (data: any) => {
+      toast.success(`কানেকশন সফল! পেজ: ${data.pageName}`);
+    },
+    onError: (err: any) => toast.error(err.message || "ভেরিফিকেশন ব্যর্থ হয়েছে।"),
+  });
+
   return (
     <div className="mx-auto max-w-4xl pb-20">
       <div className="flex items-center justify-between mb-8">
