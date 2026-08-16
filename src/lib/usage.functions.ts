@@ -6,7 +6,8 @@ import { assertAdmin } from "./admin.server";
 export const getUsageStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    const ctx = context as any;
+    await assertAdmin(ctx.supabase, ctx.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Get aggregated stats
@@ -40,6 +41,7 @@ export const logActionUsage = createServerFn({ method: "POST" })
     metadata: z.any().optional()
   }).parse(d))
   .handler(async ({ context, data }) => {
+    const ctx = context as any;
     // This is typically called from other server functions
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     
@@ -53,7 +55,7 @@ export const logActionUsage = createServerFn({ method: "POST" })
     const config = (settings?.usage_config as any)?.[data.action] || { credits: 0, usd: 0, bdt: 0 };
 
     const { error } = await supabaseAdmin.from("usage_logs").insert({
-      actor_id: context?.userId || null,
+      actor_id: ctx?.userId || null,
       action: data.action,
       credits_used: config.credits,
       cost_usd: config.usd,
