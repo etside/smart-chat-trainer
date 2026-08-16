@@ -78,16 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Wear Impressive AI Console" },
+      { title: "Daddy AI Console" },
       {
         name: "description",
-        content: "Wear Impressive-এর AI সেলস এজেন্ট ট্রেনিং কনসোল।",
+        content: "Daddy AI-এর সেলস এজেন্ট ট্রেনিং কনসোল।",
       },
-      { name: "author", content: "Wear Impressive" },
-      { property: "og:title", content: "Wear Impressive AI Console" },
+      { name: "author", content: "Daddy AI" },
+      { property: "og:title", content: "Daddy AI Console" },
       {
         property: "og:description",
-        content: "Wear Impressive-এর AI সেলস এজেন্ট ট্রেনিং কনসোল।",
+        content: "Daddy AI-এর সেলস এজেন্ট ট্রেনিং কনসোল।",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
