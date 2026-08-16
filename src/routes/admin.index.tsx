@@ -46,7 +46,30 @@ function Dashboard() {
         '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add clear webhook request/response schema documentation and copy-pastable sample payloads to the admin webhook test page. https://wearimpressive.com/api/meta-catalog?format=csv ensure to connect the  data and get more product data sync and improve the training
+                                            For the code present, I get the error below.
+
+Please think step-by-step in order to resolve it.
+```
+ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [],
+    "message": "Required"
+  }
+]
+
+{
+  "timestamp": 1786840597237,
+  "error_type": "RUNTIME_ERROR",
+  "filename": "http://localhost:8080/_serverFn/eyJmaWxlIjoiL3NyYy9saWIvc3luYy5mdW5jdGlvbnMudHM_dHNzLXNlcnZlcmZuLXNwbGl0IiwiZXhwb3J0Ijoic3luY0NhdGFsb2dfY3JlYXRlU2VydmVyRm5faGFuZGxlciJ9",
+  "lineno": 0,
+  "colno": 0,
+  "stack": "ZodError: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"object\",\n    \"received\": \"undefined\",\n    \"path\": [],\n    \"message\": \"Required\"\n  }\n]\n    at get error (file:///dev-server/node_modules/zod/v3/types.js:39:31)\n    at ZodObject.parse (file:///dev-server/node_modules/zod/v3/types.js:114:22)\n    at inputValidator (/dev-server/src/lib/sync.functions.ts:12:8)\n    at execValidator (/dev-server/node_modules/@tanstack/start-client-core/src/createServerFn.ts:911:12)\n    at callNextMiddleware (/dev-server/node_modules/@tanstack/start-client-core/src/createServerFn.ts:273:26)\n    at userNext (/dev-server/node_modules/@tanstack/start-client-core/src/createServerFn.ts:312:32)\n    at eval (/dev-server/src/integrations/supabase/auth-middleware.ts:101:12)\n    at async callNextMiddleware (/dev-server/node_modules/@tanstack/start-client-core/src/createServerFn.ts:322:24)\n    at async AsyncFunction.__executeServer (/dev-server/node_modules/@tanstack/start-client-core/src/createServerFn.ts:212:20)\n    at async eval (/dev-server/node_modules/@tanstack/start-server-core/src/server-functions-handler.ts:159:16)",
+  "has_blank_screen": true
+}
+```
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
