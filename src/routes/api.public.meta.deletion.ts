@@ -30,7 +30,7 @@ export const Route = createFileRoute('/api/public/meta/deletion')({
           if (parts.length !== 2) {
             return new Response('Invalid signed_request format', { status: 400 });
           }
-          const [encodedSig, payload] = parts;
+          const [encodedSig, payload] = parts as [string, string];
           
           // Decode data
           const sig = Buffer.from(encodedSig.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
