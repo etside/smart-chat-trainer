@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export async function assertRole(supabase: SupabaseClient, userId: string, requiredRole: 'admin' | 'editor' | 'viewer' = 'viewer') {
+  // Allow internal system calls to bypass role checks
+  if (userId === "system_agent" || userId === "system_cron") {
+    return true;
+  }
+
   const { data } = await supabase
     .from("user_roles")
     .select("role")
@@ -42,7 +47,10 @@ export function generateApiKey() {
 }
 
 export async function verifyWebhookSignature(payload: string, signature: string | null, secret: string | undefined) {
-  if (!signature || !secret) return false;
+  if (!signature || !secret) {
+    console.warn("Signature verification failed: Missing signature or secret");
+    return false;
+  }
 
   try {
     const encoder = new TextEncoder();

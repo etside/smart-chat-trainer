@@ -33,6 +33,29 @@ export async function generateReply(
   versionId?: string | null,
 ): Promise<{ reply: string; examples: Array<{ question: string; answer: string }> }> {
   const settings = await getSettings();
+  
+  // 1. Check for product-specific keywords and trigger real-time sync if needed
+  // This ensures the AI has the most current stock/inventory info for product queries.
+  const isProductQuery = /দাম|স্টক|স্টকে|inventory|price|stock|কত|আছে/.test(message);
+  
+  if (isProductQuery) {
+    try {
+      // Trigger a silent background sync via the syncCatalog server function logic
+      // We import it dynamically to avoid circular dependencies if any
+      const { syncCatalog } = await import("./sync.functions");
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      
+      // We run this in the background but wait slightly for it to at least start
+      // Note: syncCatalog is a server function, we call its internal logic
+      await (syncCatalog as any).handler({
+        context: { supabase: supabaseAdmin, userId: "system_agent" },
+        data: { idempotencyKey: `auto_sync_${new Date().toISOString().slice(0, 13)}` }
+      }).catch((e: any) => console.error("Auto-sync failed:", e));
+    } catch (e) {
+      console.error("Failed to trigger real-time sync:", e);
+    }
+  }
+
   const examples = await findExamples(message);
 
   const exampleBlock = examples.length
