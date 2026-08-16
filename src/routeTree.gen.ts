@@ -14,6 +14,8 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as DataDeletionRouteImport } from './routes/data-deletion'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminApiKeysRouteImport } from './routes/admin.api-keys'
@@ -56,6 +58,16 @@ const ConnectRoute = ConnectRouteImport.update({
 const DataDeletionRoute = DataDeletionRouteImport.update({
   id: '/data-deletion',
   path: '/data-deletion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -155,6 +167,8 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
@@ -179,6 +193,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
@@ -205,6 +221,8 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/connections': typeof AdminConnectionsRoute
@@ -232,6 +250,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/connect'
     | '/data-deletion'
+    | '/privacy'
+    | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
     | '/admin/connections'
@@ -256,6 +276,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/connect'
     | '/data-deletion'
+    | '/privacy'
+    | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
     | '/admin/connections'
@@ -281,6 +303,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/connect'
     | '/data-deletion'
+    | '/privacy'
+    | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
     | '/admin/connections'
@@ -307,6 +331,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ConnectRoute: typeof ConnectRoute
   DataDeletionRoute: typeof DataDeletionRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicChatRoute: typeof ApiPublicChatRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicAiSyncStatusRoute: typeof ApiPublicAiSyncStatusRoute
@@ -350,6 +376,20 @@ declare module '@tanstack/react-router' {
       path: '/data-deletion'
       fullPath: '/data-deletion'
       preLoaderRoute: typeof DataDeletionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -519,6 +559,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ConnectRoute: ConnectRoute,
   DataDeletionRoute: DataDeletionRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   ApiPublicChatRoute: ApiPublicChatRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicAiSyncStatusRoute: ApiPublicAiSyncStatusRoute,

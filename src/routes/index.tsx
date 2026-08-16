@@ -111,58 +111,84 @@ function Landing() {
         </div>
       </section>
 
-      {/* Bento Grid Features */}
+      {/* Features Showcase */}
       <section className="py-24 px-6 lg:px-8 bg-card relative z-10">
         <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Core Technology</h2>
+            <p className="text-muted-foreground text-lg italic">Beyond basic chatbots — enterprise intelligence.</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bento-item md:col-span-2 h-[400px]">
+            <div className="bento-item md:col-span-2 h-[450px] group">
               <div className="max-w-md">
-                <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Mic className="size-7 text-primary" />
                 </div>
-                <h3 className="text-3xl font-bold mb-4">Voice-to-Training</h3>
+                <h3 className="text-3xl font-bold mb-4 italic">Adaptive Voice Training</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Train your agent by just speaking. Our high-fidelity transcription converts your voice into structured Q&A pairs instantly.
+                  Train your agent with zero coding. Speak naturally, and our AI extracts structured sales knowledge, including complex multi-step instructions and brand nuances.
                 </p>
+                <Link to="/admin" className="text-primary font-bold mt-6 inline-flex items-center gap-2 hover:gap-3 transition-all">
+                  Open Voice Console <ArrowRight className="size-4" />
+                </Link>
               </div>
-              <div className="absolute right-[-10%] bottom-[-10%] opacity-20 rotate-12">
+              <div className="absolute right-[-10%] bottom-[-10%] opacity-20 rotate-12 transition-transform group-hover:rotate-0">
                  <Mic className="size-64 text-primary" />
               </div>
             </div>
 
-            <div className="bento-item h-[400px]">
-               <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6">
+            <div className="bento-item h-[450px] group">
+               <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Zap className="size-7 text-accent" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Auto-Sync Engine</h3>
+                <h3 className="text-2xl font-bold mb-4 italic">Real-time Stock Sync</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Real-time synchronization with your product catalog, stocks, and inventory across all channels.
+                  Direct integration with your ERP and catalog. Your AI never suggests an out-of-stock item or an outdated price, maintaining absolute customer trust.
                 </p>
+                <div className="mt-8 pt-8 border-t border-white/10 w-full">
+                  <div className="flex justify-between items-center text-xs font-mono text-muted-foreground mb-2">
+                    <span>API SYNC</span>
+                    <span className="text-success">ACTIVE</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-success w-full animate-pulse" />
+                  </div>
+                </div>
             </div>
 
-            <div className="bento-item h-[400px]">
-               <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+            <div className="bento-item h-[450px] group">
+               <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Globe className="size-7 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Multi-Platform</h3>
+                <h3 className="text-2xl font-bold mb-4 italic">Omnichannel Presence</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  One agent, everywhere. Connect to Messenger, WhatsApp, and Telegram with a single API key.
+                  One single brain for your entire business. Connect to WhatsApp, Instagram, Facebook, and your Website with a unified training pipeline.
                 </p>
+                <div className="flex gap-4 mt-8 opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                  <MessageSquareText className="size-6" />
+                  <Users className="size-6" />
+                  <Globe className="size-6" />
+                </div>
             </div>
 
-            <div className="bento-item md:col-span-2 h-[400px]">
+            <div className="bento-item md:col-span-2 h-[450px] group">
               <div className="max-w-md">
-                <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6">
+                <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <ShieldCheck className="size-7 text-accent" />
                 </div>
-                <h3 className="text-3xl font-bold mb-4">Enterprise Guardrails</h3>
+                <h3 className="text-3xl font-bold mb-4 italic">Privacy First by Design</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Built-in safety layers ensure your AI stays on brand, never hallucinates prices, and protects user data.
+                  Fully GDPR and CCPA compliant. Your training data is encrypted at rest and in transit, and you maintain complete ownership of your proprietary datasets.
                 </p>
+                <div className="flex gap-3 mt-6">
+                  <span className="text-[10px] border border-success/20 bg-success/10 text-success px-2 py-1 rounded-full font-bold">GDPR COMPLIANT</span>
+                  <span className="text-[10px] border border-primary/20 bg-primary/10 text-primary px-2 py-1 rounded-full font-bold">256-BIT ENCRYPTION</span>
+                </div>
               </div>
               <div className="absolute right-10 top-10 flex gap-4">
-                 <div className="size-20 glass rounded-full flex items-center justify-center animate-bounce">
-                    <ShieldCheck className="size-10 text-success" />
+                 <div className="size-24 glass rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ShieldCheck className="size-12 text-success shadow-[0_0_20px_rgba(34,197,94,0.3)]" />
                  </div>
               </div>
             </div>
