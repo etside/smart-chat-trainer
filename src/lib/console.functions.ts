@@ -442,6 +442,7 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
   });
 
 export const getTrainingJobDetail = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ id: z.string(), search: z.string().optional(), page: z.number().int().default(0) }).parse(d))
   .inputValidator((d: unknown) => z.object({ id: z.string() }).parse(d))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
