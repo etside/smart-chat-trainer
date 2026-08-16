@@ -190,12 +190,13 @@ export const syncCatalog = createServerFn({ method: "POST" })
           "X-AI-Signature": `sha256=${await (async () => {
             const encoder = new TextEncoder();
             const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-            // Ensure payload is exactly what we send in the body
             const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(bodyStr));
             return Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, "0")).join("");
           })()}`,
           "X-Secret": secret,
-          "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`
+          "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`,
+          "Token": token.startsWith("Bearer ") ? token.slice(7) : token,
+          "Secret": secret
         },
         body: bodyStr
       });
