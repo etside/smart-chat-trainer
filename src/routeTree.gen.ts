@@ -17,6 +17,7 @@ import { Route as DataDeletionRouteImport } from './routes/data-deletion'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
 import { Route as AdminProgressRouteImport } from './routes/admin.progress'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -68,6 +69,11 @@ const AdminAddRoute = AdminAddRouteImport.update({
 const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
   id: '/connections',
   path: '/connections',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPlaygroundRoute = AdminPlaygroundRouteImport.update({
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/data-deletion': typeof DataDeletionRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/data-deletion': typeof DataDeletionRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/data-deletion': typeof DataDeletionRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/data-deletion'
     | '/admin/add'
     | '/admin/connections'
+    | '/admin/logs'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/data-deletion'
     | '/admin/add'
     | '/admin/connections'
+    | '/admin/logs'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/data-deletion'
     | '/admin/add'
     | '/admin/connections'
+    | '/admin/logs'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
@@ -335,6 +347,13 @@ declare module '@tanstack/react-router' {
       path: '/connections'
       fullPath: '/admin/connections'
       preLoaderRoute: typeof AdminConnectionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/playground': {
@@ -427,6 +446,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAddRoute: typeof AdminAddRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
+  AdminLogsRoute: typeof AdminLogsRoute
   AdminPlaygroundRoute: typeof AdminPlaygroundRoute
   AdminProgressRoute: typeof AdminProgressRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -439,6 +459,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAddRoute: AdminAddRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
+  AdminLogsRoute: AdminLogsRoute,
   AdminPlaygroundRoute: AdminPlaygroundRoute,
   AdminProgressRoute: AdminProgressRoute,
   AdminSettingsRoute: AdminSettingsRoute,

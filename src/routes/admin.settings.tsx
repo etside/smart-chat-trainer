@@ -15,7 +15,7 @@ import { getSyncCredentials, updateSyncCredentials, getMetaCredentials, updateMe
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Key, Save, Sparkles, Facebook, MessageSquare, Info, ShieldCheck, Copy, AlertCircle } from "lucide-react";
+import { Key, Save, Sparkles, Facebook, MessageSquare, Info, ShieldCheck, Copy, AlertCircle, Terminal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { verifyMetaConnection, getMetaWebhookConfig } from "@/lib/meta.functions";
 import { toast } from "sonner";
@@ -291,16 +291,25 @@ function SettingsPage() {
           <h1 className="text-3xl font-bold tracking-tight">সেটিংস</h1>
           <p className="mt-1 text-sm text-muted-foreground italic">Daddy AI-এর ব্যক্তিত্ব ও নিয়মাবলী কনফিগার করুন।</p>
         </div>
-        <Button 
-          size="lg" 
-          onClick={() => mutation.mutate()} 
-          disabled={mutation.isPending}
-          className="shadow-xl shadow-primary/20"
-        >
-          <Save className="mr-2 size-4" />
-          {mutation.isPending ? "সেভ হচ্ছে..." : "সব সেটিংস সেভ করুন"}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/admin/logs">
+              <Terminal className="mr-2 size-4" />
+              Logs & Policy
+            </Link>
+          </Button>
+          <Button 
+            size="lg" 
+            onClick={() => mutation.mutate()} 
+            disabled={mutation.isPending}
+            className="shadow-xl shadow-primary/20"
+          >
+            <Save className="mr-2 size-4" />
+            {mutation.isPending ? "সেভ হচ্ছে..." : "সব সেটিংস সেভ করুন"}
+          </Button>
+        </div>
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
