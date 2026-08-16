@@ -142,4 +142,20 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-panel);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: var(--animate-in);
+}
+
+@utility panel-hover {
+  @apply hover:shadow-lg hover:-translate-y-1 hover:border-primary/20;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
