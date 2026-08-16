@@ -333,8 +333,14 @@ export const transcribeVoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
-    const settings = await getAgentSettings({ context });
-    const text = await transcribeAudio(data.audio, data.mimeType, settings.lovable_api_key_override);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
+      .from("agent_settings")
+      .select("lovable_api_key_override")
+      .eq("id", 1)
+      .maybeSingle();
+
+    const text = await transcribeAudio(data.audio, data.mimeType, settings?.lovable_api_key_override);
     return { text };
   });
 
