@@ -491,26 +491,51 @@ function SettingsPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10">
-                  <div>
-                    <p className="text-sm font-medium">Configuration ID</p>
-                    <p className="text-xs text-muted-foreground">Meta Partner Integration ID</p>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <div>
+                      <p className="text-sm font-medium">Meta Business ID</p>
+                      <p className="text-xs text-muted-foreground">Partner Integration Config ID</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono">
+                        4435001526812234
+                      </code>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="size-8"
+                        onClick={() => {
+                          navigator.clipboard.writeText("4435001526812234");
+                          toast.success("Business ID কপি করা হয়েছে");
+                        }}
+                      >
+                        <Copy className="size-3" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono">
-                      4435001526812234
-                    </code>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="size-8"
-                      onClick={() => {
-                        navigator.clipboard.writeText("4435001526812234");
-                        toast.success("ID কপি করা হয়েছে");
-                      }}
-                    >
-                      <Copy className="size-3" />
-                    </Button>
+
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-pink-500/5 border border-pink-500/10">
+                    <div>
+                      <p className="text-sm font-medium">Instagram Marketplace ID</p>
+                      <p className="text-xs text-muted-foreground">Creator Marketplace Config ID</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono">
+                        1065823475931849
+                      </code>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="size-8"
+                        onClick={() => {
+                          navigator.clipboard.writeText("1065823475931849");
+                          toast.success("Instagram ID কপি করা হয়েছে");
+                        }}
+                      >
+                        <Copy className="size-3" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 
