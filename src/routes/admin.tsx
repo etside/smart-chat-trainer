@@ -133,10 +133,10 @@ function AdminLayout() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 relative group",
+                  "flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 relative group border-l-4",
                   active
-                    ? "bg-black text-white shadow-lg shadow-black/20 scale-[1.02]"
-                    : "text-muted-foreground hover:bg-black/5 hover:text-black",
+                    ? "bg-black text-white shadow-lg shadow-black/20 scale-[1.02] border-primary"
+                    : "text-muted-foreground hover:bg-black/5 hover:text-black border-transparent",
                 )}
               >
                 <item.icon className={cn("size-4.5", active ? "text-white" : "group-hover:scale-110 transition-transform")} />
