@@ -40,10 +40,10 @@ export const getSyncSettings = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
-      .select("sync_schedule, last_sync_at")
+      .select("sync_schedule, last_sync_at, last_sync_status, last_sync_details")
       .eq("id", 1)
       .maybeSingle();
-    return data || { sync_schedule: "manual", last_sync_at: null };
+    return data || { sync_schedule: "manual", last_sync_at: null, last_sync_status: null, last_sync_details: null };
   });
 
 export const previewSync = createServerFn({ method: "POST" })

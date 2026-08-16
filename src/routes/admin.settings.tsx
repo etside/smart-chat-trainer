@@ -391,6 +391,7 @@ function SettingsPage() {
                   localStorage.setItem('prev_sync_creds', JSON.stringify({ token: syncToken, secret: syncSecret }));
                   setSyncToken(res.token);
                   setSyncSecret(res.secret);
+                  return;
                 }
               }}
             >
