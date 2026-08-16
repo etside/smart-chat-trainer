@@ -18,7 +18,8 @@ import {
   PlusCircle,
   Settings,
   Terminal,
-  BarChart3
+  BarChart3,
+  ShieldCheck
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -37,11 +38,12 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance" | "/privacy" | "/terms" | "/privacy-request";
   label: string;
   icon: typeof Database;
   exact?: boolean;
   minRole?: "admin" | "editor" | "viewer";
+  legal?: boolean;
 }> = [
   { to: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true, minRole: "viewer" },
   { to: "/admin/onboarding", label: "অনবোর্ডিং উইজার্ড", icon: PlusCircle, minRole: "admin" },
@@ -60,6 +62,9 @@ const nav: Array<{
   { to: "/admin/logs", label: "ইভেন্ট লগ ও পলিসি", icon: History, minRole: "admin" },
   { to: "/connect", label: "AI কানেক্ট", icon: Terminal, minRole: "viewer" },
   { to: "/admin/performance", label: "পারফরম্যান্স", icon: Activity, minRole: "admin" },
+  { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck, legal: true },
+  { to: "/terms", label: "Terms of Service", icon: ShieldCheck, legal: true },
+  { to: "/privacy-request", label: "GDPR Request", icon: History, legal: true },
 ];
 
 function AdminLayout() {
@@ -104,6 +109,7 @@ function AdminLayout() {
   }
 
   const filteredNav = nav.filter((item) => {
+    if (item.legal) return true;
     const requiredRoleIndex = roles.indexOf(item.minRole || "viewer");
     return userRoleIndex >= requiredRoleIndex;
   });

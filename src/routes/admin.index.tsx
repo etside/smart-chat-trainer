@@ -53,7 +53,9 @@ function Dashboard() {
           <Button variant="ghost" size="sm" className="h-6 px-2 text-[9px] hover:bg-white/10 text-muted-foreground" onClick={() => {
             navigator.clipboard.writeText(`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
 
-First ensure existing credentials and auth won't be affected by it. If it doesn't then analyze the complete project for ensure multi role and any business focused Ai text and voice both English+Bengali social platform auto reply and sales agent with required security, pages, nav with proper wired up buttons for legal pages,  use of AI models support that makes everything easy and sold not  a analyzer with voice button but transcribing doesn't work type issues`);
+/skill:redesign  Use this skill after the phases below gives a report and updates then start the complete project redesign without making any credentials changes:
+
+And  Verify and harden multi-role access (admin/editor/viewer) end to end so auth, security rules, and protected pages never break the credentials. Also need to ensure multi roles means tentant can sign up and get's the access of admin except the security features. Fix my voice message transcription so it reliably records, transcribes, and converts speech to text in the voice input UI. /skill:redesign Using current project setup .Fix the typing input issues so text entry works correctly alongside the transcription workflow without conflicts or formatting bugs.. Implement English+Bengali social platform auto-reply flows for my AI sales agent with proper context handling and configurable response templates.. Add a full verification pass for Privacy, Terms, and GDPR legal pages wiring so every nav button routes correctly and remains accessible across devices.`);
             toast.success("ডকুমেন্টেশন কপি হয়েছে");
           }}>
             <Terminal className="size-3 mr-1" /> Copy Script
@@ -63,7 +65,9 @@ First ensure existing credentials and auth won't be affected by it. If it doesn'
           <span className="text-primary/80">$</span> daddy-ai --status check-sync
           {"\n"}<span className="text-white/40">{`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
 
-First ensure existing credentials and auth won't be affected by it. If it doesn't then analyze the complete project for ensure multi role and any business focused Ai text and voice both English+Bengali social platform auto reply and sales agent with required security, pages, nav with proper wired up buttons for legal pages,  use of AI models support that makes everything easy and sold not  a analyzer with voice button but transcribing doesn't work type issues`}</span>
+/skill:redesign  Use this skill after the phases below gives a report and updates then start the complete project redesign without making any credentials changes:
+
+And  Verify and harden multi-role access (admin/editor/viewer) end to end so auth, security rules, and protected pages never break the credentials. Also need to ensure multi roles means tentant can sign up and get's the access of admin except the security features. Fix my voice message transcription so it reliably records, transcribes, and converts speech to text in the voice input UI. /skill:redesign Using current project setup .Fix the typing input issues so text entry works correctly alongside the transcription workflow without conflicts or formatting bugs.. Implement English+Bengali social platform auto-reply flows for my AI sales agent with proper context handling and configurable response templates.. Add a full verification pass for Privacy, Terms, and GDPR legal pages wiring so every nav button routes correctly and remains accessible across devices.`}</span>
         </div>
       </div>
 
