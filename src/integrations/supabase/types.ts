@@ -480,6 +480,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_usage_aggregates: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -487,6 +488,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_agent_credits: { Args: { amount: number }; Returns: undefined }
       log_audit: {
         Args: {
           _action: string
