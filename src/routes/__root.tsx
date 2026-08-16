@@ -170,6 +170,14 @@ function RootComponent() {
       FB.AppEvents.logPageView();
     };
 
+    // @ts-ignore
+    window.checkLoginState = function() {
+      // @ts-ignore
+      FB.getLoginStatus(function(response) {
+        window.dispatchEvent(new CustomEvent('fb-login-status', { detail: response }));
+      });
+    };
+
     (function (d, s, id) {
       var js,
         fjs = d.getElementsByTagName(s)[0];

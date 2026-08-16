@@ -30,7 +30,7 @@ const MODELS = [
   { id: "openai/gpt-5.6-luna", label: "Daddy Fast & Light (GPT-5.6 Luna)" },
 ];
 
-function MetaLoginButton() {
+function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
   const [status, setStatus] = useState<string>("unknown");
   const [user, setUser] = useState<any>(null);
 
@@ -55,13 +55,19 @@ function MetaLoginButton() {
 
   const handleLogin = () => {
     // @ts-ignore
-    FB.login((response) => {
-      setStatus(response.status);
-      if (response.status === 'connected') {
-        setUser(response.authResponse);
-        toast.success("Meta লগইন সফল হয়েছে");
-      }
-    }, { scope: 'pages_messaging,whatsapp_business_messaging,pages_manage_metadata,pages_read_engagement' });
+    if (typeof FB !== 'undefined') {
+      // @ts-ignore
+      FB.login((response) => {
+        setStatus(response.status);
+        if (response.status === 'connected') {
+          setUser(response.authResponse);
+          toast.success("Meta লগইন সফল হয়েছে");
+        }
+      }, { 
+        config_id: metaAppId, // Using App ID as config_id for the newer flow if applicable
+        scope: 'pages_messaging,whatsapp_business_messaging,pages_manage_metadata,pages_read_engagement' 
+      });
+    }
   };
 
   const handleLogout = () => {
@@ -332,7 +338,7 @@ function SettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="col-span-full mb-4">
-                <MetaLoginButton />
+                <MetaLoginButton metaAppId={metaAppId} />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">App ID</Label>
