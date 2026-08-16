@@ -219,7 +219,13 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
       .from("agent_settings")
-      .update({ ...data, updated_at: new Date().toISOString() })
+      .update({ 
+        system_prompt: data.system_prompt,
+        model: data.model,
+        auto_approve: data.auto_approve,
+        lovable_api_key_override: data.lovable_api_key_override ?? null,
+        updated_at: new Date().toISOString() 
+      })
       .eq("id", 1);
     return { ok: true };
   });
