@@ -39,29 +39,30 @@ const nav: Array<{
   label: string;
   icon: typeof Database;
   exact?: boolean;
+  minRole?: "admin" | "editor" | "viewer";
 }> = [
-  { to: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true },
-  { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database },
-  { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle },
-  { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare },
-  { to: "/admin/sync", label: "সিঙ্ক স্ট্যাটাস", icon: Activity },
-  { to: "/admin/progress", label: "ট্রেনিং লাইভ", icon: Activity },
-  { to: "/admin/api-keys", label: "API Keys", icon: KeyRound },
-  { to: "/admin/connections", label: "কানেকশন", icon: KeyRound },
-  { to: "/admin/webhook-test", label: "টেস্ট প্যানেল", icon: Terminal },
-  { to: "/admin/settings", label: "সেটিংস", icon: Settings },
-  { to: "/connect", label: "AI কানেক্ট", icon: Terminal },
+  { to: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true, minRole: "viewer" },
+  { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database, minRole: "viewer" },
+  { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle, minRole: "editor" },
+  { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare, minRole: "viewer" },
+  { to: "/admin/sync", label: "সিঙ্ক স্ট্যাটাস", icon: Activity, minRole: "viewer" },
+  { to: "/admin/progress", label: "ট্রেনিং লাইভ", icon: Activity, minRole: "viewer" },
+  { to: "/admin/api-keys", label: "API Keys", icon: KeyRound, minRole: "admin" },
+  { to: "/admin/connections", label: "কানেকশন", icon: KeyRound, minRole: "admin" },
+  { to: "/admin/webhook-test", label: "টেস্ট প্যানেল", icon: Terminal, minRole: "editor" },
+  { to: "/admin/settings", label: "সেটিংস", icon: Settings, minRole: "admin" },
+  { to: "/connect", label: "AI কানেক্ট", icon: Terminal, minRole: "viewer" },
 ];
 
 function AdminLayout() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const checkAdmin = useServerFn(amIAdmin);
+  const fetchMyRole = useServerFn(getMyRole);
 
-  const adminQuery = useQuery({
-    queryKey: ["is-admin", session?.user.id],
-    queryFn: () => checkAdmin(),
+  const roleQuery = useQuery({
+    queryKey: ["my-role", session?.user.id],
+    queryFn: () => fetchMyRole(),
     enabled: Boolean(session),
   });
 
@@ -69,14 +70,18 @@ function AdminLayout() {
     if (!loading && !session) navigate({ to: "/auth" });
   }, [loading, session, navigate]);
 
-  if (loading || (session && adminQuery.isLoading)) {
+  if (loading || (session && roleQuery.isLoading)) {
     return <div className="p-10 text-sm text-muted-foreground">লোড হচ্ছে...</div>;
   }
 
-  if (session && adminQuery.data && !adminQuery.data.admin) {
+  const userRole = roleQuery.data?.role || "user";
+  const roles = ["user", "viewer", "editor", "admin"];
+  const userRoleIndex = roles.indexOf(userRole);
+
+  if (session && userRole === "user") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-5 text-center">
-        <p className="text-sm text-muted-foreground">এই অ্যাকাউন্টের অ্যাডমিন অ্যাক্সেস নেই।</p>
+        <p className="text-sm text-muted-foreground">এই অ্যাকাউন্টের কনসোল অ্যাক্সেস নেই।</p>
         <Button
           variant="outline"
           onClick={async () => {
@@ -90,6 +95,11 @@ function AdminLayout() {
     );
   }
 
+  const filteredNav = nav.filter((item) => {
+    const requiredRoleIndex = roles.indexOf(item.minRole || "viewer");
+    return userRoleIndex >= requiredRoleIndex;
+  });
+
   return (
     <div className="flex min-h-screen bg-background selection:bg-primary/20 noise-overlay">
       {/* Enhanced Sidebar */}
@@ -102,12 +112,12 @@ function AdminLayout() {
           </div>
           <div>
             <p className="font-display text-lg font-bold leading-tight tracking-tight">Daddy AI</p>
-            <p className="text-[10px] uppercase tracking-widest text-primary font-black opacity-70">Console v2.0</p>
+            <p className="text-[10px] uppercase tracking-widest text-primary font-black opacity-70">Console v2.0 • {userRole}</p>
           </div>
         </div>
 
         <nav className="flex flex-col gap-1.5 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-          {nav.map((item) => {
+          {filteredNav.map((item) => {
             const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
             return (
               <Link
@@ -143,7 +153,7 @@ function AdminLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <nav className="flex gap-1 overflow-x-auto bg-sidebar px-3 py-2 text-sidebar-foreground md:hidden">
-          {nav.map((item) => (
+          {filteredNav.map((item) => (
             <Link
               key={item.to}
               to={item.to}
