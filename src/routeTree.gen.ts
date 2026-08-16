@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as DataDeletionRouteImport } from './routes/data-deletion'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PrivacyRequestRouteImport } from './routes/privacy-request'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
@@ -63,6 +64,11 @@ const DataDeletionRoute = DataDeletionRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRequestRoute = PrivacyRequestRouteImport.update({
+  id: '/privacy-request',
+  path: '/privacy-request',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
   '/privacy': typeof PrivacyRoute
+  '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
@@ -251,6 +260,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/data-deletion'
     | '/privacy'
+    | '/privacy-request'
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/data-deletion'
     | '/privacy'
+    | '/privacy-request'
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/data-deletion'
     | '/privacy'
+    | '/privacy-request'
     | '/terms'
     | '/admin/add'
     | '/admin/api-keys'
@@ -332,6 +344,7 @@ export interface RootRouteChildren {
   ConnectRoute: typeof ConnectRoute
   DataDeletionRoute: typeof DataDeletionRoute
   PrivacyRoute: typeof PrivacyRoute
+  PrivacyRequestRoute: typeof PrivacyRequestRoute
   TermsRoute: typeof TermsRoute
   ApiPublicChatRoute: typeof ApiPublicChatRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
@@ -383,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-request': {
+      id: '/privacy-request'
+      path: '/privacy-request'
+      fullPath: '/privacy-request'
+      preLoaderRoute: typeof PrivacyRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -560,6 +580,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConnectRoute: ConnectRoute,
   DataDeletionRoute: DataDeletionRoute,
   PrivacyRoute: PrivacyRoute,
+  PrivacyRequestRoute: PrivacyRequestRoute,
   TermsRoute: TermsRoute,
   ApiPublicChatRoute: ApiPublicChatRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
