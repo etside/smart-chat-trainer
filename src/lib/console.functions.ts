@@ -320,9 +320,9 @@ export const triggerTraining = createServerFn({ method: "POST" })
       throw new Error(`Failed to start training job: ${error.message}`);
     }
 
-    // Mocking an immediate background process update for demo purposes
-    // In a real app, this would be a background queue or edge function
-    setTimeout(async () => {
+    // In a real app, this would be a background queue or edge function.
+    // We update it after a short delay to simulate processing.
+    const runTraining = async () => {
       try {
         const { data: approved } = await supabaseAdmin
           .from("training_pairs")
@@ -346,7 +346,10 @@ export const triggerTraining = createServerFn({ method: "POST" })
           } as any)
           .eq("id", job.id);
       }
-    }, 2000);
+    };
+
+    // We don't await this so the function returns the job_id immediately
+    runTraining();
 
     return { job_id: job.id };
   });
