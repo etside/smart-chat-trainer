@@ -12,10 +12,38 @@ export const getSyncRuns = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("sync_runs")
-      .select("*")
+      .select("*, training_jobs(*)")
       .order("started_at", { ascending: false })
-      .limit(10);
+      .limit(20);
     return data ?? [];
+  });
+
+export const updateSyncSchedule = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => 
+    z.object({ schedule: z.enum(["manual", "hourly", "daily", "weekly"]) }).parse(d)
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("agent_settings")
+      .update({ sync_schedule: data.schedule })
+      .eq("id", 1);
+    return { ok: true };
+  });
+
+export const getSyncSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("agent_settings")
+      .select("sync_schedule, last_sync_at")
+      .eq("id", 1)
+      .maybeSingle();
+    return data || { sync_schedule: "manual", last_sync_at: null };
   });
 
 export const previewSync = createServerFn({ method: "POST" })

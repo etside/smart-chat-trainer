@@ -26,6 +26,8 @@ function SyncStatusPage() {
   const fetchRuns = useServerFn(getSyncRuns);
   const triggerSync = useServerFn(syncCatalog);
   const getPreview = useServerFn(previewSync);
+  const fetchSettings = useServerFn(getSyncSettings);
+  const saveSchedule = useServerFn(updateSyncSchedule);
 
   const [previewData, setPreviewData] = useState<any[] | null>(null);
 
@@ -35,11 +37,25 @@ function SyncStatusPage() {
     refetchInterval: 10000,
   });
 
+  const { data: settings } = useQuery({
+    queryKey: ["sync-settings"],
+    queryFn: () => fetchSettings(),
+  });
+
   const syncMutation = useMutation({
-    mutationFn: () => triggerSync({ data: {} }),
+    mutationFn: (idempotencyKey?: string) => triggerSync({ data: { idempotencyKey } }),
     onSuccess: (res) => {
       toast.success(res.message);
       qc.invalidateQueries({ queryKey: ["sync-runs"] });
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const scheduleMutation = useMutation({
+    mutationFn: (schedule: "manual" | "hourly" | "daily" | "weekly") => saveSchedule({ data: { schedule } }),
+    onSuccess: () => {
+      toast.success("সিডিউল আপডেট হয়েছে");
+      qc.invalidateQueries({ queryKey: ["sync-settings"] });
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -95,6 +111,28 @@ function SyncStatusPage() {
             এখনই সিঙ্ক করুন
           </Button>
         </div>
+      </div>
+
+      <div className="mt-6 panel p-5 border-primary/10">
+        <h2 className="font-semibold flex items-center gap-2 mb-4">
+          <Clock className="size-4 text-primary" /> অটোমেটিক সিঙ্ক সিডিউল (Scheduled Sync)
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {["manual", "hourly", "daily", "weekly"].map((s) => (
+            <Button
+              key={s}
+              variant={settings?.sync_schedule === s ? "default" : "outline"}
+              size="sm"
+              onClick={() => scheduleMutation.mutate(s as any)}
+              disabled={scheduleMutation.isPending}
+            >
+              {s.charAt(0).toUpperCase() + s.slice(1)}
+            </Button>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground italic">
+          * সিডিউল অনুযায়ী অটোমেটিক প্রোডাক্ট আপডেট এবং ট্রেনিং ট্রিগার হবে।
+        </p>
       </div>
 
       {previewData && (
@@ -154,14 +192,18 @@ function SyncStatusPage() {
                   <th className="px-4 py-3 font-medium">আইডি</th>
                   <th className="px-4 py-3 font-medium">স্ট্যাটাস</th>
                   <th className="px-4 py-3 font-medium">আইটেম সংখ্যা</th>
-                  <th className="px-4 py-3 font-medium">শুরু</th>
-                  <th className="px-4 py-3 font-medium">এরর মেসেজ</th>
+                   <th className="px-4 py-3 font-medium">শুরু</th>
+                  <th className="px-4 py-3 font-medium">ট্রেনিং জব</th>
+                  <th className="px-4 py-3 font-medium">অ্যাকশন</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {runs?.map((run: any) => (
                   <tr key={run.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-4 font-mono text-xs">{run.id.slice(0, 8)}</td>
+                    <td className="px-4 py-4 font-mono text-xs" title={run.idempotency_key}>
+                      {run.id.slice(0, 8)}
+                      {run.idempotency_key && <span className="ml-1 text-[10px] text-primary">(IDEM)</span>}
+                    </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         {run.status === "completed" && (
@@ -177,11 +219,37 @@ function SyncStatusPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4 font-semibold">{run.items_count || 0}</td>
-                    <td className="px-4 py-4 text-muted-foreground">
+                    <td className="px-4 py-4 text-muted-foreground whitespace-nowrap">
                       {new Date(run.started_at).toLocaleString("bn-BD")}
                     </td>
-                    <td className="px-4 py-4 max-w-xs truncate text-destructive text-xs">
-                      {run.error_message || "—"}
+                    <td className="px-4 py-4">
+                      {run.training_jobs?.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {run.training_jobs.map((job: any) => (
+                            <Link 
+                              key={job.id} 
+                              to="/admin/progress" 
+                              className="text-[10px] font-mono hover:underline flex items-center gap-1"
+                            >
+                              {job.status === 'completed' ? <CheckCircle2 className="size-2 text-green-500" /> : <Clock className="size-2" />}
+                              {job.id.slice(0, 8)}
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-[10px]"
+                        onClick={() => syncMutation.mutate(`retry_${run.id}_${Date.now()}`)}
+                        disabled={syncMutation.isPending}
+                      >
+                        <Play className="size-3 mr-1" /> রি-রান
+                      </Button>
                     </td>
                   </tr>
                 ))}
