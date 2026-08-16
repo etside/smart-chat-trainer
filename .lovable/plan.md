@@ -1,36 +1,42 @@
-# Implementation Plan - Visual Text Edits & Feature Enhancements
+# Implementation Plan - Training Console Enhancements
 
-Apply requested visual text updates and implement comprehensive feature enhancements for the Wear Impressive AI console.
+Apply requested visual text updates and implement a comprehensive suite of features for the Wear Impressive AI Sales Agent Training Console, including bilingual support, version tracking, and external integrations.
 
 ## User-facing changes
 
-- **Dashboard Update**: The dashboard summary has been updated with the requested instruction and approval block.
-- **AI Credit & Billing**: Display AI credit usage and allow adding custom API keys in the settings.
-- **Model/Version Tracking**: New interface to track training versions, select versions for API connections, and roll back if needed.
-- **Training Progress Page**: A dedicated page showing the status, timing, and errors for automatic training jobs.
-- **Webhook Receiver**: Support for external platforms to send messages to the app via a dedicated webhook endpoint.
-- **Data Export**: Tools to download training sets, JSON exports, and voice transcripts.
+- **Dashboard Update**: The main admin dashboard summary text is updated with specific instructions and approval status.
+- **AI Credit Monitoring**: View current credit usage and balance directly within the training console.
+- **Custom API Keys**: Support for adding custom AI API keys (OpenAI/Lovable) in Settings for personalized usage tracking.
+- **Model & Version Management**:
+  - Track training "snapshots" or versions of the AI's knowledge.
+  - Choose specific training versions for different API connections.
+  - Ability to roll back to a previous training state if performance degrades.
+- **Training Progress Page**: A new management view showing real-time status, execution history, and error logs for all automatic training jobs.
+- **Webhook Integration**: A new webhook endpoint allows external platforms (like Facebook Messenger or WhatsApp) to send messages directly to the app to trigger responses or training.
+- **Data Export**: Structured export tools to download your uploaded JSON files, voice transcripts, and training pair sets.
 
 ## Technical details
 
-- **Database Schema Updates**:
-  - `agent_settings`: Add `lovable_api_key_override`.
-  - `training_jobs`: New table for tracking background training tasks.
-  - `training_versions`: Table to store snapshots of approved Q&A pairs.
-  - `api_keys`: Add `version_id` to link keys to specific snapshots.
-- **AI & Transcription**: Refine `ai.server.ts` to explicitly handle simultaneous Bengali and English transcription and voice processing.
-- **API Enhancements**:
-  - Implement `src/routes/api/public/webhook.ts` for external integrations.
-  - Add data export server functions using streamed responses.
+- **Bilingual Core**: Enhance `src/lib/ai.server.ts` to ensure the transcription and generation prompts explicitly support simultaneous Bengali and English (Banglish) processing.
+- **Database Schema**:
+  - `agent_settings`: Add `lovable_api_key_override` and `credit_usage` tracking.
+  - `training_jobs`: Create a table to log the lifecycle of automated training tasks.
+  - `training_versions`: Create a table to store immutable snapshots of approved training pairs.
+  - `api_keys`: Add a `version_id` column to route API requests to specific snapshots.
+- **Server Functions**:
+  - `exportData`: A new server function to generate and stream JSON/CSV datasets.
+  - `getTrainingJobs`: Fetch background job status for the UI.
+- **External API**: Implement `src/routes/api/public/webhook.ts` with signature validation for secure external platform connectivity.
+- **Git Sync Readiness**: Ensure all credentials and environment configurations are structured for seamless synchronization.
 
 ## Architecture
 
 ```text
-[Dashboard] -> [Training Progress] -> [Settings (API Keys, Versions)]
-      |               |
-      v               v
-[Agent Logic] <-> [Training Jobs Table]
-      |               |
-      v               v
-[Supabase] <-> [External Webhooks]
+[Training Console] -> [Training Progress View] -> [Settings & Versions]
+       |                     |
+       v                     v
+[Agent RAG Logic] <-> [Versioned Training Sets]
+       |                     |
+       v                     v
+[Supabase / Cloud] <-> [External Platform Webhooks]
 ```
