@@ -127,6 +127,46 @@ export const Route = createFileRoute("/api/public/webhook")({
 
         const { generateReply, logConversation } = await import("@/lib/agent.server");
 
+        // 3. Handle Training Ingestion
+        if (parsed.data.training_data) {
+          const { question, answer, context: trainingContext } = parsed.data.training_data;
+          
+          // Idempotency: Don't insert duplicate questions in a short period
+          const { data: existingPair } = await supabaseAdmin
+            .from("training_pairs")
+            .select("id")
+            .eq("question", question)
+            .limit(1)
+            .maybeSingle();
+
+          if (!existingPair) {
+            const { error: insertError } = await supabaseAdmin.from("training_pairs").insert({
+              question,
+              answer,
+              source: 'webhook',
+              status: 'pending',
+              metadata: { context: trainingContext, webhook_payload: body }
+            });
+
+            if (!insertError) {
+              const { data: runningJobs } = await supabaseAdmin
+                .from("training_jobs")
+                .select("id")
+                .eq("status", "running")
+                .limit(1);
+
+              if (!runningJobs || runningJobs.length === 0) {
+                await supabaseAdmin.from("training_jobs").insert({
+                  status: "running",
+                  processed_count: 0,
+                  retry_count: 0
+                });
+              }
+            }
+          }
+          return json({ success: true, message: "Training data received" });
+        }
+
         // Handle generic message events
         if (parsed.data.message) {
           try {
