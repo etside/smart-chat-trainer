@@ -492,6 +492,7 @@ function SettingsPage() {
 
               <div className="space-y-4">
                 <div className="flex flex-col gap-4">
+                  {/* Meta Business ID */}
                   <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10">
                     <div>
                       <p className="text-sm font-medium">Meta Business ID</p>
@@ -515,6 +516,7 @@ function SettingsPage() {
                     </div>
                   </div>
 
+                  {/* Instagram Marketplace ID */}
                   <div className="flex items-center justify-between p-3 rounded-lg bg-pink-500/5 border border-pink-500/10">
                     <div>
                       <p className="text-sm font-medium">Instagram Marketplace ID</p>
@@ -538,6 +540,7 @@ function SettingsPage() {
                     </div>
                   </div>
 
+                  {/* Instagram Onboarding ID */}
                   <div className="flex items-center justify-between p-3 rounded-lg bg-indigo-500/5 border border-indigo-500/10">
                     <div>
                       <p className="text-sm font-medium">Instagram Onboarding ID</p>
@@ -554,6 +557,54 @@ function SettingsPage() {
                         onClick={() => {
                           navigator.clipboard.writeText("1687781608963502");
                           toast.success("Onboarding ID কপি করা হয়েছে");
+                        }}
+                      >
+                        <Copy className="size-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Measurement Partner ID */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                    <div>
+                      <p className="text-sm font-medium">WhatsApp Measurement Partner</p>
+                      <p className="text-xs text-muted-foreground">Measurement Partner Config ID</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono text-emerald-400">
+                        1069878039319399
+                      </code>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="size-8"
+                        onClick={() => {
+                          navigator.clipboard.writeText("1069878039319399");
+                          toast.success("WhatsApp ID কপি করা হয়েছে");
+                        }}
+                      >
+                        <Copy className="size-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Embedded Signup ID */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-600/5 border border-emerald-600/10">
+                    <div>
+                      <p className="text-sm font-medium">WhatsApp Embedded Signup</p>
+                      <p className="text-xs text-muted-foreground">Embedded Signup (60d Token) ID</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono text-emerald-500">
+                        1627789222122323
+                      </code>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="size-8"
+                        onClick={() => {
+                          navigator.clipboard.writeText("1627789222122323");
+                          toast.success("Embedded Signup ID কপি করা হয়েছে");
                         }}
                       >
                         <Copy className="size-3" />
