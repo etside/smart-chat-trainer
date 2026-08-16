@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  Activity,
   Database,
   KeyRound,
   LayoutDashboard,
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -41,6 +42,7 @@ const nav: Array<{
   { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database },
   { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle },
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare },
+  { to: "/admin/progress", label: "প্রগ্রেস", icon: Activity },
   { to: "/admin/connections", label: "কানেকশন", icon: KeyRound },
   { to: "/admin/settings", label: "সেটিংস", icon: Settings },
 ];
