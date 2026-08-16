@@ -50,6 +50,10 @@ function WebhookTest() {
     },
   });
 
+  const handleTestSync = () => {
+    syncMutation.mutate();
+  };
+
   const textPayload = JSON.stringify({
     type: "text",
     message: "ডেলিভারি চার্জ কত?",
