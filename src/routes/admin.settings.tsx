@@ -178,8 +178,8 @@ function SettingsPage() {
   const fetchSettings = useServerFn(getAgentSettings);
   const save = useServerFn(saveAgentSettings);
   
-  const fetchExtra = useServerFn(import("@/lib/extra-settings.functions").then(m => m.getExtraSettings));
-  const saveExtra = useServerFn(import("@/lib/extra-settings.functions").then(m => m.updateExtraSettings));
+  const fetchExtra = useServerFn(getExtraSettings);
+  const saveExtra = useServerFn(updateExtraSettings);
 
   const { data } = useQuery({ queryKey: ["agent-settings"], queryFn: () => fetchSettings() });
 
