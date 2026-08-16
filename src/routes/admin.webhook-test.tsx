@@ -25,12 +25,13 @@ function WebhookTest() {
 
   const mutation = useMutation({
     mutationFn: async (payload: { type: "text" | "voice"; message?: string; audio?: string; mimeType?: string }) => {
+      const { type, message, audio, mimeType } = payload;
       return testFn({
         data: {
-          type: payload.type,
-          message: payload.message,
-          audio: payload.audio,
-          mimeType: payload.mimeType,
+          type,
+          message,
+          audio,
+          mimeType,
           sender,
         },
       });
