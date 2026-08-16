@@ -17,7 +17,7 @@ function blobToBase64(blob: Blob) {
   });
 }
 
-export function VoiceRecorder({ onText }: { onText: (text: string) => void }) {
+export function VoiceRecorder({ onText, onAudioBlob }: { onText: (text: string) => void, onAudioBlob?: (blob: Blob) => void }) {
   const [recording, setRecording] = useState(false);
   const [busy, setBusy] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -38,6 +38,10 @@ export function VoiceRecorder({ onText }: { onText: (text: string) => void }) {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
         if (blob.size < 1000) {
           toast.error("রেকর্ডিং খুব ছোট হয়ে গেছে।");
+          return;
+        }
+        if (onAudioBlob) {
+          onAudioBlob(blob);
           return;
         }
         setBusy(true);
