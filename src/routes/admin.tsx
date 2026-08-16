@@ -18,6 +18,7 @@ import {
   PlusCircle,
   Settings,
   Terminal,
+  BarChart3
 } from "lucide-react";
 import { useEffect } from "react";
 
