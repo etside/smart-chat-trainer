@@ -72,15 +72,27 @@ export const Route = createFileRoute("/api/public/webhook")({
         // Handle generic message events
         if (parsed.data.message) {
           try {
+            const { generateReply, logConversation } = await import("@/lib/agent.server");
             const { reply } = await generateReply(parsed.data.message, []);
             
-            await supabaseAdmin
+            // Log activity to first valid API key for tracking if possible
+            const { data: firstKey } = await supabaseAdmin
               .from("api_keys")
-              .update({ last_used_at: new Date().toISOString() })
-              .eq("id", keyRow.id);
+              .select("id")
+              .eq("revoked", false)
+              .limit(1)
+              .maybeSingle();
+
+            if (firstKey) {
+              await supabaseAdmin
+                .from("api_keys")
+                .update({ last_used_at: new Date().toISOString() })
+                .eq("id", firstKey.id);
+            }
 
             await logConversation(
               parsed.data.conversation_id || parsed.data.sender || null,
+
               "webhook",
               [
                 { role: "user", content: parsed.data.message },
