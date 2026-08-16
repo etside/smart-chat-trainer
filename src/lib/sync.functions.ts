@@ -54,8 +54,11 @@ export const previewSync = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     
-    const token = process.env['SYNC_TOKEN'];
-    const secret = process.env['SYNC_SECRET'];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin.from("agent_settings").select("sync_token, sync_secret").eq("id", 1).maybeSingle();
+    
+    const token = settings?.sync_token || process.env['SYNC_TOKEN'];
+    const secret = settings?.sync_secret || process.env['SYNC_SECRET'];
 
     if (!token || !secret) {
       throw new Error("Sync credentials not configured in environment variables.");
@@ -130,8 +133,10 @@ export const syncCatalog = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const token = process.env['SYNC_TOKEN'];
-    const secret = process.env['SYNC_SECRET'];
+    const { data: settings } = await supabaseAdmin.from("agent_settings").select("sync_token, sync_secret").eq("id", 1).maybeSingle();
+    
+    const token = settings?.sync_token || process.env['SYNC_TOKEN'];
+    const secret = settings?.sync_secret || process.env['SYNC_SECRET'];
 
     if (!token || !secret) {
       throw new Error("Sync credentials (SYNC_TOKEN/SYNC_SECRET) not configured.");

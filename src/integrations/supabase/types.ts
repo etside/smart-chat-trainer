@@ -23,6 +23,8 @@ export type Database = {
           lovable_api_key_override: string | null
           model: string
           sync_schedule: string | null
+          sync_secret: string | null
+          sync_token: string | null
           system_prompt: string
           updated_at: string
         }
@@ -34,6 +36,8 @@ export type Database = {
           lovable_api_key_override?: string | null
           model?: string
           sync_schedule?: string | null
+          sync_secret?: string | null
+          sync_token?: string | null
           system_prompt?: string
           updated_at?: string
         }
@@ -45,6 +49,8 @@ export type Database = {
           lovable_api_key_override?: string | null
           model?: string
           sync_schedule?: string | null
+          sync_secret?: string | null
+          sync_token?: string | null
           system_prompt?: string
           updated_at?: string
         }
