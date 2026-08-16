@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bot, Mic, MessageSquareText, Sparkles, ArrowRight, Zap, ShieldCheck, Globe, Star, Users } from "lucide-react";
-import logoAsset from "@/assets/daddy-ai-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,6 +26,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const { session, loading } = useAuth();
+  const logoUrl = "/__l5e/assets-v1/16ae758b-43b8-4811-bf07-1fb7fe1d6698/daddy-ai-logo.png";
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20 flex flex-col">
@@ -34,7 +34,7 @@ function Landing() {
       <nav className="fixed top-6 inset-x-0 z-50 mx-auto max-w-5xl px-6">
         <div className="glass rounded-full px-6 py-3 flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-2">
-            <img src={logoAsset.url} alt="Daddy AI" className="h-8 w-auto" />
+            <img src={logoUrl} alt="Daddy AI" className="h-8 w-auto" />
             <span className="font-bold text-xl tracking-tight hidden sm:block">Daddy AI</span>
           </div>
           <div className="flex items-center gap-4">
@@ -102,7 +102,6 @@ function Landing() {
                    </main>
                 </div>
              </div>
-             {/* Sparkles Decor */}
              <Sparkles className="absolute -top-10 -right-10 size-20 text-accent/20 animate-pulse" />
              <div className="absolute -bottom-20 -left-20 size-64 bg-primary/20 blur-[100px] rounded-full" />
           </div>
@@ -199,7 +198,7 @@ function Landing() {
       <footer className="mt-auto border-t border-border/40 py-12 px-6">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <img src={logoAsset.url} alt="Daddy AI" className="h-6 w-auto" />
+            <img src={logoUrl} alt="Daddy AI" className="h-6 w-auto" />
             <span className="font-bold text-lg tracking-tight">Daddy AI</span>
           </div>
           <div className="flex gap-8 text-sm text-muted-foreground">

@@ -11,7 +11,6 @@ import { useEffect, type ReactNode, useState } from "react";
 import { getMetaCredentials } from "../lib/settings.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { getExtraSettings } from "../lib/extra-settings.functions";
-import { getAgentSettings } from "../lib/console.functions";
 import { useQuery } from "@tanstack/react-query";
 
 import { Toaster } from "../components/ui/sonner";
@@ -41,7 +40,7 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+  console.error("Root Error:", error);
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
@@ -49,28 +48,28 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+      <div className="max-w-md text-center p-8 glass rounded-3xl border border-white/10 shadow-2xl">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-4">
+          Console Load Error
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
+        <div className="text-left bg-black/20 p-4 rounded-xl mb-6 overflow-auto max-h-40">
+          <code className="text-xs text-red-400">{error.message}</code>
+        </div>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-all hover:scale-105"
           >
-            Try again
+            Retry Connection
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-full border border-input bg-background/50 px-6 py-2 text-sm font-medium text-foreground transition-all hover:bg-accent"
           >
-            Go home
+            Back Home
           </a>
         </div>
       </div>
@@ -111,34 +110,39 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: ReactNode }) {
+function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+  
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <QueryClientProvider client={queryClient}>
+          <InnerRoot />
+          <Toaster position="top-center" richColors />
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>
   );
 }
 
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+function InnerRoot() {
   const fetchMetaCreds = useServerFn(getMetaCredentials);
   const fetchExtra = useServerFn(getExtraSettings);
   
   const { data: extra } = useQuery({ 
     queryKey: ["extra-settings-public"], 
-    queryFn: () => fetchExtra() 
+    queryFn: () => fetchExtra(),
+    retry: false,
+    staleTime: 60000,
   });
 
   const [metaConfig, setMetaConfig] = useState<{ appId: string; apiVersion: string } | null>(null);
@@ -154,14 +158,16 @@ function RootComponent() {
   useEffect(() => {
     fetchMetaCreds()
       .then((data) => {
-        if (data.appId) {
+        if (data && data.appId) {
           setMetaConfig({
             appId: data.appId,
             apiVersion: (data as any).apiVersion || "v19.0",
           });
         }
       })
-      .catch((err) => console.error("Failed to fetch Meta config for SDK:", err));
+      .catch((err) => {
+        // This is fine on public routes
+      });
   }, [fetchMetaCreds]);
 
   useEffect(() => {
@@ -179,21 +185,11 @@ function RootComponent() {
       
       // @ts-ignore
       FB.getLoginStatus(function(response) {
-        console.log("Meta Login Status:", response.status);
-        // Custom event for components to listen to
         window.dispatchEvent(new CustomEvent('fb-login-status', { detail: response }));
       });
 
       // @ts-ignore
       FB.AppEvents.logPageView();
-    };
-
-    // @ts-ignore
-    window.checkLoginState = function() {
-      // @ts-ignore
-      FB.getLoginStatus(function(response) {
-        window.dispatchEvent(new CustomEvent('fb-login-status', { detail: response }));
-      });
     };
 
     (function (d, s, id) {
@@ -209,11 +205,5 @@ function RootComponent() {
     })(document, "script", "facebook-jssdk");
   }, [metaConfig]);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <Toaster position="top-center" richColors />
-    </QueryClientProvider>
-  );
+  return <Outlet />;
 }

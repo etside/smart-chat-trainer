@@ -4,9 +4,7 @@ import { z } from "zod";
 import { assertAdmin } from "./admin.server";
 
 export const getExtraSettings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+  .handler(async () => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
