@@ -62,7 +62,7 @@ function ApiKeysPage() {
           <h1 className="text-3xl font-bold tracking-tight">API Keys</h1>
           <p className="mt-1 text-sm text-muted-foreground italic">
             এক্সটার্নাল প্ল্যাটফর্ম (যেমন: Netlify, Meta) থেকে ডেটা সিঙ্ক এবং ট্রেনিং ইনজেশনের জন্য কী ব্যবহার করুন। 
-            রিকুয়েস্টের হেডার হিসেবে `X-API-Key` অথবা `Authorization: Bearer <KEY>` ব্যবহার করুন।
+            রিকুয়েস্টের হেডার হিসেবে `X-API-Key` অথবা {"Authorization: Bearer <KEY>"} ব্যবহার করুন।
           </p>
         </div>
       </div>
