@@ -296,7 +296,7 @@ export const getTrainingVersions = createServerFn({ method: "GET" })
 export const triggerTraining = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ version_id: z.string().uuid().optional() }).parse(d))
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context, data }) => {
+  .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -306,16 +306,13 @@ export const triggerTraining = createServerFn({ method: "POST" })
       .insert({
         status: "processing",
         processed_count: 0,
-        // In a real scenario, this would trigger an async worker.
-        // For now we simulate the start of the job.
-      })
+      } as any)
       .select()
       .single();
 
     if (error) throw new Error("Failed to start training job");
 
     // Mocking an immediate background process update for demo purposes
-    // In production, this would be handled by a queue/worker
     setTimeout(async () => {
       const { data: approved } = await supabaseAdmin
         .from("training_pairs")
@@ -328,7 +325,7 @@ export const triggerTraining = createServerFn({ method: "POST" })
           status: "completed",
           processed_count: approved?.length || 0,
           finished_at: new Date().toISOString()
-        })
+        } as any)
         .eq("id", job.id);
     }, 2000);
 
