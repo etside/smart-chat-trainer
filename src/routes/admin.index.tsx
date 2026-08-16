@@ -42,78 +42,19 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-3xl font-bold tracking-tight">ড্যাশবোর্ড</h1>
-      <div className="mt-3 p-4 bg-muted/50 rounded-xl text-[10px] leading-relaxed text-muted-foreground border border-border/50 font-mono whitespace-pre-wrap animate-in overflow-hidden">
-        {`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-
-Authentication verified and operational. (Action: catalog, session ID required)
-
+      <div className="mt-3 p-4 bg-muted/50 rounded-xl text-[10px] leading-relaxed text-muted-foreground border border-border/50 font-mono whitespace-pre-wrap animate-in overflow-hidden relative group">
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button variant="ghost" size="sm" className="h-6 text-[9px]" onClick={() => {
+            navigator.clipboard.writeText(`Authentication verified and operational. (Action: catalog, session ID required)
 Set up the Wear Impressive AI Webhook integration.
-
-## Endpoint
-POST https://api.v2.wearimpressive.com/api/ai/webhook
-
-## Authentication — TWO layers required on every request
-
-1. Bearer token in Authorization header:
-   Authorization: Bearer f5e1f9b68be9fc8d69867283a6ebdf61755f23e93ff0c014def36f555d7fb42f
-
-2. HMAC-SHA256 body signature in X-AI-Signature header:
-   - Compute: HMAC-SHA256(rawRequestBody, secret)
-   - Secret: c05d89defdc77a396b6543c85bce957bb5a12394a0828c54825817d51b3cd58a
-   - Format header as: X-AI-Signature: sha256=<hex_digest>
-
-## Request format
-Every request body is JSON with a mandatory "action" field:
-{ "action": "...", "session": "unique-session-id", ...other fields }
-
-## Available actions
-
-### Browse catalogue
-{ "action": "catalog", "search": "shirt", "in_stock": true, "per_page": 20, "page": 1 }
-
-### Single product detail
-{ "action": "product", "id": 123 }
-// or by slug:
-{ "action": "product", "slug": "blue-shirt" }
-
-### Check stock
-{ "action": "stock", "product_ids": [1, 2, 3] }
-
-### List categories
-{ "action": "categories" }
-
-### Add to cart
-{ "action": "cart_add", "session": "sess-abc", "product_id": 123, "variant_id": 456, "quantity": 1 }
-
-### View cart
-{ "action": "cart_view", "session": "sess-abc" }
-
-### Clear cart
-{ "action": "cart_clear", "session": "sess-abc" }
-
-### Place order (COD, auto-confirmed)
-{
-  "action": "order_place",
-  "session": "sess-abc",
-  "payment_method": "cod",
-  "shipping_address": {
-    "full_name": "Customer Name",
-    "phone": "017XXXXXXXX",
-    "address_line_1": "Delivery Address",
-    "division": "Dhaka",
-    "district": "Dhaka",
-    "thana": "Mirpur"
-  }
-}
-
-## Response format
-Success: { "success": true, "action": "catalog", "data": { ... } }
-Error:   { "success": false, "error": "message" }
-
-## Notes
-- Integration scope covers discovery to order placement.
-- Orders are placed as COD and auto-confirmed.
-- Currency is BDT.`}
+POST https://api.v2.wearimpressive.com/api/ai/webhook`);
+            toast.success("ডকুমেন্টেশন কপি হয়েছে");
+          }}>কপি করুন</Button>
+        </div>
+        {`Wear Impressive AI Webhook Integration Guide
+Authentication: Two layers required (Bearer Token + HMAC Signature)
+Endpoint: POST https://api.v2.wearimpressive.com/api/ai/webhook
+Actions: catalog, product, stock, categories, cart_add, order_place`}
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">

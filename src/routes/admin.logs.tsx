@@ -105,7 +105,7 @@ function AdminLogsPage() {
                     <th className="pb-3 font-medium">সোর্স</th>
                     <th className="pb-3 font-medium">ইভেন্ট</th>
                     <th className="pb-3 font-medium">স্ট্যাটাস</th>
-                    <th className="pb-3 font-medium">পেলোড</th>
+                    <th className="pb-3 font-medium">পেলোড / এরর</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -131,8 +131,10 @@ function AdminLogsPage() {
                           {log.status_code}
                         </span>
                       </td>
-                      <td className="py-4 max-w-xs truncate font-mono text-[10px] text-muted-foreground">
-                        {JSON.stringify(log.payload)}
+                      <td className="py-4 max-w-xs truncate font-mono text-[10px] text-muted-foreground" title={JSON.stringify(log.payload)}>
+                        {log.status_code >= 400 && log.payload?.error ? (
+                          <span className="text-destructive">{log.payload.error}</span>
+                        ) : JSON.stringify(log.payload)}
                       </td>
                     </tr>
                   ))}

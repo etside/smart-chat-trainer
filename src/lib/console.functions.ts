@@ -440,3 +440,25 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
     }
     return { items };
   });
+
+export const getTrainingJobDetail = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ id: z.string() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    const { data: job } = await supabaseAdmin
+      .from("training_jobs")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+      
+    const { data: samples } = await supabaseAdmin
+      .from("training_pairs")
+      .select("question, answer, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    return { job: job as any, samples: samples as any[] };
+  });

@@ -2,10 +2,13 @@ import { getTrainingJobs, triggerTraining } from "@/lib/console.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertCircle, CheckCircle2, Clock, Loader2, Play, RotateCcw } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Loader2, Play, RotateCcw, ExternalLink, Database, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { getTrainingJobDetail } from "@/lib/console.functions";
+import { useState } from "react";
 
 
 import { cn } from "@/lib/utils";
@@ -19,11 +22,19 @@ function TrainingProgress() {
   const qc = useQueryClient();
   const fetchJobs = useServerFn(getTrainingJobs);
   const startTraining = useServerFn(triggerTraining);
+  const fetchJobDetail = useServerFn(getTrainingJobDetail);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["training-jobs"],
     queryFn: () => fetchJobs(),
     refetchInterval: 5000,
+  });
+
+  const { data: jobDetail, isLoading: isDetailLoading } = useQuery({
+    queryKey: ["training-job-detail", selectedJobId],
+    queryFn: () => selectedJobId ? fetchJobDetail({ data: { id: selectedJobId } }) : null,
+    enabled: !!selectedJobId,
   });
 
   const mutation = useMutation({
@@ -79,7 +90,10 @@ function TrainingProgress() {
                   transition={{ delay: index * 0.05 }}
                   className="panel p-6 bg-card/40 backdrop-blur-md border-white/5 shadow-xl hover:shadow-2xl transition-all"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div 
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer"
+                    onClick={() => setSelectedJobId(job.id)}
+                  >
                     <div className="flex items-start gap-4">
                       <div className={cn(
                         "size-12 rounded-2xl flex items-center justify-center shadow-lg",
