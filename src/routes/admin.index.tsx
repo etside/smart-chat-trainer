@@ -51,9 +51,9 @@ function Dashboard() {
           </div>
           <div className="text-[9px] uppercase tracking-tighter text-muted-foreground font-sans font-bold">System Status: Active</div>
           <Button variant="ghost" size="sm" className="h-6 px-2 text-[9px] hover:bg-white/10 text-muted-foreground" onClick={() => {
-            navigator.clipboard.writeText(`Authentication verified and operational. (Action: catalog, session ID required)
-Set up the Wear Impressive AI Webhook integration.
-POST https://api.v2.wearimpressive.com/api/ai/webhook`);
+            navigator.clipboard.writeText(`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+
+Navigation button color into black`);
             toast.success("ডকুমেন্টেশন কপি হয়েছে");
           }}>
             <Terminal className="size-3 mr-1" /> Copy Script
