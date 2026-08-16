@@ -15,6 +15,7 @@ import {
   MessagesSquare,
   PlusCircle,
   Settings,
+  Terminal,
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -33,7 +34,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -44,6 +45,7 @@ const nav: Array<{
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare },
   { to: "/admin/progress", label: "প্রগ্রেস", icon: Activity },
   { to: "/admin/connections", label: "কানেকশন", icon: KeyRound },
+  { to: "/admin/webhook-test", label: "টেস্ট প্যানেল", icon: Terminal },
   { to: "/admin/settings", label: "সেটিংস", icon: Settings },
 ];
 
