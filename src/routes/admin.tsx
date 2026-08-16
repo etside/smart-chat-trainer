@@ -147,7 +147,17 @@ function AdminLayout() {
           })}
         </nav>
 
-        <div className="mt-6 pt-6 border-t border-border/40">
+        <div className="mt-auto space-y-4 pt-6 border-t border-border/40">
+          <div className="px-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full justify-start text-[10px] uppercase tracking-widest font-bold"
+              onClick={() => document.documentElement.classList.toggle('high-contrast')}
+            >
+              <Activity className="size-3 mr-2" /> High Contrast
+            </Button>
+          </div>
           <button
             onClick={async () => {
               await supabase.auth.signOut();
