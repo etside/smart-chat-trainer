@@ -1,61 +1,36 @@
-# Daddy AI Netlify GitHub Sync Implementation Plan
+# Daddy AI Training Logs Export & Deployment Plan
 
-Ensure that the Netlify deployment via GitHub repo sync method works perfectly, syncing the complete existing project state (code, environment, and backend integration).
+Implement training log exports, real-time finish notifications, and a paginated/searchable transcription table. Finalize Netlify GitHub sync configuration for seamless deployment.
 
-## Deployment Strategy
-Use a **zero-config build** approach by providing a robust `netlify.toml` and a complete environment checklist. This ensures that once the repo is linked to Netlify, the only manual step is adding the environment variables from the checklist.
+## User Actions
+- **Export Training Logs**: Download JSON/CSV reports of training runs directly from the progress page.
+- **Real-time Notifications**: Receive instant toast notifications when a training job completes successfully or fails.
+- **Enhanced Run Details**: Filter and search through transcription samples in the detail modal to find low-confidence entries.
 
 ## Implementation Details
 
-### 1. Build Configuration Enhancement
-- Update `netlify.toml` to explicitly handle Node/Bun versions and server-side redirects for TanStack Start.
-- Ensure the build command is strictly `bun run build`.
-- Set the publish directory to `.output/public`.
+### 1. Training Logs & Export
+- **Server Function**: Update `src/lib/console.functions.ts` to add `exportTrainingRunLogs` which fetches a job's validation errors, versioning, and timeline for CSV/JSON export.
+- **UI Enhancement**: Add an "Export Logs" button to the job detail modal in `src/routes/admin.progress.tsx`.
 
-### 2. Environment Variable Management
-- Finalize `NETLIFY_CHECKLIST.md` with all current variables, including those added in recent turns (Meta, B2B, Sync).
-- Ensure `.env.example` is complete and serves as a direct reference for Netlify's "Import from .env" feature (if available) or manual entry.
+### 2. Notifications & Live Progress
+- **Real-time Monitoring**: Update `TrainingProgress` component to track job completion state changes between refetch cycles.
+- **Toast Alerts**: Trigger `sonner` notifications when a job's status transitions to 'completed' or 'failed'.
 
-### 3. Netlify-Specific Redirects
-- Implement the fallback redirect in `netlify.toml` to point to the Nitro server output, which is essential for TanStack Start SSR to work on Netlify.
+### 3. Transcription Samples Table
+- **Server Function**: Enhance `getTrainingJobDetail` in `src/lib/console.functions.ts` to support pagination and search parameters for samples.
+- **UI Detail View**: Replace the static sample list with a searchable, paginated table in the job detail dialog.
 
-### 4. Code & Data Synchronization
-- The GitHub sync method automatically handles code.
-- Database synchronization (Supabase) is already established via environment variables.
+### 4. Netlify Sync & Deployment
+- **Config Audit**: Verify `netlify.toml` and `.env.example` include all critical keys (Meta, B2B, Sync).
+- **GitHub Sync Support**: Ensure the build pipeline uses `bun` and correctly maps SSR routes for Netlify Functions.
 
-## Technical Details
+## Technical Tasks
 
-### `netlify.toml`
-```toml
-[build]
-  command = "bun run build"
-  publish = ".output/public"
+### Frontend
+- **Pagination Logic**: Implement state for `page` and `search` within the `TrainingProgress` modal.
+- **CSV Generator**: Add a client-side utility to convert JSON logs to CSV for download.
 
-[build.environment]
-  NODE_VERSION = "20"
-  BUN_VERSION = "latest"
-
-[[redirects]]
-  from = "/*"
-  to = "/.output/server/index.mjs"
-  status = 200
-
-[functions]
-  node_version = "20"
-  directory = ".output/server"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "microphone=(), camera=(), geolocation=()"
-```
-
-### Environment Variables Checklist (Updated)
-1. **Supabase**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
-2. **Daddy AI Sync**: `SYNC_TOKEN`, `SYNC_SECRET`.
-3. **Training Webhooks**: `WEBHOOK_SECRET`, `CRON_SECRET`.
-4. **Meta Integration**: `VITE_META_APP_ID`, `META_APP_SECRET`, `META_WEBHOOK_VERIFY_TOKEN`.
-5. **B2B Connectivity**: `B2B_BACKBLAZE_KEY`, `BOSON_WORKSPACE_ID`, `FISH_AUDIO_API_KEY`.
+### Backend
+- **Query Optimization**: Update `getTrainingJobDetail` to handle query filters for `training_pairs` associated with a specific run.
+- **Environment Integrity**: Sync `NETLIFY_CHECKLIST.md` with the latest B2B and VPS variable requirements.
