@@ -10,6 +10,7 @@ import logoAsset from "@/assets/daddy-ai-logo.png.asset.json";
 import {
   Activity,
   Database,
+  History,
   KeyRound,
   LayoutDashboard,
   LogOut,
