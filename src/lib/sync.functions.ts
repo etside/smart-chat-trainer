@@ -173,7 +173,12 @@ export const syncCatalog = createServerFn({ method: "POST" })
       .single();
 
     try {
-      const payload = { action: "catalog", per_page: 50, session: `sync_${run?.id || Date.now()}` }; // Added session ID
+      const payload = { 
+        action: "catalog", 
+        per_page: 50, 
+        session: `sync_${run?.id || Date.now()}`,
+        token: token.startsWith("Bearer ") ? token.slice(7) : token // Passing token in body as well
+      };
       const bodyStr = JSON.stringify(payload);
       
       const syncRes = await fetchWithRetry(data.url, {
