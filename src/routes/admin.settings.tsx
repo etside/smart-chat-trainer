@@ -486,7 +486,10 @@ function SettingsPage() {
 
                   <div className="space-y-3 pt-2">
                     <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
-                      <span className="text-muted-foreground font-medium">Valid OAuth Redirect URI:</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground font-medium">Valid OAuth Redirect URIs:</span>
+                        <span className="text-[10px] text-accent italic font-bold">Popups & In-app Browsers</span>
+                      </div>
                       <div className="flex items-center justify-between gap-2">
                         <code className="text-primary font-mono truncate">{`${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`}</code>
                         <Button variant="ghost" size="icon" className="size-6 shrink-0" onClick={() => {
@@ -496,10 +499,45 @@ function SettingsPage() {
                           <Copy className="size-3" />
                         </Button>
                       </div>
+                      <p className="text-[9px] text-muted-foreground/60 leading-tight">
+                        A manually specified redirect_uri used with Login on the web must exactly match this URI.
+                      </p>
                     </div>
 
                     <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
-                      <span className="text-muted-foreground font-medium">Deauthorize / Data Deletion URL:</span>
+                      <span className="text-muted-foreground font-medium">Allowed Domains for the JavaScript SDK:</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-primary font-mono truncate">{typeof window !== 'undefined' ? window.location.hostname : ''}</code>
+                        <Button variant="ghost" size="icon" className="size-6 shrink-0" onClick={() => {
+                          navigator.clipboard.writeText(window.location.hostname);
+                          toast.success("Domain কপি করা হয়েছে");
+                        }}>
+                          <Copy className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground font-medium">Deauthorize / Data Deletion Callback:</span>
+                        <span className="text-[10px] text-destructive italic font-bold">Security & Privacy</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-primary font-mono truncate">{`${typeof window !== 'undefined' ? window.location.origin : ''}/api/public/meta/deletion`}</code>
+                        <Button variant="ghost" size="icon" className="size-6 shrink-0" onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/api/public/meta/deletion`);
+                          toast.success("Callback URL কপি করা হয়েছে");
+                        }}>
+                          <Copy className="size-3" />
+                        </Button>
+                      </div>
+                      <p className="text-[9px] text-muted-foreground/60 leading-tight">
+                        Webhook Meta pings when a user deauthorizes the app or requests data deletion.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                      <span className="text-muted-foreground font-medium">Data Deletion Request URL (User Facing):</span>
                       <div className="flex items-center justify-between gap-2">
                         <code className="text-primary font-mono truncate">https://salesdaddy.netlify.app/data-policy</code>
                         <Button variant="ghost" size="icon" className="size-6 shrink-0" onClick={() => {
