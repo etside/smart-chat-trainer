@@ -150,6 +150,16 @@
   @apply hover:shadow-lg hover:-translate-y-1 hover:border-primary/20;
 }
 
+@utility glass {
+  background: color-mix(in oklch, var(--color-card), transparent 20%);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in oklch, var(--color-border), transparent 50%);
+}
+
+@utility bento-item {
+  @apply panel panel-hover flex flex-col justify-between p-8 relative overflow-hidden;
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -158,4 +168,12 @@
 @keyframes in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.mesh-bg {
+  background: 
+    radial-gradient(circle at 0% 0%, oklch(0.44 0.083 172 / 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 100% 0%, oklch(0.78 0.115 72 / 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, oklch(0.44 0.083 172 / 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, oklch(0.78 0.115 72 / 0.1) 0%, transparent 50%);
 }
