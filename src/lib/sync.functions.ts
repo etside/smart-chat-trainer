@@ -242,6 +242,29 @@ export const syncCatalog = createServerFn({ method: "POST" })
           })
           .eq("id", run.id);
         
+        // Update agent_settings with fresh sync status
+        await supabaseAdmin
+          .from("agent_settings")
+          .update({
+            last_sync_at: new Date().toISOString(),
+            last_sync_status: "success",
+            last_sync_details: { 
+              run_id: run.id, 
+              items_count: trainingPairs.length,
+              source: data.url
+            }
+          })
+          .eq("id", 1);
+
+        // Audit log for sync trigger
+        await supabaseAdmin.from("audit_logs").insert({
+          actor_id: context.userId,
+          action: 'trigger_sync',
+          entity_type: 'sync_runs',
+          entity_id: run.id,
+          metadata: { endpoint: data.url, status: 'success', items: trainingPairs.length }
+        });
+
         // Trigger training after successful sync
         const { triggerTraining } = await import("./console.functions");
         await triggerTraining({ data: { sync_run_id: run.id } as any });
