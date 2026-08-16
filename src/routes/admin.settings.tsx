@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { getAgentSettings, saveAgentSettings } from "@/lib/console.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -148,6 +148,25 @@ function SettingsPage() {
                 </p>
               </div>
               <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
+            </div>
+          </div>
+
+          <div className="panel p-6 border-l-4 border-l-primary bg-primary/5">
+            <h2 className="font-bold mb-4">এক্সটার্নাল প্লাটফর্ম কানেক্টর</h2>
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                আপনার লারাভেল ব্যাকএন্ড বা অন্য সিস্টেমের সাথে কানেক্ট করুন।
+              </p>
+              <Link to="/admin/webhook-test">
+                <Button variant="outline" size="sm" className="w-full">
+                  প্লাটফর্ম কনফিগার করুন
+                </Button>
+              </Link>
+              <Link to="/admin/sync">
+                <Button variant="ghost" size="sm" className="w-full">
+                  API সিঙ্ক স্ট্যাটাস
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
