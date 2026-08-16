@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           auto_approve: boolean
           credit_usage: number | null
+          data_policy_content: string | null
           id: number
           last_sync_at: string | null
           lovable_api_key_override: string | null
@@ -38,6 +39,7 @@ export type Database = {
         Insert: {
           auto_approve?: boolean
           credit_usage?: number | null
+          data_policy_content?: string | null
           id?: number
           last_sync_at?: string | null
           lovable_api_key_override?: string | null
@@ -58,6 +60,7 @@ export type Database = {
         Update: {
           auto_approve?: boolean
           credit_usage?: number | null
+          data_policy_content?: string | null
           id?: number
           last_sync_at?: string | null
           lovable_api_key_override?: string | null
@@ -337,6 +340,36 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_logs: {
+        Row: {
+          created_at: string | null
+          event_type: string | null
+          headers: Json | null
+          id: string
+          payload: Json | null
+          source: string
+          status_code: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type?: string | null
+          headers?: Json | null
+          id?: string
+          payload?: Json | null
+          source: string
+          status_code?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string | null
+          headers?: Json | null
+          id?: string
+          payload?: Json | null
+          source?: string
+          status_code?: number | null
         }
         Relationships: []
       }

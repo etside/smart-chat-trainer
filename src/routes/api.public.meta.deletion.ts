@@ -5,9 +5,15 @@ export const Route = createFileRoute('/api/public/meta/deletion')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const source = 'meta';
+        const event_type = 'data_deletion';
+        const headers: Record<string, string> = {};
+        request.headers.forEach((value, key) => { headers[key] = value; });
+
         try {
           const formData = await request.formData();
           const signedRequest = formData.get('signed_request') as string;
+
 
           if (!signedRequest) {
             return new Response('Missing signed_request', { status: 400 });
