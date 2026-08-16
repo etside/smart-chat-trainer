@@ -13,14 +13,22 @@ export async function chatComplete(
   messages: ChatMessage[],
   model = "openai/gpt-5.6-sol",
   apiKeyOverride?: string | null,
-): Promise<string> {
+  stream = false
+): Promise<string | ReadableStream> {
+  const body = { 
+    model, 
+    messages, 
+    reasoning_effort: "none",
+    stream
+  };
+
   const res = await fetch(`${GATEWAY}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Lovable-API-Key": await getApiKey(apiKeyOverride),
     },
-    body: JSON.stringify({ model, messages, reasoning_effort: "none" }),
+    body: JSON.stringify(body),
   });
 
   if (res.status === 429) throw new Error("RATE_LIMIT");
@@ -28,6 +36,10 @@ export async function chatComplete(
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`AI request failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+
+  if (stream && res.body) {
+    return res.body;
   }
 
   const json = (await res.json()) as {
