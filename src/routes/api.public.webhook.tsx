@@ -42,6 +42,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           const apiKey = request.headers.get("x-api-key") || request.headers.get("Authorization")?.replace("Bearer ", "");
           const signature = request.headers.get("x-webhook-signature") || request.headers.get("x-ai-signature");
           const idempotencyKey = request.headers.get("x-idempotency-key");
+          const timestamp = request.headers.get("x-webhook-timestamp");
 
           const { hashApiKey, verifyWebhookSignature } = await import("@/lib/admin.server");
 
@@ -65,7 +66,19 @@ export const Route = createFileRoute("/api/public/webhook")({
 
           // 2. Check HMAC Signature (if API key fails)
           if (!isAuthorized && signature && secret) {
-            isAuthorized = await verifyWebhookSignature(rawBody, signature, secret);
+            // Replay protection: Verify signature includes timestamp if provided
+            const bodyToVerify = timestamp ? `${timestamp}.${rawBody}` : rawBody;
+            isAuthorized = await verifyWebhookSignature(bodyToVerify, signature, secret);
+            
+            // Replay protection: Reject if timestamp is too old (5 mins)
+            if (isAuthorized && timestamp) {
+              const ts = parseInt(timestamp, 10);
+              const now = Math.floor(Date.now() / 1000);
+              if (isNaN(ts) || Math.abs(now - ts) > 300) {
+                isAuthorized = false;
+                console.warn("Webhook timestamp validation failed.");
+              }
+            }
           }
 
           if (!isAuthorized) {
@@ -77,7 +90,7 @@ export const Route = createFileRoute("/api/public/webhook")({
               headers: Object.fromEntries(request.headers.entries()),
               status_code: 401,
               processing_status: 'failed',
-              error_details: 'Unauthorized'
+              error_details: 'Unauthorized or invalid signature'
             });
             return json({ error: "Unauthorized" }, 401);
           }
