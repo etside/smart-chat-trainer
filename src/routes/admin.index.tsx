@@ -89,6 +89,16 @@ function Dashboard() {
             অটোমেটিক ট্রেনিং জব এবং স্ট্যাটাস দেখুন।
           </p>
         </Link>
+        <Link
+          to="/admin/webhook-test"
+          className="panel block p-5 transition-colors hover:bg-secondary/50"
+        >
+          <Terminal className="size-5 text-primary" />
+          <h2 className="mt-3 font-semibold">ওয়েবহুক টেস্ট প্যানেল</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            ভয়েস বা টেক্সট পাঠিয়ে AI রেসপন্স এবং লগ যাচাই করুন।
+          </p>
+        </Link>
       </div>
 
       <div className="mt-8">
