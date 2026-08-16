@@ -135,13 +135,13 @@ function AdminLayout() {
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 relative group",
                   active
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]"
-                    : "text-muted-foreground hover:bg-primary/5 hover:text-primary",
+                    ? "bg-black text-white shadow-lg shadow-black/20 scale-[1.02]"
+                    : "text-muted-foreground hover:bg-black/5 hover:text-black",
                 )}
               >
-                <item.icon className={cn("size-4.5", active ? "text-primary-foreground" : "group-hover:scale-110 transition-transform")} />
+                <item.icon className={cn("size-4.5", active ? "text-white" : "group-hover:scale-110 transition-transform")} />
                 {item.label}
-                {active && <div className="absolute right-2 size-1.5 rounded-full bg-primary-foreground/50" />}
+                {active && <div className="absolute right-2 size-1.5 rounded-full bg-white/50" />}
               </Link>
             );
           })}
@@ -167,7 +167,7 @@ function AdminLayout() {
             <Link
               key={item.to}
               to={item.to}
-              className="whitespace-nowrap rounded-md px-3 py-1.5 text-xs hover:bg-sidebar-accent/60"
+              className="whitespace-nowrap rounded-md px-3 py-1.5 text-xs hover:bg-black/10 active:bg-black active:text-white"
             >
               {item.label}
             </Link>
