@@ -16,9 +16,11 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
 import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
+import { Route as AdminProgressRouteImport } from './routes/admin.progress'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
 import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
+import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -55,6 +57,11 @@ const AdminPlaygroundRoute = AdminPlaygroundRouteImport.update({
   path: '/playground',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProgressRoute = AdminProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -70,6 +77,11 @@ const ApiPublicChatRoute = ApiPublicChatRouteImport.update({
   path: '/api/public/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
+  id: '/api/public/webhook',
+  path: '/api/public/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -78,10 +90,12 @@ export interface FileRoutesByFullPath {
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
+  '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -89,10 +103,12 @@ export interface FileRoutesByTo {
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
+  '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -102,10 +118,12 @@ export interface FileRoutesById {
   '/admin/add': typeof AdminAddRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/playground': typeof AdminPlaygroundRoute
+  '/admin/progress': typeof AdminProgressRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/chat': typeof ApiPublicChatRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,10 +134,12 @@ export interface FileRouteTypes {
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
+    | '/admin/progress'
     | '/admin/settings'
     | '/admin/training'
     | '/admin/'
     | '/api/public/chat'
+    | '/api/public/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -127,10 +147,12 @@ export interface FileRouteTypes {
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
+    | '/admin/progress'
     | '/admin/settings'
     | '/admin/training'
     | '/admin'
     | '/api/public/chat'
+    | '/api/public/webhook'
   id:
     | '__root__'
     | '/'
@@ -139,10 +161,12 @@ export interface FileRouteTypes {
     | '/admin/add'
     | '/admin/connections'
     | '/admin/playground'
+    | '/admin/progress'
     | '/admin/settings'
     | '/admin/training'
     | '/admin/'
     | '/api/public/chat'
+    | '/api/public/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -150,6 +174,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiPublicChatRoute: typeof ApiPublicChatRoute
+  ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -203,6 +228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlaygroundRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/progress': {
+      id: '/admin/progress'
+      path: '/progress'
+      fullPath: '/admin/progress'
+      preLoaderRoute: typeof AdminProgressRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/settings'
@@ -224,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhook': {
+      id: '/api/public/webhook'
+      path: '/api/public/webhook'
+      fullPath: '/api/public/webhook'
+      preLoaderRoute: typeof ApiPublicWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -231,6 +270,7 @@ interface AdminRouteChildren {
   AdminAddRoute: typeof AdminAddRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
   AdminPlaygroundRoute: typeof AdminPlaygroundRoute
+  AdminProgressRoute: typeof AdminProgressRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -240,6 +280,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAddRoute: AdminAddRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
   AdminPlaygroundRoute: AdminPlaygroundRoute,
+  AdminProgressRoute: AdminProgressRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminTrainingRoute: AdminTrainingRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -252,6 +293,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiPublicChatRoute: ApiPublicChatRoute,
+  ApiPublicWebhookRoute: ApiPublicWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

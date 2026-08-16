@@ -37,7 +37,7 @@ export const Route = createFileRoute("/api/public/chat")({
 
         const { data: keyRow } = await supabaseAdmin
           .from("api_keys")
-          .select("id, revoked")
+          .select("id, revoked, version_id")
           .eq("key_hash", await hashApiKey(apiKey))
           .maybeSingle();
 
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/api/public/chat")({
         const { generateReply, logConversation } = await import("@/lib/agent.server");
 
         try {
-          const { reply } = await generateReply(parsed.message, parsed.history ?? []);
+          const { reply } = await generateReply(parsed.message, parsed.history ?? [], keyRow.version_id);
 
           await supabaseAdmin
             .from("api_keys")
