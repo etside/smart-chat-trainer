@@ -15,7 +15,7 @@ import { getSyncCredentials, updateSyncCredentials, getMetaCredentials, updateMe
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Key, Save, Sparkles, Facebook, MessageSquare, Info, ShieldCheck } from "lucide-react";
+import { Key, Save, Sparkles, Facebook, MessageSquare, Info, ShieldCheck, Copy, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { verifyMetaConnection, getMetaWebhookConfig } from "@/lib/meta.functions";
 import { toast } from "sonner";
@@ -485,6 +485,46 @@ function SettingsPage() {
                         value={metaVerifyToken}
                         onChange={(e) => setMetaVerifyToken(e.target.value)}
                       />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <div>
+                    <p className="text-sm font-medium">Configuration ID</p>
+                    <p className="text-xs text-muted-foreground">Meta Partner Integration ID</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono">
+                      4435001526812234
+                    </code>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="size-8"
+                      onClick={() => {
+                        navigator.clipboard.writeText("4435001526812234");
+                        toast.success("ID কপি করা হয়েছে");
+                      }}
+                    >
+                      <Copy className="size-3" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="p-4 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="size-5 text-yellow-500 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-yellow-500">App Review ও বিজনেস ভেরিফিকেশন</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        আপনার অ্যাপটি লাইভ করার আগে Meta App Review সম্পন্ন করতে হবে। অন্যথায় আপনার রোলের বাইরের ইউজাররা এটি ব্যবহার করতে পারবে না। 
+                        <a href="https://developers.facebook.com/docs/apps/business-verification" target="_blank" rel="noreferrer" className="text-primary hover:underline ml-1">
+                          বিজনেস ভেরিফিকেশন গাইড দেখুন →
+                        </a>
+                      </p>
                     </div>
                   </div>
                 </div>
