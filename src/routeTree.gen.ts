@@ -25,6 +25,7 @@ import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
 import { Route as ApiPublicAiSyncStatusRouteImport } from './routes/api/public/ai-sync/status'
 import { Route as ApiPublicCronSyncRouteImport } from './routes/api.public.cron.sync'
+import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api.public.webhooks.meta'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -106,6 +107,11 @@ const ApiPublicCronSyncRoute = ApiPublicCronSyncRouteImport.update({
   path: '/api/public/cron/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksMetaRoute = ApiPublicWebhooksMetaRouteImport.update({
+  id: '/api/public/webhooks/meta',
+  path: '/api/public/webhooks/meta',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
+    | '/api/public/webhooks/meta'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
+    | '/api/public/webhooks/meta'
   id:
     | '__root__'
     | '/'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
+    | '/api/public/webhooks/meta'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -225,6 +237,7 @@ export interface RootRouteChildren {
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicAiSyncStatusRoute: typeof ApiPublicAiSyncStatusRoute
   ApiPublicCronSyncRoute: typeof ApiPublicCronSyncRoute
+  ApiPublicWebhooksMetaRoute: typeof ApiPublicWebhooksMetaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -341,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/meta': {
+      id: '/api/public/webhooks/meta'
+      path: '/api/public/webhooks/meta'
+      fullPath: '/api/public/webhooks/meta'
+      preLoaderRoute: typeof ApiPublicWebhooksMetaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -378,6 +398,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicAiSyncStatusRoute: ApiPublicAiSyncStatusRoute,
   ApiPublicCronSyncRoute: ApiPublicCronSyncRoute,
+  ApiPublicWebhooksMetaRoute: ApiPublicWebhooksMetaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
