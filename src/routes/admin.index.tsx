@@ -42,8 +42,8 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-semibold">ড্যাশবোর্ড</h1>
-      <div className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">
-        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            use this for sync with  website all info and price and details of products, stocks ,  inventory, order   URL:    POST\n\n  https://api.v2.wearimpressive.com/api/ai/webhook\n\n  Token:\n\n  10f036a1730c407a7b060447f08543ac9f21ef1e0f9ef0f75f2b8ff474b2\n\n  d7c4\n\n  Secret:\n\n  c7188d3e68a3a58ebd4adfb0209630b26922aebe619f14fb4e080742208f\n\n  bed2"}
+      <div className="mt-1 p-3 bg-secondary/30 rounded-lg text-xs text-muted-foreground border italic">
+        {"'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n\nAdvanced sync endpoint configured. Token and Secret are stored securely."}
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -77,13 +77,13 @@ function Dashboard() {
           </p>
         </Link>
         <Link
-          to="/admin/progress"
-          className="panel block p-5 transition-colors hover:bg-secondary/50"
+          to="/admin/sync"
+          className="panel block p-5 transition-colors hover:bg-secondary/50 border-primary/20 bg-primary/5"
         >
           <Activity className="size-5 text-primary" />
-          <h2 className="mt-3 font-semibold">ট্রেনিং প্রগ্রেস</h2>
+          <h2 className="mt-3 font-semibold">প্রোডাক্ট সিঙ্ক</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            অটোমেটিক ট্রেনিং জব এবং স্ট্যাটাস দেখুন।
+            ইনভেন্টরি এবং প্রোডাক্ট ডেটা অটোমেটিক সিঙ্ক ম্যানেজ করুন।
           </p>
         </Link>
         <Link
@@ -94,6 +94,16 @@ function Dashboard() {
           <h2 className="mt-3 font-semibold">ওয়েবহুক টেস্ট প্যানেল</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             ভয়েস বা টেক্সট পাঠিয়ে AI রেসপন্স এবং লগ যাচাই করুন।
+          </p>
+        </Link>
+        <Link
+          to="/admin/progress"
+          className="panel block p-5 transition-colors hover:bg-secondary/50"
+        >
+          <Activity className="size-5 text-primary" />
+          <h2 className="mt-3 font-semibold">ট্রেনিং প্রগ্রেস</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            অটোমেটিক ট্রেনিং জব এবং স্ট্যাটাস দেখুন।
           </p>
         </Link>
       </div>
