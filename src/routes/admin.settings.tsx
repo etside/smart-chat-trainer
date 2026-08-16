@@ -55,13 +55,19 @@ function MetaLoginButton() {
 
   const handleLogin = () => {
     // @ts-ignore
-    FB.login((response) => {
-      setStatus(response.status);
-      if (response.status === 'connected') {
-        setUser(response.authResponse);
-        toast.success("Meta লগইন সফল হয়েছে");
-      }
-    }, { scope: 'pages_messaging,whatsapp_business_messaging,pages_manage_metadata,pages_read_engagement' });
+    if (typeof FB !== 'undefined') {
+      // @ts-ignore
+      FB.login((response) => {
+        setStatus(response.status);
+        if (response.status === 'connected') {
+          setUser(response.authResponse);
+          toast.success("Meta লগইন সফল হয়েছে");
+        }
+      }, { 
+        config_id: metaAppId, // Using App ID as config_id for the newer flow if applicable
+        scope: 'pages_messaging,whatsapp_business_messaging,pages_manage_metadata,pages_read_engagement' 
+      });
+    }
   };
 
   const handleLogout = () => {
