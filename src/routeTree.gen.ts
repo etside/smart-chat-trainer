@@ -25,12 +25,6 @@ import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
 import { Route as ApiPublicAiSyncStatusRouteImport } from './routes/api/public/ai-sync/status'
 import { Route as ApiPublicCronSyncRouteImport } from './routes/api.public.cron.sync'
-import { Route as ApiPublicWebhooksCouriersPathaoRouteImport } from './routes/api/public/webhooks/couriers/pathao'
-import { Route as ApiPublicWebhooksCouriersRedxRouteImport } from './routes/api/public/webhooks/couriers/redx'
-import { Route as ApiPublicWebhooksCouriersSteadfastRouteImport } from './routes/api/public/webhooks/couriers/steadfast'
-import { Route as ApiPublicWebhooksPaymentsBkashRouteImport } from './routes/api/public/webhooks/payments/bkash'
-import { Route as ApiPublicWebhooksPaymentsNagadRouteImport } from './routes/api/public/webhooks/payments/nagad'
-import { Route as ApiPublicWebhooksPaymentsSslcommerzRouteImport } from './routes/api/public/webhooks/payments/sslcommerz'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -112,42 +106,6 @@ const ApiPublicCronSyncRoute = ApiPublicCronSyncRouteImport.update({
   path: '/api/public/cron/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicWebhooksCouriersPathaoRoute =
-  ApiPublicWebhooksCouriersPathaoRouteImport.update({
-    id: '/api/public/webhooks/couriers/pathao',
-    path: '/api/public/webhooks/couriers/pathao',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicWebhooksCouriersRedxRoute =
-  ApiPublicWebhooksCouriersRedxRouteImport.update({
-    id: '/api/public/webhooks/couriers/redx',
-    path: '/api/public/webhooks/couriers/redx',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicWebhooksCouriersSteadfastRoute =
-  ApiPublicWebhooksCouriersSteadfastRouteImport.update({
-    id: '/api/public/webhooks/couriers/steadfast',
-    path: '/api/public/webhooks/couriers/steadfast',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicWebhooksPaymentsBkashRoute =
-  ApiPublicWebhooksPaymentsBkashRouteImport.update({
-    id: '/api/public/webhooks/payments/bkash',
-    path: '/api/public/webhooks/payments/bkash',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicWebhooksPaymentsNagadRoute =
-  ApiPublicWebhooksPaymentsNagadRouteImport.update({
-    id: '/api/public/webhooks/payments/nagad',
-    path: '/api/public/webhooks/payments/nagad',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicWebhooksPaymentsSslcommerzRoute =
-  ApiPublicWebhooksPaymentsSslcommerzRouteImport.update({
-    id: '/api/public/webhooks/payments/sslcommerz',
-    path: '/api/public/webhooks/payments/sslcommerz',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -166,12 +124,6 @@ export interface FileRoutesByFullPath {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
-  '/api/public/webhooks/couriers/pathao': typeof ApiPublicWebhooksCouriersPathaoRoute
-  '/api/public/webhooks/couriers/redx': typeof ApiPublicWebhooksCouriersRedxRoute
-  '/api/public/webhooks/couriers/steadfast': typeof ApiPublicWebhooksCouriersSteadfastRoute
-  '/api/public/webhooks/payments/bkash': typeof ApiPublicWebhooksPaymentsBkashRoute
-  '/api/public/webhooks/payments/nagad': typeof ApiPublicWebhooksPaymentsNagadRoute
-  '/api/public/webhooks/payments/sslcommerz': typeof ApiPublicWebhooksPaymentsSslcommerzRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -189,12 +141,6 @@ export interface FileRoutesByTo {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
-  '/api/public/webhooks/couriers/pathao': typeof ApiPublicWebhooksCouriersPathaoRoute
-  '/api/public/webhooks/couriers/redx': typeof ApiPublicWebhooksCouriersRedxRoute
-  '/api/public/webhooks/couriers/steadfast': typeof ApiPublicWebhooksCouriersSteadfastRoute
-  '/api/public/webhooks/payments/bkash': typeof ApiPublicWebhooksPaymentsBkashRoute
-  '/api/public/webhooks/payments/nagad': typeof ApiPublicWebhooksPaymentsNagadRoute
-  '/api/public/webhooks/payments/sslcommerz': typeof ApiPublicWebhooksPaymentsSslcommerzRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -214,12 +160,6 @@ export interface FileRoutesById {
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
-  '/api/public/webhooks/couriers/pathao': typeof ApiPublicWebhooksCouriersPathaoRoute
-  '/api/public/webhooks/couriers/redx': typeof ApiPublicWebhooksCouriersRedxRoute
-  '/api/public/webhooks/couriers/steadfast': typeof ApiPublicWebhooksCouriersSteadfastRoute
-  '/api/public/webhooks/payments/bkash': typeof ApiPublicWebhooksPaymentsBkashRoute
-  '/api/public/webhooks/payments/nagad': typeof ApiPublicWebhooksPaymentsNagadRoute
-  '/api/public/webhooks/payments/sslcommerz': typeof ApiPublicWebhooksPaymentsSslcommerzRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -240,12 +180,6 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
-    | '/api/public/webhooks/couriers/pathao'
-    | '/api/public/webhooks/couriers/redx'
-    | '/api/public/webhooks/couriers/steadfast'
-    | '/api/public/webhooks/payments/bkash'
-    | '/api/public/webhooks/payments/nagad'
-    | '/api/public/webhooks/payments/sslcommerz'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -263,12 +197,6 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
-    | '/api/public/webhooks/couriers/pathao'
-    | '/api/public/webhooks/couriers/redx'
-    | '/api/public/webhooks/couriers/steadfast'
-    | '/api/public/webhooks/payments/bkash'
-    | '/api/public/webhooks/payments/nagad'
-    | '/api/public/webhooks/payments/sslcommerz'
   id:
     | '__root__'
     | '/'
@@ -287,12 +215,6 @@ export interface FileRouteTypes {
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
     | '/api/public/cron/sync'
-    | '/api/public/webhooks/couriers/pathao'
-    | '/api/public/webhooks/couriers/redx'
-    | '/api/public/webhooks/couriers/steadfast'
-    | '/api/public/webhooks/payments/bkash'
-    | '/api/public/webhooks/payments/nagad'
-    | '/api/public/webhooks/payments/sslcommerz'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -303,12 +225,6 @@ export interface RootRouteChildren {
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicAiSyncStatusRoute: typeof ApiPublicAiSyncStatusRoute
   ApiPublicCronSyncRoute: typeof ApiPublicCronSyncRoute
-  ApiPublicWebhooksCouriersPathaoRoute: typeof ApiPublicWebhooksCouriersPathaoRoute
-  ApiPublicWebhooksCouriersRedxRoute: typeof ApiPublicWebhooksCouriersRedxRoute
-  ApiPublicWebhooksCouriersSteadfastRoute: typeof ApiPublicWebhooksCouriersSteadfastRoute
-  ApiPublicWebhooksPaymentsBkashRoute: typeof ApiPublicWebhooksPaymentsBkashRoute
-  ApiPublicWebhooksPaymentsNagadRoute: typeof ApiPublicWebhooksPaymentsNagadRoute
-  ApiPublicWebhooksPaymentsSslcommerzRoute: typeof ApiPublicWebhooksPaymentsSslcommerzRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -425,48 +341,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhooks/couriers/pathao': {
-      id: '/api/public/webhooks/couriers/pathao'
-      path: '/api/public/webhooks/couriers/pathao'
-      fullPath: '/api/public/webhooks/couriers/pathao'
-      preLoaderRoute: typeof ApiPublicWebhooksCouriersPathaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhooks/couriers/redx': {
-      id: '/api/public/webhooks/couriers/redx'
-      path: '/api/public/webhooks/couriers/redx'
-      fullPath: '/api/public/webhooks/couriers/redx'
-      preLoaderRoute: typeof ApiPublicWebhooksCouriersRedxRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhooks/couriers/steadfast': {
-      id: '/api/public/webhooks/couriers/steadfast'
-      path: '/api/public/webhooks/couriers/steadfast'
-      fullPath: '/api/public/webhooks/couriers/steadfast'
-      preLoaderRoute: typeof ApiPublicWebhooksCouriersSteadfastRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhooks/payments/bkash': {
-      id: '/api/public/webhooks/payments/bkash'
-      path: '/api/public/webhooks/payments/bkash'
-      fullPath: '/api/public/webhooks/payments/bkash'
-      preLoaderRoute: typeof ApiPublicWebhooksPaymentsBkashRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhooks/payments/nagad': {
-      id: '/api/public/webhooks/payments/nagad'
-      path: '/api/public/webhooks/payments/nagad'
-      fullPath: '/api/public/webhooks/payments/nagad'
-      preLoaderRoute: typeof ApiPublicWebhooksPaymentsNagadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhooks/payments/sslcommerz': {
-      id: '/api/public/webhooks/payments/sslcommerz'
-      path: '/api/public/webhooks/payments/sslcommerz'
-      fullPath: '/api/public/webhooks/payments/sslcommerz'
-      preLoaderRoute: typeof ApiPublicWebhooksPaymentsSslcommerzRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -504,14 +378,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicAiSyncStatusRoute: ApiPublicAiSyncStatusRoute,
   ApiPublicCronSyncRoute: ApiPublicCronSyncRoute,
-  ApiPublicWebhooksCouriersPathaoRoute: ApiPublicWebhooksCouriersPathaoRoute,
-  ApiPublicWebhooksCouriersRedxRoute: ApiPublicWebhooksCouriersRedxRoute,
-  ApiPublicWebhooksCouriersSteadfastRoute:
-    ApiPublicWebhooksCouriersSteadfastRoute,
-  ApiPublicWebhooksPaymentsBkashRoute: ApiPublicWebhooksPaymentsBkashRoute,
-  ApiPublicWebhooksPaymentsNagadRoute: ApiPublicWebhooksPaymentsNagadRoute,
-  ApiPublicWebhooksPaymentsSslcommerzRoute:
-    ApiPublicWebhooksPaymentsSslcommerzRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
