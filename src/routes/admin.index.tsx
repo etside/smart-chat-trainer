@@ -51,9 +51,9 @@ POST https://api.v2.wearimpressive.com/api/ai/webhook`);
             toast.success("ডকুমেন্টেশন কপি হয়েছে");
           }}>কপি করুন</Button>
         </div>
-        {`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-
-Enable token-by-token or chunked streaming for AI replies so the response feels instant. Add a configurable limit for maximum simultaneous agent reply messages and ensure agents run in parallel without collisions. Optimize conversation analysis to run incrementally on partial transcripts for faster agent responses. Implement streaming voice transcription so I can see text appear while audio is still uploading. Add a performance dashboard that tracks transcription latency, analysis time, and overall response time per request.`}
+        {`Authentication verified and operational. (Action: catalog, session ID required)
+Set up the Wear Impressive AI Webhook integration.
+POST https://api.v2.wearimpressive.com/api/ai/webhook`}
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
