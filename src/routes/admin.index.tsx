@@ -46,7 +46,7 @@ function Dashboard() {
         '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add a manual retrain button per dataset/version so I can re-run training on demand and monitor progress without waiting for the automatic trigger. Ensure the project is ready for  and ensure this generates a api key or webhook for another platform to send this training UI and everything support from there
+                                            Add a webhook test panel so I can send a sample voice/message payload and immediately verify transcription, training triggers, and the stored response logs.
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
