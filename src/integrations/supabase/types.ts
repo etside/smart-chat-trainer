@@ -240,6 +240,36 @@ export type Database = {
           },
         ]
       }
+      notification_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean | null
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       sync_runs: {
         Row: {
           error_message: string | null
@@ -379,6 +409,39 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_alerts: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          threshold_bdt: number
+          threshold_credits: number
+          threshold_usd: number
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          threshold_bdt: number
+          threshold_credits: number
+          threshold_usd: number
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          threshold_bdt?: number
+          threshold_credits?: number
+          threshold_usd?: number
+          type?: string
+        }
+        Relationships: []
+      }
       usage_logs: {
         Row: {
           action: string
@@ -480,6 +543,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_usage_thresholds: { Args: never; Returns: undefined }
       get_usage_aggregates: { Args: never; Returns: Json }
       has_role: {
         Args: {
