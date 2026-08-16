@@ -107,7 +107,7 @@ function WebhookDLQPage() {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-primary/70">সর্বশেষ সিঙ্ক রান</p>
-              <p className="text-sm font-medium">{new Date(stats.lastSync.started_at).toLocaleString('bn-BD')}</p>
+              <p className="text-sm font-medium">{new Date(stats.lastSync.started_at || "").toLocaleString('bn-BD')}</p>
             </div>
           </div>
           <div className="text-right">
