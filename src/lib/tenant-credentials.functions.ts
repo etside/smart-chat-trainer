@@ -120,7 +120,7 @@ export const rotateDeliverySecret = createServerFn({ method: "POST" })
     const column = data.kind === "webhook" ? "webhook_secret" : "cron_secret";
     await supabaseAdmin
       .from("agent_settings")
-      .update({ [column]: value })
+      .update({ [column]: value } as Record<string, string>)
       .eq("id", 1);
 
     await supabaseAdmin.from("audit_logs").insert({
