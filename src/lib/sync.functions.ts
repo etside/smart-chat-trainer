@@ -89,14 +89,17 @@ export const previewSync = createServerFn({ method: "POST" })
       if (!syncRes.ok) throw new Error(`Preview failed: ${syncRes.statusText} (${syncRes.status})`);
       const apiData = await syncRes.json();
       const items = apiData.success && apiData.data?.products ? apiData.data.products : (Array.isArray(apiData) ? apiData : []);
-      
-      return { 
+
+      return {
         preview: items.slice(0, 5).map((item: any) => ({
           name: item.name || item.title || "Unknown",
-          price: item.price || "N/A",
-          stock: item.stock_status || item.inventory || "N/A",
+          price: item.effective_price || item.price || "N/A",
+          stock: item.stock ?? item.stock_status ?? "N/A",
+          category: item.category || "",
+          variants: item.variants?.length || 0,
           isValid: Boolean(item.name || item.title) && (item.price !== undefined)
-        }))
+        })),
+        total: apiData.data?.total || items.length
       };
     } catch (err: any) {
       throw new Error(`Preview failed: ${err.message}`);
@@ -180,53 +183,117 @@ export const syncCatalog = createServerFn({ method: "POST" })
       .single();
 
     try {
-      const payload = { 
-        action: "catalog", 
-        per_page: 50, 
-        session: `sync_${run?.id || Date.now()}`,
-        token: token.startsWith("Bearer ") ? token.slice(7) : token // Passing token in body as well
-      };
-      const bodyStr = JSON.stringify(payload);
-      
-      const syncRes = await fetchWithRetry(data.url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
-          "X-AI-Signature": `sha256=${await (async () => {
-            const encoder = new TextEncoder();
-            const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-            const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(bodyStr));
-            return Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, "0")).join("");
-          })()}`,
-          "X-Secret": secret,
-          "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`,
-          "Token": token.startsWith("Bearer ") ? token.slice(7) : token,
-          "Secret": secret
-        },
-        body: bodyStr
-      });
-      
-      if (!syncRes.ok) {
-        let errorBody = "";
-        try {
-          errorBody = await syncRes.text();
-        } catch (e) {}
-        throw new Error(`API sync failed: ${syncRes.statusText} (${syncRes.status}) - ${errorBody.slice(0, 500)}`);
+      // Fetch all pages of products
+      let allItems: any[] = [];
+      let page = 1;
+      const perPage = 50;
+      let totalPages = 1;
+
+      while (page <= totalPages && page <= 20) { // cap at 20 pages (1000 products)
+        const payload = {
+          action: "catalog",
+          per_page: perPage,
+          page,
+          session: `sync_${run?.id || Date.now()}`,
+          token: token.startsWith("Bearer ") ? token.slice(7) : token
+        };
+        const bodyStr = JSON.stringify(payload);
+
+        const syncRes = await fetchWithRetry(data.url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+            "X-AI-Signature": `sha256=${await (async () => {
+              const encoder = new TextEncoder();
+              const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+              const signed = await crypto.subtle.sign("HMAC", key, encoder.encode(bodyStr));
+              return Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, "0")).join("");
+            })()}`,
+            "X-Secret": secret,
+            "X-Idempotency-Key": data.idempotencyKey || `run_${run?.id}`,
+            "Token": token.startsWith("Bearer ") ? token.slice(7) : token,
+            "Secret": secret
+          },
+          body: bodyStr
+        });
+
+        if (!syncRes.ok) {
+          let errorBody = "";
+          try { errorBody = await syncRes.text(); } catch (e) {}
+          throw new Error(`API sync failed: ${syncRes.statusText} (${syncRes.status}) - ${errorBody.slice(0, 500)}`);
+        }
+
+        const apiData = await syncRes.json();
+        const pageItems = apiData.success && apiData.data?.products ? apiData.data.products : (Array.isArray(apiData) ? apiData : []);
+        allItems = allItems.concat(pageItems);
+
+        // Update total pages from API response
+        if (apiData.data?.last_page) {
+          totalPages = apiData.data.last_page;
+        } else if (pageItems.length < perPage) {
+          break; // last page
+        }
+        page++;
       }
-      
-      const apiData = await syncRes.json();
-      const items = apiData.success && apiData.data?.products ? apiData.data.products : (Array.isArray(apiData) ? apiData : []);
-      
+
+      const items = allItems;
+      console.log(`[sync] Fetched ${items.length} products across ${page - 1} pages`);
+
       const trainingPairs = items
-        .filter((item: any) => (item.name || item.title) && item.price)
-        .map((item: any) => ({
-          question: `${item.name || item.title} এর স্টক বা দাম কত?`,
-          answer: `${item.name || item.title} এর দাম ${item.price} টাকা। স্টক: ${item.stock_status || item.inventory || 'Available'}। বিবরণ: ${item.description || ''}`,
-          status: 'approved' as const,
-          source: 'api_sync'
-        })).slice(0, 2000);
+        .filter((item: any) => (item.name || item.title) && (item.price || item.effective_price))
+        .flatMap((item: any) => {
+          const name = item.name || item.title;
+          const price = item.effective_price || item.price;
+          const stock = item.stock ?? item.stock_status ?? 'Available';
+          const category = item.category || '';
+          const brand = item.brand || '';
+          const desc = item.short_description || item.description || '';
+
+          const pairs = [];
+
+          // Main product Q&A
+          pairs.push({
+            question: `${name} এর দাম কত?`,
+            answer: `${name} এর দাম ${price} টাকা।${category ? ` ক্যাটাগরি: ${category}।` : ''}${brand ? ` ব্র্যান্ড: ${brand}।` : ''}`,
+            status: 'approved' as const,
+            source: 'api_sync'
+          });
+
+          // Stock Q&A
+          pairs.push({
+            question: `${name} স্টকে আছে কি?`,
+            answer: `${name} এর স্টক: ${stock === 0 || stock === 'out_of_stock' ? 'স্টকে নেই' : 'স্টকে আছে'}।`,
+            status: 'approved' as const,
+            source: 'api_sync'
+          });
+
+          // Variant Q&A
+          if (item.variants && Array.isArray(item.variants)) {
+            for (const v of item.variants.slice(0, 5)) {
+              const label = v.options ? Object.values(v.options).join(', ') : (v.sku || 'variant');
+              pairs.push({
+                question: `${name} ${label} এর দাম ও স্টক কত?`,
+                answer: `${name} ${label} — দাম: ${v.effective_price || v.price || price} টাকা, স্টক: ${v.stock ?? 'Available'}।`,
+                status: 'approved' as const,
+                source: 'api_sync'
+              });
+            }
+          }
+
+          // Combined info Q&A
+          if (desc) {
+            pairs.push({
+              question: `${name} সম্পর্কে জানান`,
+              answer: `${name}: ${desc}। দাম: ${price} টাকা।`,
+              status: 'approved' as const,
+              source: 'api_sync'
+            });
+          }
+
+          return pairs;
+        }).slice(0, 5000);
 
       const { error } = await supabaseAdmin
         .from("training_pairs")
