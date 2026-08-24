@@ -22,7 +22,8 @@ import {
   ShieldCheck,
   MessageSquare,
   Menu,
-  X
+  X,
+  Wand2
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -41,7 +42,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/credentials" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance" | "/admin/auto-replies" | "/privacy" | "/terms" | "/privacy-request";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/credentials" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance" | "/admin/auto-replies" | "/admin/skill-builder" | "/privacy" | "/terms" | "/privacy-request";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -55,6 +56,7 @@ const nav: Array<{
   { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle, minRole: "editor" },
   { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare, minRole: "viewer" },
   { to: "/admin/auto-replies", label: "অটো-রিপ্লাই টেমপ্লেট", icon: MessageSquare, minRole: "editor" },
+  { to: "/admin/skill-builder", label: "স্কিল বিল্ডার", icon: Wand2, minRole: "editor" },
   { to: "/admin/sync", label: "সিঙ্ক স্ট্যাটাস", icon: Activity, minRole: "viewer" },
   { to: "/admin/audit-logs", label: "অডিট লগ", icon: History, minRole: "admin" },
   { to: "/admin/progress", label: "ট্রেনিং লাইভ", icon: Activity, minRole: "viewer" },
