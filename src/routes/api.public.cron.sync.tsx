@@ -4,16 +4,29 @@ export const Route = createFileRoute("/api/public/cron/sync")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        // Simple secret check for cron jobs
         const authHeader = request.headers.get("Authorization");
-        const cronSecret = process.env['CRON_SECRET'];
-        
+
+        // Try agent_settings.cron_secret first, fall back to env var
+        let cronSecret = process.env['CRON_SECRET'];
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: settings } = await supabaseAdmin
+            .from("agent_settings")
+            .select("cron_secret")
+            .eq("id", 1)
+            .maybeSingle();
+          if ((settings as any)?.cron_secret) {
+            cronSecret = (settings as any).cron_secret;
+          }
+        } catch (e) {
+          // Fall back to env var silently
+        }
+
         if (!cronSecret) {
-          console.error("CRON_SECRET environment variable is not configured.");
+          console.error("CRON_SECRET not configured in agent_settings or env.");
           return new Response("Configuration Error", { status: 500 });
         }
-        
-        // Support both literal match and Bearer format for flexibility
+
         if (authHeader !== `Bearer ${cronSecret}` && authHeader !== cronSecret) {
           return new Response("Unauthorized", { status: 401 });
         }
