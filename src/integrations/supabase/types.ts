@@ -21,6 +21,7 @@ export type Database = {
           b2b_backblaze_key: string | null
           boson_workspace_id: string | null
           credit_usage: number | null
+          cron_secret: string | null
           data_policy_content: string | null
           enable_streaming: boolean | null
           fish_audio_api_key: string | null
@@ -46,6 +47,7 @@ export type Database = {
           updated_at: string
           usage_config: Json | null
           vps_hosting_config: Json | null
+          webhook_secret: string | null
         }
         Insert: {
           alt_api_keys?: Json | null
@@ -53,6 +55,7 @@ export type Database = {
           b2b_backblaze_key?: string | null
           boson_workspace_id?: string | null
           credit_usage?: number | null
+          cron_secret?: string | null
           data_policy_content?: string | null
           enable_streaming?: boolean | null
           fish_audio_api_key?: string | null
@@ -78,6 +81,7 @@ export type Database = {
           updated_at?: string
           usage_config?: Json | null
           vps_hosting_config?: Json | null
+          webhook_secret?: string | null
         }
         Update: {
           alt_api_keys?: Json | null
@@ -85,6 +89,7 @@ export type Database = {
           b2b_backblaze_key?: string | null
           boson_workspace_id?: string | null
           credit_usage?: number | null
+          cron_secret?: string | null
           data_policy_content?: string | null
           enable_streaming?: boolean | null
           fish_audio_api_key?: string | null
@@ -110,6 +115,7 @@ export type Database = {
           updated_at?: string
           usage_config?: Json | null
           vps_hosting_config?: Json | null
+          webhook_secret?: string | null
         }
         Relationships: []
       }
@@ -184,6 +190,56 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_reply_template_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          language: string
+          name: string
+          platform: string
+          status: string
+          template_id: string
+          template_text: string
+          variables: Json
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language: string
+          name: string
+          platform: string
+          status?: string
+          template_id: string
+          template_text: string
+          variables?: Json
+          version: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language?: string
+          name?: string
+          platform?: string
+          status?: string
+          template_id?: string
+          template_text?: string
+          variables?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_reply_template_versions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "auto_reply_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auto_reply_templates: {
         Row: {
           created_at: string | null
@@ -191,9 +247,11 @@ export type Database = {
           language: string
           name: string
           platform: string
+          status: string
           template_text: string
           updated_at: string | null
           variables: Json | null
+          version: number
         }
         Insert: {
           created_at?: string | null
@@ -201,9 +259,11 @@ export type Database = {
           language: string
           name: string
           platform: string
+          status?: string
           template_text: string
           updated_at?: string | null
           variables?: Json | null
+          version?: number
         }
         Update: {
           created_at?: string | null
@@ -211,9 +271,11 @@ export type Database = {
           language?: string
           name?: string
           platform?: string
+          status?: string
           template_text?: string
           updated_at?: string | null
           variables?: Json | null
+          version?: number
         }
         Relationships: []
       }
@@ -369,6 +431,45 @@ export type Database = {
           source?: string | null
           started_at?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      tenant_credentials: {
+        Row: {
+          client_secret: string
+          client_token: string
+          created_at: string
+          id: string
+          platform: string
+          rotated_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          webhook_verify_token: string
+        }
+        Insert: {
+          client_secret: string
+          client_token: string
+          created_at?: string
+          id?: string
+          platform: string
+          rotated_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          webhook_verify_token: string
+        }
+        Update: {
+          client_secret?: string
+          client_token?: string
+          created_at?: string
+          id?: string
+          platform?: string
+          rotated_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          webhook_verify_token?: string
         }
         Relationships: []
       }
@@ -565,42 +666,51 @@ export type Database = {
       webhook_logs: {
         Row: {
           created_at: string | null
+          direction: string
           error_details: string | null
           event_type: string | null
           headers: Json | null
           id: string
+          last_attempt_at: string | null
           next_retry_at: string | null
           payload: Json | null
           processing_status: string | null
           retry_count: number | null
           source: string
           status_code: number | null
+          target_url: string | null
         }
         Insert: {
           created_at?: string | null
+          direction?: string
           error_details?: string | null
           event_type?: string | null
           headers?: Json | null
           id?: string
+          last_attempt_at?: string | null
           next_retry_at?: string | null
           payload?: Json | null
           processing_status?: string | null
           retry_count?: number | null
           source: string
           status_code?: number | null
+          target_url?: string | null
         }
         Update: {
           created_at?: string | null
+          direction?: string
           error_details?: string | null
           event_type?: string | null
           headers?: Json | null
           id?: string
+          last_attempt_at?: string | null
           next_retry_at?: string | null
           payload?: Json | null
           processing_status?: string | null
           retry_count?: number | null
           source?: string
           status_code?: number | null
+          target_url?: string | null
         }
         Relationships: []
       }
