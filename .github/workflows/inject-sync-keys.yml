@@ -1,0 +1,30 @@
+name: Inject Sync Credentials
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inject:
+    name: Inject SYNC_TOKEN and SYNC_SECRET into VPS .env
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Inject keys via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script: |
+            ENV_FILE=/var/www/daddyai/.env
+
+            # Remove any existing lines so re-running is safe and idempotent.
+            sed -i '/^SYNC_TOKEN=/d' "$ENV_FILE"
+            sed -i '/^SYNC_SECRET=/d' "$ENV_FILE"
+
+            # Append the new keys
+            echo 'SYNC_TOKEN=f5e1f9b68be9fc8d69867283a6ebdf61755f23e93ff0c014def36f555d7fb42f' >> "$ENV_FILE"
+            echo 'SYNC_SECRET=c05d89defdc77a396b6543c85bce957bb5a12394a0828c54825817d51b3cd58a' >> "$ENV_FILE"
+
+            echo "Sync credentials injected into $ENV_FILE"
