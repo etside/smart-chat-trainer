@@ -23,6 +23,7 @@ import { Route as AdminApiKeysRouteImport } from './routes/admin.api-keys'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAutoRepliesRouteImport } from './routes/admin.auto-replies'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
+import { Route as AdminCredentialsRouteImport } from './routes/admin.credentials'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminOnboardingRouteImport } from './routes/admin.onboarding'
 import { Route as AdminPerformanceRouteImport } from './routes/admin.performance'
@@ -109,6 +110,11 @@ const AdminAutoRepliesRoute = AdminAutoRepliesRouteImport.update({
 const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
   id: '/connections',
   path: '/connections',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCredentialsRoute = AdminCredentialsRouteImport.update({
+  id: '/credentials',
+  path: '/credentials',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminLogsRoute = AdminLogsRouteImport.update({
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/credentials': typeof AdminCredentialsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/credentials': typeof AdminCredentialsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/credentials': typeof AdminCredentialsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/admin/audit-logs'
     | '/admin/auto-replies'
     | '/admin/connections'
+    | '/admin/credentials'
     | '/admin/logs'
     | '/admin/onboarding'
     | '/admin/performance'
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/admin/audit-logs'
     | '/admin/auto-replies'
     | '/admin/connections'
+    | '/admin/credentials'
     | '/admin/logs'
     | '/admin/onboarding'
     | '/admin/performance'
@@ -377,6 +388,7 @@ export interface FileRouteTypes {
     | '/admin/audit-logs'
     | '/admin/auto-replies'
     | '/admin/connections'
+    | '/admin/credentials'
     | '/admin/logs'
     | '/admin/onboarding'
     | '/admin/performance'
@@ -514,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConnectionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/credentials': {
+      id: '/admin/credentials'
+      path: '/credentials'
+      fullPath: '/admin/credentials'
+      preLoaderRoute: typeof AdminCredentialsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/logs': {
       id: '/admin/logs'
       path: '/logs'
@@ -642,6 +661,7 @@ interface AdminRouteChildren {
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminAutoRepliesRoute: typeof AdminAutoRepliesRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
+  AdminCredentialsRoute: typeof AdminCredentialsRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminOnboardingRoute: typeof AdminOnboardingRoute
   AdminPerformanceRoute: typeof AdminPerformanceRoute
@@ -662,6 +682,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminAutoRepliesRoute: AdminAutoRepliesRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
+  AdminCredentialsRoute: AdminCredentialsRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminOnboardingRoute: AdminOnboardingRoute,
   AdminPerformanceRoute: AdminPerformanceRoute,
