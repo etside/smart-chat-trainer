@@ -1,0 +1,25 @@
+name: Deploy Daddy AI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /var/www/daddyai
+            git pull origin main
+            export BUN_INSTALL=/root/.bun
+            export PATH=$BUN_INSTALL/bin:$PATH
+            bun install
+            NITRO_PRESET=node-server bun run build
+            systemctl restart daddyai
