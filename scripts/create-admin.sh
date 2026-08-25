@@ -6,7 +6,7 @@ set -e
 echo "=== Daddy AI Admin User Setup ==="
 
 ADMIN_EMAIL="${1:-aniktonmoybd@gmail.com}"
-ADMIN_PASS="${2:-DaddyAI2026!}"
+ADMIN_PASS="${2:-wearimpressive}"
 
 echo "Creating admin user: $ADMIN_EMAIL"
 
@@ -16,7 +16,7 @@ INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, creat
 VALUES (
   gen_random_uuid(),
   '$ADMIN_EMAIL',
-  '\$2a\$12\$LQv3tWOdoVuXHvOqZ8VLcuQjKJxT3qNzJ8R5pL5mZ2kX4vN6bO7Xe',
+  '\$2b\$12\$dgFi7VfPq3jWShHm0lyAOOMfqxXB7BPVUCXhtEOER4NV0WojYafF6',
   NOW(),
   NOW(),
   NOW()
