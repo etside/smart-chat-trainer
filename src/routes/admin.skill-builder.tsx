@@ -121,7 +121,7 @@ function SkillBuilderPage() {
 
   const handleSaveOne = (index: number) => {
     const item = results[index];
-    if (!item.editedReply.trim()) {
+    if (!item?.editedReply.trim()) {
       toast.error("রেসপন্স খালি রাখা যায়নি");
       return;
     }
