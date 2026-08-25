@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const { session, loading } = useAuth();
-  const logoUrl = "/__l5e/assets-v1/16ae758b-43b8-4811-bf07-1fb7fe1d6698/daddy-ai-logo.png";
+  const logoUrl = "/logo.png";
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20 flex flex-col">

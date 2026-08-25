@@ -1,11 +1,10 @@
 {
   "version": 1,
-  "asset_id": "16ae758b-43b8-4811-bf07-1fb7fe1d6698",
-  "project_id": "e673c7aa-6e98-4d06-8452-0973d8e98802",
-  "url": "/__l5e/assets-v1/16ae758b-43b8-4811-bf07-1fb7fe1d6698/daddy-ai-logo.png",
-  "r2_key": "a/v1/e673c7aa-6e98-4d06-8452-0973d8e98802/16ae758b-43b8-4811-bf07-1fb7fe1d6698/daddy-ai-logo.png",
+  "asset_id": "local-logo",
+  "project_id": "self-hosted",
+  "url": "/logo.png",
   "original_filename": "daddy-ai-logo.png",
-  "size": 468668,
-  "content_type": "image/jpeg",
-  "created_at": "2026-08-16T02:58:44Z"
+  "size": 87837,
+  "content_type": "image/png",
+  "created_at": "2026-08-25T15:11:00Z"
 }
