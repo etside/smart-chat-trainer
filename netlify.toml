@@ -9,6 +9,20 @@
 [context.deploy-preview]
   command = "npm run build"
 
+# Custom domain configuration
+[[redirects]]
+  from = "https://daddyai.online/*"
+  to = "https://www.daddyai.online/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://daddyai.online/*"
+  to = "https://www.daddyai.online/:splat"
+  status = 301
+  force = true
+
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/index"
@@ -24,3 +38,4 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "microphone=(), camera=(), geolocation=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://api.v2.wearimpressive.com; frame-src 'none'; object-src 'none'"
