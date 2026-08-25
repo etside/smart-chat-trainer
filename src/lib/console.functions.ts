@@ -215,15 +215,18 @@ export const getAgentSettings = createServerFn({ method: "GET" })
       .select("system_prompt, model, auto_approve, lovable_api_key_override, credit_usage")
       .eq("id", 1)
       .maybeSingle();
-    return (
-      data ?? { 
-        system_prompt: "", 
-        model: "mimo-v2.5",
-        auto_approve: false,
-        lovable_api_key_override: "",
-        credit_usage: 0
-      }
-    );
+    const VALID = ["mimo-v2.5-pro", "mimo-v2.5"];
+    const raw = data ?? {
+      system_prompt: "",
+      model: "mimo-v2.5",
+      auto_approve: false,
+      lovable_api_key_override: "",
+      credit_usage: 0
+    };
+    return {
+      ...raw,
+      model: VALID.includes(raw.model) ? raw.model : "mimo-v2.5",
+    };
   });
 
 export const saveAgentSettings = createServerFn({ method: "POST" })

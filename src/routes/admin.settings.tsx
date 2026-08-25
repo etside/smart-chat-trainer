@@ -27,6 +27,9 @@ export const Route = createFileRoute("/admin/settings")({
   component: SettingsPage,
 });
 
+const VALID_MODELS = ["mimo-v2.5-pro", "mimo-v2.5"];
+const DEFAULT_MODEL = "mimo-v2.5";
+
 const MODELS = [
   { id: "mimo-v2.5-pro", label: "MiMo V2.5 Pro (High-Performance)" },
   { id: "mimo-v2.5", label: "MiMo V2.5 (Balanced)" },
@@ -256,7 +259,7 @@ function SettingsPage() {
   useEffect(() => {
     if (!data) return;
     setPrompt(data.system_prompt ?? "");
-    setModel(data.model ?? "mimo-v2.5");
+    setModel(VALID_MODELS.includes(data.model) ? data.model : DEFAULT_MODEL);
     setAutoApprove(Boolean(data.auto_approve));
     setApiKeyOverride(data.lovable_api_key_override ?? "sk-s2x202i1tn9j4ha4n2jf6s4uei6pa43onqpamt3a5t9jqvfy");
   }, [data]);
