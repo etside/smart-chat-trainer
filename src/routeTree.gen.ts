@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApiRouteImport } from './routes/api'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as ConnectRouteImport } from './routes/connect'
+import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DataDeletionRouteImport } from './routes/data-deletion'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as KnowledgeBaseRouteImport } from './routes/knowledge-base'
@@ -72,9 +74,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComplianceRoute = ComplianceRouteImport.update({
+  id: '/compliance',
+  path: '/compliance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConnectRoute = ConnectRouteImport.update({
   id: '/connect',
   path: '/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DataDeletionRoute = DataDeletionRouteImport.update({
@@ -268,7 +280,9 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
+  '/compliance': typeof ComplianceRoute
   '/connect': typeof ConnectRoute
+  '/cookies': typeof CookiesRoute
   '/data-deletion': typeof DataDeletionRoute
   '/faq': typeof FaqRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
@@ -311,7 +325,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
+  '/compliance': typeof ComplianceRoute
   '/connect': typeof ConnectRoute
+  '/cookies': typeof CookiesRoute
   '/data-deletion': typeof DataDeletionRoute
   '/faq': typeof FaqRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
@@ -356,7 +372,9 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
+  '/compliance': typeof ComplianceRoute
   '/connect': typeof ConnectRoute
+  '/cookies': typeof CookiesRoute
   '/data-deletion': typeof DataDeletionRoute
   '/faq': typeof FaqRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
@@ -402,7 +420,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api'
     | '/auth'
+    | '/compliance'
     | '/connect'
+    | '/cookies'
     | '/data-deletion'
     | '/faq'
     | '/knowledge-base'
@@ -445,7 +465,9 @@ export interface FileRouteTypes {
     | '/'
     | '/api'
     | '/auth'
+    | '/compliance'
     | '/connect'
+    | '/cookies'
     | '/data-deletion'
     | '/faq'
     | '/knowledge-base'
@@ -489,7 +511,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api'
     | '/auth'
+    | '/compliance'
     | '/connect'
+    | '/cookies'
     | '/data-deletion'
     | '/faq'
     | '/knowledge-base'
@@ -534,7 +558,9 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   ApiRoute: typeof ApiRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ComplianceRoute: typeof ComplianceRoute
   ConnectRoute: typeof ConnectRoute
+  CookiesRoute: typeof CookiesRoute
   DataDeletionRoute: typeof DataDeletionRoute
   FaqRoute: typeof FaqRoute
   KnowledgeBaseRoute: typeof KnowledgeBaseRoute
@@ -573,11 +599,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compliance': {
+      id: '/compliance'
+      path: '/compliance'
+      fullPath: '/compliance'
+      preLoaderRoute: typeof ComplianceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/connect': {
       id: '/connect'
       path: '/connect'
       fullPath: '/connect'
       preLoaderRoute: typeof ConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/data-deletion': {
@@ -935,7 +975,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   ApiRoute: ApiRouteWithChildren,
   AuthRoute: AuthRoute,
+  ComplianceRoute: ComplianceRoute,
   ConnectRoute: ConnectRoute,
+  CookiesRoute: CookiesRoute,
   DataDeletionRoute: DataDeletionRoute,
   FaqRoute: FaqRoute,
   KnowledgeBaseRoute: KnowledgeBaseRoute,

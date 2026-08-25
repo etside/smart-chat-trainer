@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Toaster } from "../components/ui/sonner";
 import { SupportModal } from "../components/SupportModal";
+import { CookieConsent } from "../components/CookieConsent";
 import appCss from "../styles.css?url";
 function reportError(error: unknown, context: Record<string, unknown> = {}) {
   if (typeof window === "undefined") return;
@@ -132,6 +133,7 @@ function RootComponent() {
           <InnerRoot />
           <Toaster position="top-center" richColors />
           <SupportModal />
+          <CookieConsent />
         </QueryClientProvider>
         <Scripts />
       </body>

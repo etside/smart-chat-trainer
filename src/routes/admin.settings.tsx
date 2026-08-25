@@ -195,7 +195,7 @@ function SettingsPage() {
   const [prompt, setPrompt] = useState("");
   const [model, setModel] = useState("mimo-v2.5");
   const [autoApprove, setAutoApprove] = useState(false);
-  const [apiKeyOverride, setApiKeyOverride] = useState("sk-s2x202i1tn9j4ha4n2jf6s4uei6pa43onqpamt3a5t9jqvfy");
+  const [apiKeyOverride, setApiKeyOverride] = useState("");
   const [reduceMotion, setReduceMotion] = useState(false);
 
   const [b2bBackblazeKey, setB2bBackblazeKey] = useState("");
@@ -265,7 +265,7 @@ function SettingsPage() {
     setPrompt(data.system_prompt ?? "");
     setModel(VALID_MODELS.includes(data.model) ? data.model : DEFAULT_MODEL);
     setAutoApprove(Boolean(data.auto_approve));
-    setApiKeyOverride(data.lovable_api_key_override ?? "sk-s2x202i1tn9j4ha4n2jf6s4uei6pa43onqpamt3a5t9jqvfy");
+    setApiKeyOverride(data.lovable_api_key_override ?? "");
   }, [data]);
 
   const mutation = useMutation({

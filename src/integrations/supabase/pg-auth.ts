@@ -42,7 +42,10 @@ import { pool } from './pg-client';
 // Configuration
 // ---------------------------------------------------------------------------
 
-const JWT_SECRET = process.env['JWT_SECRET'] || 'daddyai-self-hosted-secret-change-in-production';
+const JWT_SECRET = process.env['JWT_SECRET'];
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is not set. Authentication will not work.');
+}
 const JWT_EXPIRES_IN = '7d';
 const SESSION_DAYS = 7;
 
