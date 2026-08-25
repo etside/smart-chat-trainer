@@ -9,6 +9,7 @@ import { useServerFn } from "@tanstack/react-start";
 import logoAsset from "@/assets/daddy-ai-logo.png.asset.json";
 import {
   Activity,
+  Code2,
   Database,
   History,
   KeyRound,
@@ -42,7 +43,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/credentials" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance" | "/admin/auto-replies" | "/admin/skill-builder" | "/privacy" | "/terms" | "/privacy-request";
+  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/credentials" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance" | "/admin/auto-replies" | "/admin/skill-builder" | "/privacy" | "/terms" | "/privacy-request" | "/api" | "/faq";
   label: string;
   icon: typeof Database;
   exact?: boolean;
@@ -67,6 +68,8 @@ const nav: Array<{
   { to: "/admin/webhook-dlq", label: "Webhook & DLQ", icon: Terminal, minRole: "editor" },
   { to: "/admin/logs", label: "ইভেন্ট লগ ও পলিসি", icon: History, minRole: "admin" },
   { to: "/connect", label: "AI কানেক্ট", icon: Terminal, minRole: "viewer" },
+  { to: "/api", label: "API & White Label", icon: Code2, minRole: "viewer" },
+  { to: "/faq", label: "FAQ", icon: MessageSquare, minRole: "viewer" },
   { to: "/admin/performance", label: "পারফরম্যান্স", icon: Activity, minRole: "admin" },
   { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck, legal: true },
   { to: "/terms", label: "Terms of Service", icon: ShieldCheck, legal: true },

@@ -45,6 +45,12 @@ function Landing() {
               <Link to="/connect" className="text-sm font-medium hover:text-primary transition-colors">
                 Integrations
               </Link>
+              <Link to="/api" className="text-sm font-medium hover:text-primary transition-colors">
+                API
+              </Link>
+              <Link to="/faq" className="text-sm font-medium hover:text-primary transition-colors">
+                FAQ
+              </Link>
               <Link to="/privacy" className="text-sm font-medium hover:text-primary transition-colors">
                 Legal
               </Link>
@@ -315,11 +321,13 @@ function Landing() {
             <img src={logoUrl} alt="Daddy AI" className="h-6 w-auto" />
             <span className="font-bold text-lg tracking-tight">Daddy AI</span>
           </div>
-          <div className="flex gap-8 text-sm text-muted-foreground">
+          <div className="flex gap-8 text-sm text-muted-foreground flex-wrap justify-center">
              <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
              <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
              <Link to="/privacy-request" className="hover:text-primary transition-colors">GDPR Request</Link>
-             <Link to="/admin" className="hover:text-primary transition-colors">Documentation</Link>
+             <Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link>
+             <Link to="/api" className="hover:text-primary transition-colors">API & White Label</Link>
+             <Link to="/connect" className="hover:text-primary transition-colors">Integrations</Link>
           </div>
           <p className="text-sm text-muted-foreground">
             © 2026 Daddy AI. All rights reserved.
