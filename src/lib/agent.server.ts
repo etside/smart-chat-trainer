@@ -37,6 +37,15 @@ async function getFreshStockData(query: string) {
 
 export type HistoryTurn = { role: "user" | "assistant"; content: string };
 
+const VALID_MIMO_MODELS = ["mimo-v2.5-pro", "mimo-v2.5"];
+
+function sanitizeModel(model: string | null | undefined): string {
+  if (!model || !VALID_MIMO_MODELS.includes(model)) {
+    return "mimo-v2.5";
+  }
+  return model;
+}
+
 export async function getSettings() {
   const { data } = await supabaseAdmin
     .from("agent_settings")
@@ -46,7 +55,7 @@ export async function getSettings() {
 
   return {
     system_prompt: data?.system_prompt ?? "",
-    model: data?.model ?? "mimo-v2-flash",
+    model: sanitizeModel(data?.model),
     auto_approve: data?.auto_approve ?? false,
     lovable_api_key_override: data?.lovable_api_key_override,
   };

@@ -1,4 +1,4 @@
-const GATEWAY = process.env["AI_GATEWAY_URL"] || "https://mimo.mi.com/v1";
+const GATEWAY = process.env["AI_GATEWAY_URL"] || "https://api.xiaomimimo.com/v1";
 const DEFAULT_API_KEY = process.env["MIMO_API_KEY"] || "";
 
 async function getApiKey(override?: string | null) {
@@ -13,14 +13,13 @@ export type ChatMessage = { role: "system" | "user" | "assistant"; content: stri
 
 export async function chatComplete(
   messages: ChatMessage[],
-  model = "mimo-v2-flash",
+  model = "mimo-v2.5",
   apiKeyOverride?: string | null,
   stream = false
 ): Promise<string | ReadableStream> {
   const body = { 
     model, 
     messages, 
-    reasoning_effort: "none",
     stream
   };
 

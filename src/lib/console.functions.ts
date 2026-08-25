@@ -218,7 +218,7 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     return (
       data ?? { 
         system_prompt: "", 
-        model: "mimo-v2-flash",
+        model: "mimo-v2.5",
         auto_approve: false,
         lovable_api_key_override: "",
         credit_usage: 0
@@ -479,7 +479,7 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
         },
         { role: "user", content: data.text },
       ],
-      "mimo-v2-pro",
+      "mimo-v2.5-pro",
     );
     
     if (typeof raw !== 'string') throw new Error("Expected string response from AI");

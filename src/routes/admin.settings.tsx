@@ -28,12 +28,8 @@ export const Route = createFileRoute("/admin/settings")({
 });
 
 const MODELS = [
-  { id: "mimo-v2-pro", label: "MiMo V2 Pro (High-Performance)" },
-  { id: "mimo-v2-flash", label: "MiMo V2 Flash (Balanced)" },
-  { id: "mimo-v2-lite", label: "MiMo V2 Lite (Fast & Light)" },
-  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro (via Lovable)" },
-  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash (via Lovable)" },
-  { id: "google/gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite (via Lovable)" },
+  { id: "mimo-v2.5-pro", label: "MiMo V2.5 Pro (High-Performance)" },
+  { id: "mimo-v2.5", label: "MiMo V2.5 (Balanced)" },
 ];
 
 function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
@@ -194,7 +190,7 @@ function SettingsPage() {
   const { data } = useQuery({ queryKey: ["agent-settings"], queryFn: () => fetchSettings() });
 
   const [prompt, setPrompt] = useState("");
-  const [model, setModel] = useState("mimo-v2-flash");
+  const [model, setModel] = useState("mimo-v2.5");
   const [autoApprove, setAutoApprove] = useState(false);
   const [apiKeyOverride, setApiKeyOverride] = useState("sk-s2x202i1tn9j4ha4n2jf6s4uei6pa43onqpamt3a5t9jqvfy");
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -260,7 +256,7 @@ function SettingsPage() {
   useEffect(() => {
     if (!data) return;
     setPrompt(data.system_prompt ?? "");
-    setModel(data.model ?? "mimo-v2-flash");
+    setModel(data.model ?? "mimo-v2.5");
     setAutoApprove(Boolean(data.auto_approve));
     setApiKeyOverride(data.lovable_api_key_override ?? "sk-s2x202i1tn9j4ha4n2jf6s4uei6pa43onqpamt3a5t9jqvfy");
   }, [data]);
