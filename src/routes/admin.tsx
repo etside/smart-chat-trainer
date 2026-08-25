@@ -9,6 +9,7 @@ import { useServerFn } from "@tanstack/react-start";
 import logoAsset from "@/assets/daddy-ai-logo.png.asset.json";
 import {
   Activity,
+  AlertTriangle,
   Code2,
   Database,
   History,
@@ -90,6 +91,7 @@ const navSections: NavSection[] = [
     items: [
       { to: "/admin/sync", label: "Sync Status", icon: Activity, minRole: "viewer" },
       { to: "/admin/progress", label: "Training Live", icon: Activity, minRole: "viewer" },
+      { to: "/admin/escalation", label: "Escalation Queue", icon: AlertTriangle, minRole: "admin" },
       { to: "/admin/webhook-test", label: "Webhook Test", icon: Terminal, minRole: "editor" },
     ],
   },

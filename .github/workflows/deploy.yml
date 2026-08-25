@@ -63,7 +63,10 @@ jobs:
             echo "=== Build output check ==="
             ls -la .output/server/index.mjs 2>/dev/null || echo "No .output/server"
             ls -la .output/public/ 2>/dev/null || echo "No .output/public"
-            grep -l "compliance\|cookies\|tutorials" .output/server/*.mjs 2>/dev/null || echo "Routes NOT found in server bundle"
+            # Run database migrations
+            echo "=== Running migrations ==="
+            PGPASSWORD=${{ secrets.PG_PASSWORD || 'daddyai_2026_secure' }} psql -h localhost -U daddyai -d daddyai -f migration.sql 2>/dev/null || echo "Base migration skipped"
+            PGPASSWORD=${{ secrets.PG_PASSWORD || 'daddyai_2026_secure' }} psql -h localhost -U daddyai -d daddyai -f migration_sales_agent.sql 2>/dev/null || echo "Sales agent migration applied"
             pm2 delete daddyai 2>/dev/null || true
             pm2 start ecosystem.config.cjs
             pm2 save

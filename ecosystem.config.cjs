@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'daddyai',
-      script: 'server.mjs',
+      script: '.output/server/index.mjs',
       cwd: '/var/www/daddyai',
       env: {
         NODE_ENV: 'production',

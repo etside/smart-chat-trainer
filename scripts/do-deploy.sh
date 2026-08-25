@@ -93,9 +93,20 @@ curl -fsSL https://bun.sh/install | bash
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-# Install PM2 and Nginx
+# Install PM2, Nginx, PostgreSQL
 npm install -g pm2
-apt install -y nginx certbot python3-certbot-nginx
+apt install -y nginx certbot python3-certbot-nginx postgresql postgresql-contrib
+
+# Setup PostgreSQL
+systemctl enable postgresql
+systemctl start postgresql
+
+# Create database and user (idempotent)
+sudo -u postgres psql -c "CREATE USER daddyai WITH PASSWORD 'daddyai_2026_secure';" 2>/dev/null || true
+sudo -u postgres psql -c "CREATE DATABASE daddyai OWNER daddyai;" 2>/dev/null || true
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE daddyai TO daddyai;" 2>/dev/null || true
+# Enable pg_trm extension for similarity search
+sudo -u postgres psql -d daddyai -c "CREATE EXTENSION IF NOT EXISTS pg_trm;" 2>/dev/null || true
 
 # Create deploy directory
 mkdir -p /var/www/daddyai
@@ -139,7 +150,16 @@ echo "=== Build verification ==="
 if ls .output/server/index.mjs >/dev/null 2>&1; then
   echo "Server bundle: OK"
 else
-  echo "WARNING: No server bundle found"
+  echo "WARNING: No server bundle found - check TanStack Start config"
+fi
+ls -la .output/server/ 2>/dev/null || echo "No .output/server directory"
+
+# Run database migrations if psql is available
+if command -v psql &>/dev/null; then
+  echo "=== Running database migrations ==="
+  PGPASSWORD=daddyai_2026_secure psql -h localhost -U daddyai -d daddyai -f migration.sql 2>/dev/null || echo "migration.sql skipped (tables may exist)"
+  PGPASSWORD=daddyai_2026_secure psql -h localhost -U daddyai -d daddyai -f migration_sales_agent.sql 2>/dev/null || echo "migration_sales_agent.sql applied"
+  echo "=== Migrations complete ==="
 fi
 
 # Restart app

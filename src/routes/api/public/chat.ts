@@ -53,9 +53,47 @@ export const Route = createFileRoute("/api/public/chat")({
         const { generateReply, logConversation } = await import("@/lib/agent.server");
 
         try {
-          const { reply } = await generateReply(parsed.message, parsed.history ?? [], keyRow.version_id);
+          // Check if sales agent (sentiment + lead scoring) is enabled
+          const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+          const { data: settings } = await db
+            .from("agent_settings")
+            .select("sentiment_enabled")
+            .eq("id", 1)
+            .maybeSingle();
 
-          await supabaseAdmin
+          let reply: string;
+          let salesMetadata: Record<string, unknown> | undefined;
+
+          if (settings?.sentiment_enabled) {
+            // Full sales pipeline: sentiment -> lead score -> escalation -> reply
+            const { processSalesMessage } = await import("@/lib/sales-agent.server");
+            const { generateReply } = await import("@/lib/agent.server");
+
+            const result = await processSalesMessage({
+              message: parsed.message,
+              conversationId: parsed.conversation_id ?? null,
+              sessionId: null,
+              externalId: parsed.conversation_id ?? null,
+              channel: parsed.channel ?? "api",
+              history: parsed.history ?? [],
+              generateReplyFn: generateReply,
+            });
+
+            reply = result.reply;
+            salesMetadata = {
+              sentiment: result.sentiment,
+              lead_score: result.leadScore.score,
+              lead_tier: result.leadScore.tier,
+              escalated: result.escalated,
+              signals: result.leadScore.signals,
+            };
+          } else {
+            // Simple reply without sales pipeline
+            const { reply: simpleReply } = await generateReply(parsed.message, parsed.history ?? [], keyRow.version_id);
+            reply = simpleReply;
+          }
+
+          await db
             .from("api_keys")
             .update({ last_used_at: new Date().toISOString() })
             .eq("id", keyRow.id);
@@ -66,7 +104,9 @@ export const Route = createFileRoute("/api/public/chat")({
             { role: "assistant" as const, content: reply },
           ]);
 
-          return json({ reply });
+          const responseBody: Record<string, unknown> = { reply };
+          if (salesMetadata) responseBody._sales = salesMetadata;
+          return json(responseBody);
         } catch (error) {
           const message = error instanceof Error ? error.message : "unknown";
           if (message === "RATE_LIMIT") return json({ error: "Rate limit exceeded" }, 429);
