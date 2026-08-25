@@ -32,6 +32,49 @@ async function getFreshStockData(query: string) {
   if (data) {
     stockCache[query] = { data: data.answer, timestamp: now };
   }
+
+  // If no cached data found, try the live API for real-time stock.
+  if (!data?.answer) {
+    try {
+      const { data: settings } = await supabaseAdmin
+        .from('agent_settings')
+        .select('sync_token, sync_secret')
+        .eq('id', 1)
+        .maybeSingle();
+
+      if (settings?.sync_token && settings?.sync_secret) {
+        const WEAR_IMPRESSIVE_API = 'https://api.v2.wearimpressive.com/api/ai/webhook';
+        const payload = { action: 'stock', query, token: settings.sync_token.replace('Bearer ', '') };
+        const bodyStr = JSON.stringify(payload);
+
+        const { createHmac } = await import('crypto');
+        const sig = createHmac('sha256', settings.sync_secret).update(bodyStr).digest('hex');
+
+        const res = await fetch(WEAR_IMPRESSIVE_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': settings.sync_token.startsWith('Bearer ') ? settings.sync_token : `Bearer ${settings.sync_token}`,
+            'X-AI-Signature': `sha256=${sig}`,
+            'X-Secret': settings.sync_secret,
+          },
+          body: bodyStr,
+        });
+
+        if (res.ok) {
+          const apiData = await res.json();
+          if (apiData.success && apiData.data) {
+            const stockInfo = typeof apiData.data === 'string' ? apiData.data : JSON.stringify(apiData.data);
+            stockCache[query] = { data: stockInfo, timestamp: now };
+            return stockInfo;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Live stock lookup failed, using cache:', e);
+    }
+  }
+
   return data?.answer;
 }
 

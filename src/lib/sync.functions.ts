@@ -246,7 +246,9 @@ export const syncCatalog = createServerFn({ method: "POST" })
         .flatMap((item: any) => {
           const name = item.name || item.title;
           const price = item.effective_price || item.price;
-          const stock = item.stock ?? item.stock_status ?? 'Available';
+          // Use effective stock (quantity) which accounts for cart holds.
+          // Fall back to stock (raw) then stock_status for backward compat.
+          const stock = item.quantity ?? item.stock ?? item.stock_status ?? 'Available';
           const category = item.category || '';
           const brand = item.brand || '';
           const desc = item.short_description || item.description || '';
@@ -261,10 +263,15 @@ export const syncCatalog = createServerFn({ method: "POST" })
             source: 'api_sync'
           });
 
-          // Stock Q&A
+          // Stock Q&A with effective quantity
+          const heldQty = item.held_quantity ?? 0;
+          const effectiveStock = typeof stock === 'number' ? Math.max(0, stock - heldQty) : stock;
+          const stockAnswer = typeof effectiveStock === 'number'
+            ? (effectiveStock > 0 ? `স্টকে আছে (${effectiveStock}টি)` : 'স্টকে নেই')
+            : (stock === 0 || stock === 'out_of_stock' ? 'স্টকে নেই' : 'স্টকে আছে');
           pairs.push({
             question: `${name} স্টকে আছে কি?`,
-            answer: `${name} এর স্টক: ${stock === 0 || stock === 'out_of_stock' ? 'স্টকে নেই' : 'স্টকে আছে'}।`,
+            answer: `${name} এর স্টক: ${stockAnswer}।`,
             status: 'approved' as const,
             source: 'api_sync'
           });
