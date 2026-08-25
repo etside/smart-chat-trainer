@@ -11,7 +11,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 async function generateEmbedding(text: string): Promise<number[] | null> {
   try {
     const GATEWAY = process.env["AI_GATEWAY_URL"] || "https://api.xiaomimimo.com/v1";
-    const API_KEY = process.env["MIMO_API_KEY"] || process.env["LOVABLE_API_KEY"] || "";
+    const API_KEY = process.env["MIMO_API_KEY"] || "";
     if (!API_KEY) return null;
 
     const res = await fetch(`${GATEWAY}/embeddings`, {

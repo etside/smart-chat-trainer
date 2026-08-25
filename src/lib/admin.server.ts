@@ -1,4 +1,6 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseCompat } from "@/integrations/supabase/pg-client";
+
+type SupabaseClient = SupabaseCompat;
 
 export async function assertRole(supabase: SupabaseClient, userId: string, requiredRole: 'admin' | 'editor' | 'viewer' = 'viewer') {
   console.log(`Checking role for ${userId}, required: ${requiredRole}`);

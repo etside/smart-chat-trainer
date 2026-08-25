@@ -4,9 +4,7 @@ const DEFAULT_API_KEY = process.env["MIMO_API_KEY"] || "";
 async function getApiKey(override?: string | null) {
   if (override) return override;
   if (DEFAULT_API_KEY) return DEFAULT_API_KEY;
-  const key = process.env["LOVABLE_API_KEY"];
-  if (!key) throw new Error("AI is not configured (missing key).");
-  return key;
+  throw new Error("AI is not configured (missing MIMO_API_KEY).");
 }
 
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };

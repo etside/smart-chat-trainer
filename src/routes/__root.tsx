@@ -16,7 +16,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Toaster } from "../components/ui/sonner";
 import { SupportModal } from "../components/SupportModal";
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+function reportError(error: unknown, context: Record<string, unknown> = {}) {
+  if (typeof window === "undefined") return;
+  console.error("[DaddyAI Error]", error, context);
+}
 
 function NotFoundComponent() {
   return (
@@ -44,7 +47,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error("Root Error:", error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
