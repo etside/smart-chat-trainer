@@ -28,9 +28,12 @@ export const Route = createFileRoute("/admin/settings")({
 });
 
 const MODELS = [
-  { id: "openai/gpt-5.6-sol", label: "Daddy High-Performance (GPT-5.6 Sol)" },
-  { id: "openai/gpt-5.6-terra", label: "Daddy Balanced (GPT-5.6 Terra)" },
-  { id: "openai/gpt-5.6-luna", label: "Daddy Fast & Light (GPT-5.6 Luna)" },
+  { id: "mimo-v2-pro", label: "MiMo V2 Pro (High-Performance)" },
+  { id: "mimo-v2-flash", label: "MiMo V2 Flash (Balanced)" },
+  { id: "mimo-v2-lite", label: "MiMo V2 Lite (Fast & Light)" },
+  { id: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro (via Lovable)" },
+  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash (via Lovable)" },
+  { id: "google/gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite (via Lovable)" },
 ];
 
 function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
@@ -191,9 +194,9 @@ function SettingsPage() {
   const { data } = useQuery({ queryKey: ["agent-settings"], queryFn: () => fetchSettings() });
 
   const [prompt, setPrompt] = useState("");
-  const [model, setModel] = useState("openai/gpt-5.6-sol");
+  const [model, setModel] = useState("mimo-v2-flash");
   const [autoApprove, setAutoApprove] = useState(false);
-  const [apiKeyOverride, setApiKeyOverride] = useState("");
+  const [apiKeyOverride, setApiKeyOverride] = useState("sk-s2x202i1tn9j4ha4n2jf6s4uei6pa43onqpamt3a5t9jqvfy");
   const [reduceMotion, setReduceMotion] = useState(false);
 
   const [b2bBackblazeKey, setB2bBackblazeKey] = useState("");
@@ -257,9 +260,9 @@ function SettingsPage() {
   useEffect(() => {
     if (!data) return;
     setPrompt(data.system_prompt ?? "");
-    setModel(data.model ?? "openai/gpt-5.6-sol");
+    setModel(data.model ?? "mimo-v2-flash");
     setAutoApprove(Boolean(data.auto_approve));
-    setApiKeyOverride(data.lovable_api_key_override ?? "");
+    setApiKeyOverride(data.lovable_api_key_override ?? "sk-s2x202i1tn9j4ha4n2jf6s4uei6pa43onqpamt3a5t9jqvfy");
   }, [data]);
 
   const mutation = useMutation({

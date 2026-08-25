@@ -218,7 +218,7 @@ export const getAgentSettings = createServerFn({ method: "GET" })
     return (
       data ?? { 
         system_prompt: "", 
-        model: "openai/gpt-5.6-sol", 
+        model: "mimo-v2-flash",
         auto_approve: false,
         lovable_api_key_override: "",
         credit_usage: 0
@@ -479,7 +479,7 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
         },
         { role: "user", content: data.text },
       ],
-      "openai/gpt-5.6-terra",
+      "mimo-v2-pro",
     );
     
     if (typeof raw !== 'string') throw new Error("Expected string response from AI");

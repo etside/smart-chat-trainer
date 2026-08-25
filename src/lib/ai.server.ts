@@ -1,7 +1,9 @@
-const GATEWAY = "https://ai.gateway.lovable.dev/v1";
+const GATEWAY = process.env["AI_GATEWAY_URL"] || "https://mimo.mi.com/v1";
+const DEFAULT_API_KEY = process.env["MIMO_API_KEY"] || "";
 
 async function getApiKey(override?: string | null) {
   if (override) return override;
+  if (DEFAULT_API_KEY) return DEFAULT_API_KEY;
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("AI is not configured (missing key).");
   return key;
@@ -11,7 +13,7 @@ export type ChatMessage = { role: "system" | "user" | "assistant"; content: stri
 
 export async function chatComplete(
   messages: ChatMessage[],
-  model = "openai/gpt-5.6-sol",
+  model = "mimo-v2-flash",
   apiKeyOverride?: string | null,
   stream = false
 ): Promise<string | ReadableStream> {
@@ -26,7 +28,7 @@ export async function chatComplete(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": await getApiKey(apiKeyOverride),
+      "Authorization": `Bearer ${await getApiKey(apiKeyOverride)}`,
     },
     body: JSON.stringify(body),
   });
@@ -62,7 +64,7 @@ export async function transcribeAudio(
 
   const res = await fetch(`${GATEWAY}/audio/transcriptions`, {
     method: "POST",
-    headers: { "Lovable-API-Key": await getApiKey(apiKeyOverride) },
+    headers: { "Authorization": `Bearer ${await getApiKey(apiKeyOverride)}` },
     body: form,
   });
 

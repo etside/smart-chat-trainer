@@ -79,7 +79,7 @@ ${pairBlock}`,
 
     const response = await chatComplete(
       messages,
-      "openai/gpt-4o-mini",
+      "mimo-v2-flash",
       (settings as any)?.lovable_api_key_override,
     );
 
@@ -153,7 +153,7 @@ ${exampleBlock}`,
 
       const response = await chatComplete(
         messages,
-        "openai/gpt-4o-mini",
+        "mimo-v2-flash",
         settings?.lovable_api_key_override,
       );
 

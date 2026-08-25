@@ -46,7 +46,7 @@ export async function getSettings() {
 
   return {
     system_prompt: data?.system_prompt ?? "",
-    model: data?.model ?? "openai/gpt-5.6-sol",
+    model: data?.model ?? "mimo-v2-flash",
     auto_approve: data?.auto_approve ?? false,
     lovable_api_key_override: data?.lovable_api_key_override,
   };
@@ -156,7 +156,7 @@ ${autoReplyContext}`,
   await logPerformanceMetric("analysis", analysisDuration, requestId);
 
   const replyStartTime = Date.now();
-  const replyResponse = await chatComplete(messages, "openai/gpt-4o-mini", settings.lovable_api_key_override);
+  const replyResponse = await chatComplete(messages, settings.model, settings.lovable_api_key_override);
   const reply = typeof replyResponse === 'string' ? replyResponse : 'Streaming response initiated';
   const replyDuration = Date.now() - replyStartTime;
   await logPerformanceMetric("reply", replyDuration, requestId);
@@ -165,7 +165,7 @@ ${autoReplyContext}`,
   await logPerformanceMetric("overall", totalDuration, requestId);
   
   // Log message usage
-  await logActionUsage({ data: { action: "ai_message", metadata: { model: "openai/gpt-4o-mini", duration: totalDuration } } }).catch(console.error);
+  await logActionUsage({ data: { action: "ai_message", metadata: { model: settings.model, duration: totalDuration } } }).catch(console.error);
   
   return { reply, examples: examples.map((e) => ({ question: e.question, answer: e.answer })) };
 }
