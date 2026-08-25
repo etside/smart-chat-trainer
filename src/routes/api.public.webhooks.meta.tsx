@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { supabaseAdmin } from '@/integrations/supabase/client.server'
 import { generateReply } from '@/lib/agent.server'
 import { sendMetaMessage } from '@/lib/meta-sender.server'
+import { verifyWebhookSignature } from '@/lib/admin.server'
 
 export const Route = createFileRoute('/api/public/webhooks/meta')({
   server: {
@@ -27,7 +28,25 @@ export const Route = createFileRoute('/api/public/webhooks/meta')({
       },
       POST: async ({ request }) => {
         try {
-          const body = await request.json() as any
+          // Verify webhook signature for security
+          const rawBody = await request.text()
+          const signature = request.headers.get('x-hub-signature-256')
+
+          const { data: settings } = await supabaseAdmin
+            .from('agent_settings')
+            .select('meta_app_secret')
+            .eq('id', 1)
+            .maybeSingle()
+
+          if (settings?.meta_app_secret) {
+            const isValid = await verifyWebhookSignature(rawBody, signature, settings.meta_app_secret)
+            if (!isValid) {
+              console.warn('Meta webhook signature verification failed')
+              return new Response('Forbidden', { status: 403 })
+            }
+          }
+
+          const body = JSON.parse(rawBody) as any
           
           // Log incoming webhook for visibility
           await supabaseAdmin.from('webhook_logs').insert({
@@ -36,23 +55,33 @@ export const Route = createFileRoute('/api/public/webhooks/meta')({
             source: 'meta'
           })
 
-          // Handle Messenger/WhatsApp messages
-          if (body.object === 'page' || body.object === 'whatsapp_business_account') {
+          // Handle Messenger/WhatsApp/Instagram messages
+          if (body.object === 'page' || body.object === 'whatsapp_business_account' || body.object === 'instagram') {
             const entry = body.entry?.[0]
             const changes = entry?.changes?.[0]?.value || entry?.messaging?.[0]
-            
+
             if (changes) {
               const senderId = changes.sender?.id || changes.from
               const messageText = changes.message?.text || changes.messages?.[0]?.text?.body
+
+              // Detect platform from field type
+              const fieldType = entry?.changes?.[0]?.field
+              let platform = 'messenger'
+              if (body.object === 'whatsapp_business_account') platform = 'whatsapp'
+              else if (fieldType === 'messages' && changes.message?.is_echo === undefined) {
+                // Instagram DMs come through page webhook with instagram field
+                if (changes.from && /^\d+$/.test(changes.from) && senderId !== changes.from) {
+                  platform = 'instagram'
+                }
+              }
               
               if (senderId && messageText) {
                 // Generate AI reply using RAG
                 const { reply } = await generateReply(messageText, [])
                 
                 // Send real reply back to Meta
-                const platform = body.object === 'page' ? 'messenger' : 'whatsapp';
                 try {
-                  await sendMetaMessage(senderId, reply, platform);
+                  await sendMetaMessage(senderId, reply, platform as any);
                 } catch (sendError) {
                   console.error('Failed to send Meta message:', sendError);
                 }

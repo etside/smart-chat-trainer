@@ -220,7 +220,7 @@ export async function generateReply(
 Language Detection: ${langInstruction}
 
 Auto-Reply Context:
-{auto_reply_context}
+${autoReplyContext}
 ${summaryBlock}
 
 নিচে আমাদের আগের আসল কথোপকথন থেকে সবচেয়ে মিল থাকা উদাহরণ দেওয়া হলো। এই টোন, ভাষা ও তথ্য অনুসরণ করে উত্তর দাও। উত্তর ছোট রাখো (১-৩ লাইন), ঠিক যেভাবে পেজ থেকে রিপ্লাই দেওয়া হয়।

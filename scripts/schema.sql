@@ -159,6 +159,8 @@ CREATE TABLE public.agent_settings (
     b2b_backblaze_key text,
     boson_workspace_id text,
     fish_audio_api_key text,
+    fish_audio_model_id text,
+    voice_provider varchar(10) DEFAULT 'fish',
     alt_api_keys jsonb DEFAULT '{}',
     vps_hosting_config jsonb DEFAULT '{}',
     data_policy_content text DEFAULT '# Data Policy\n\nYour data policy content here...',

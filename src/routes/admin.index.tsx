@@ -42,7 +42,7 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-3xl font-bold tracking-tight">ড্যাশবোর্ড</h1>
-      <div className="mt-3 overflow-hidden rounded-xl border border-border/40 bg-black/80 shadow-2xl animate-in font-mono group relative">
+            <div className="mt-3 overflow-hidden rounded-xl border border-border/40 bg-black/80 shadow-2xl animate-in font-mono group relative">
         <div className="flex items-center justify-between px-4 py-2 border-b border-border/20 bg-white/5">
           <div className="flex gap-1.5">
             <div className="size-2.5 rounded-full bg-red-500/50" />
@@ -50,28 +50,19 @@ function Dashboard() {
             <div className="size-2.5 rounded-full bg-emerald-500/50" />
           </div>
           <div className="text-[9px] uppercase tracking-tighter text-muted-foreground font-sans font-bold">System Status: Active</div>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-[9px] hover:bg-white/10 text-muted-foreground" onClick={() => {
-            navigator.clipboard.writeText(`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-
-/skill:redesign  Use this skill after the phases below gives a report and updates then start the complete project redesign without making any credentials changes:
-
-And  Verify and harden multi-role access (admin/editor/viewer) end to end so auth, security rules, and protected pages never break the credentials. Also need to ensure multi roles means tentant can sign up and get's the access of admin except the security features. Fix my voice message transcription so it reliably records, transcribes, and converts speech to text in the voice input UI. /skill:redesign Using current project setup .Fix the typing input issues so text entry works correctly alongside the transcription workflow without conflicts or formatting bugs.. Implement English+Bengali social platform auto-reply flows for my AI sales agent with proper context handling and configurable response templates.. Add a full verification pass for Privacy, Terms, and GDPR legal pages wiring so every nav button routes correctly and remains accessible across devices.`);
-            toast.success("ডকুমেন্টেশন কপি হয়েছে");
-          }}>
-            <Terminal className="size-3 mr-1" /> Copy Script
-          </Button>
         </div>
         <div className="p-4 text-[11px] leading-relaxed text-emerald-400/90 whitespace-pre-wrap">
           <span className="text-primary/80">$</span> daddy-ai --status check-sync
-          {"\n"}<span className="text-white/40">{`'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-
-/skill:redesign  Use this skill after the phases below gives a report and updates then start the complete project redesign without making any credentials changes:
-
-And  Verify and harden multi-role access (admin/editor/viewer) end to end so auth, security rules, and protected pages never break the credentials. Also need to ensure multi roles means tentant can sign up and get's the access of admin except the security features. Fix my voice message transcription so it reliably records, transcribes, and converts speech to text in the voice input UI. /skill:redesign Using current project setup .Fix the typing input issues so text entry works correctly alongside the transcription workflow without conflicts or formatting bugs.. Implement English+Bengali social platform auto-reply flows for my AI sales agent with proper context handling and configurable response templates.. Add a full verification pass for Privacy, Terms, and GDPR legal pages wiring so every nav button routes correctly and remains accessible across devices.`}</span>
+          {"
+"}<span className="text-white/40">{{"status":"ok","sync":"active","ai":"connected","db":"connected"}}</span>
+          {"
+"}<span className="text-primary/80">$</span> daddy-ai --version
+          {"
+"}<span className="text-white/40">Daddy AI v1.0.0 (self-hosted)</span>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+<div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c, i) => (
           <div 
             key={c.label} 

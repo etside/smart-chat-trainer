@@ -2,10 +2,11 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { playgroundReply } from "@/lib/console.functions";
+import { textToSpeech } from "@/lib/tts.functions";
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Send, Database, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Send, Database, ChevronDown, ChevronUp, Volume2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -26,11 +27,28 @@ function Playground() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const reply = useServerFn(playgroundReply);
+  const tts = useServerFn(textToSpeech);
   const [showSources, setShowSources] = useState<Record<number, boolean>>({});
+  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
 
   const toggleSources = (index: number) => {
     setShowSources(prev => ({ ...prev, [index]: !prev[index] }));
   };
+
+  async function playTTS(text: string, idx: number) {
+    try {
+      setPlayingIdx(idx);
+      const res = await tts({ data: { text: text.slice(0, 1000) } });
+      const audioSrc = `data:${res.mimeType};base64,${res.audio}`;
+      const audio = new Audio(audioSrc);
+      audio.onended = () => setPlayingIdx(null);
+      audio.onerror = () => { setPlayingIdx(null); toast.error("অডিও চালানো যায়নি"); };
+      await audio.play();
+    } catch (e: any) {
+      setPlayingIdx(null);
+      toast.error(e?.message || "TTS কাজ করেনি। Fish Audio API Key চেক করুন।");
+    }
+  }
 
   async function send(text: string) {
 
@@ -76,6 +94,20 @@ function Playground() {
             >
               {m.content}
             </div>
+            {m.role === "assistant" && (
+              <button
+                onClick={() => playTTS(m.content, i)}
+                disabled={playingIdx === i}
+                className="ml-2 p-1 rounded-full hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary"
+                title="শুনুন (TTS)"
+              >
+                {playingIdx === i ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Volume2 className="size-3.5" />
+                )}
+              </button>
+            )}
             
             {m.role === "assistant" && m.examples && m.examples.length > 0 && (
               <div className="flex flex-col gap-2 w-full max-w-[90%]">

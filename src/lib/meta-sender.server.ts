@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export async function sendMetaMessage(recipientId: string, text: string, platform: 'messenger' | 'whatsapp') {
+export async function sendMetaMessage(recipientId: string, text: string, platform: 'messenger' | 'whatsapp' | 'instagram') {
   const { data: settings } = await supabaseAdmin
     .from('agent_settings')
     .select('meta_access_token, meta_page_id, meta_whatsapp_business_account_id')
@@ -23,6 +23,22 @@ export async function sendMetaMessage(recipientId: string, text: string, platfor
       })
     });
     
+    const result = await res.json();
+    if (result.error) throw new Error(result.error.message);
+    return result;
+  } else if (platform === 'instagram') {
+    // Instagram DMs use the same Graph API as Messenger
+    if (!settings.meta_page_id) throw new Error("Meta Page ID not configured for Instagram");
+
+    const res = await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${settings.meta_access_token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipient: { id: recipientId },
+        message: { text }
+      })
+    });
+
     const result = await res.json();
     if (result.error) throw new Error(result.error.message);
     return result;

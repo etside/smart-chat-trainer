@@ -201,6 +201,8 @@ function SettingsPage() {
   const [b2bBackblazeKey, setB2bBackblazeKey] = useState("");
   const [bosonWorkspaceId, setBosonWorkspaceId] = useState("");
   const [fishAudioApiKey, setFishAudioApiKey] = useState("");
+  const [fishAudioModelId, setFishAudioModelId] = useState("");
+  const [voiceProvider, setVoiceProvider] = useState<"fish" | "mimo">("fish");
   const [altApiKeys, setAltApiKeys] = useState<Record<string, string>>({});
   const [vpsConfig, setVpsConfig] = useState<any>({});
 
@@ -252,6 +254,8 @@ function SettingsPage() {
     setB2bBackblazeKey(extraData.b2bBackblazeKey);
     setBosonWorkspaceId(extraData.bosonWorkspaceId);
     setFishAudioApiKey(extraData.fishAudioApiKey);
+    setFishAudioModelId(extraData.fishAudioModelId || "");
+    setVoiceProvider(extraData.voiceProvider || "fish");
     setAltApiKeys(extraData.altApiKeys);
     setVpsConfig(extraData.vpsHostingConfig);
   }, [extraData]);
@@ -276,6 +280,8 @@ function SettingsPage() {
         b2bBackblazeKey,
         bosonWorkspaceId,
         fishAudioApiKey,
+        fishAudioModelId,
+        voiceProvider,
         altApiKeys,
         vpsHostingConfig: vpsConfig
       } })),
@@ -468,6 +474,17 @@ function SettingsPage() {
                 />
               </div>
               <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Voice Provider</Label>
+                <select
+                  value={voiceProvider}
+                  onChange={(e) => setVoiceProvider(e.target.value as "fish" | "mimo")}
+                  className="w-full rounded-md border border-white/5 bg-muted/20 px-3 py-2 text-sm font-mono focus:bg-background"
+                >
+                  <option value="fish">Fish Audio (Voice Cloning)</option>
+                  <option value="mimo">MiMo TTS (Xiaomi)</option>
+                </select>
+              </div>
+              <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Fish Audio API Key</Label>
                 <Input
                   type="password"
@@ -476,6 +493,16 @@ function SettingsPage() {
                   onChange={(e) => setFishAudioApiKey(e.target.value)}
                   className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Fish Audio Model / Voice ID</Label>
+                <Input
+                  placeholder="Voice model ID (leave empty for default)"
+                  value={fishAudioModelId}
+                  onChange={(e) => setFishAudioModelId(e.target.value)}
+                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                />
+                <p className="text-[10px] text-muted-foreground/50">Paste a Fish Audio voice model ID for voice cloning</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">VPS Hosting Server URL</Label>
