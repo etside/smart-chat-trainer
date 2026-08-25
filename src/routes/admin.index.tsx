@@ -52,13 +52,10 @@ function Dashboard() {
           <div className="text-[9px] uppercase tracking-tighter text-muted-foreground font-sans font-bold">System Status: Active</div>
         </div>
         <div className="p-4 text-[11px] leading-relaxed text-emerald-400/90 whitespace-pre-wrap">
-          <span className="text-primary/80">$</span> daddy-ai --status check-sync
-          {"
-"}<span className="text-white/40">{{"status":"ok","sync":"active","ai":"connected","db":"connected"}}</span>
-          {"
-"}<span className="text-primary/80">$</span> daddy-ai --version
-          {"
-"}<span className="text-white/40">Daddy AI v1.0.0 (self-hosted)</span>
+          <span className="text-primary/80">$</span> daddy-ai --status check-sync{"\n"}
+          <span className="text-white/40">{"{\"status\":\"ok\",\"sync\":\"active\",\"ai\":\"connected\",\"db\":\"connected\"}"}</span>{"\n"}
+          <span className="text-primary/80">$</span> daddy-ai --version{"\n"}
+          <span className="text-white/40">Daddy AI v1.0.0 (self-hosted)</span>
         </div>
       </div>
 
