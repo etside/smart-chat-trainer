@@ -56,6 +56,11 @@ jobs:
             export BUN_INSTALL=/root/.bun
             export PATH=$BUN_INSTALL/bin:$PATH
             bun install
+            # Ensure swap is available for build (1GB VPS needs swap)
+            if [ ! -f /swapfile ]; then
+              fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+              echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
+            fi
             NITRO_PRESET=node-server bun run build
             pm2 delete daddyai 2>/dev/null || true
             pm2 start ecosystem.config.cjs

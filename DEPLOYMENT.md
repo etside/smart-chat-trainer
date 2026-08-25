@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide explains how to deploy Daddy AI to your VPS (159.223.77.185) with the domain `daddyai.online`.
+This guide explains how to deploy Daddy AI to your VPS (104.248.152.70) with the domain `daddyai.online`.
 
 ## Required GitHub Secrets
 
