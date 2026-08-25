@@ -61,6 +61,7 @@ const navSections: NavSection[] = [
     title: "Overview",
     items: [
       { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, minRole: "viewer" },
+      { to: "/admin/analytics", label: "Analytics", icon: BarChart3, minRole: "viewer" },
       { to: "/admin/usage", label: "Usage", icon: BarChart3, minRole: "admin" },
       { to: "/admin/onboarding", label: "Setup Wizard", icon: PlusCircle, minRole: "admin" },
     ],
@@ -71,13 +72,21 @@ const navSections: NavSection[] = [
       { to: "/admin/training", label: "Training Data", icon: Database, minRole: "viewer" },
       { to: "/admin/add", label: "Add Data", icon: PlusCircle, minRole: "editor" },
       { to: "/admin/skill-builder", label: "Skill Builder", icon: Wand2, minRole: "editor" },
+      { to: "/admin/canned-responses", label: "Templates", icon: MessageSquare, minRole: "editor" },
       { to: "/admin/auto-replies", label: "Auto-Replies", icon: MessageSquare, minRole: "editor" },
     ],
   },
   {
-    title: "Test & Monitor",
+    title: "Conversations",
     items: [
+      { to: "/admin/inbox", label: "Inbox", icon: MessagesSquare, minRole: "viewer" },
       { to: "/admin/playground", label: "Playground", icon: MessagesSquare, minRole: "viewer" },
+      { to: "/admin/flow-builder", label: "Flow Builder", icon: Wand2, minRole: "editor" },
+    ],
+  },
+  {
+    title: "Monitor",
+    items: [
       { to: "/admin/sync", label: "Sync Status", icon: Activity, minRole: "viewer" },
       { to: "/admin/progress", label: "Training Live", icon: Activity, minRole: "viewer" },
       { to: "/admin/webhook-test", label: "Webhook Test", icon: Terminal, minRole: "editor" },
@@ -107,6 +116,7 @@ const navSections: NavSection[] = [
       { to: "/connect", label: "AI Connect", icon: Terminal, minRole: "viewer" },
       { to: "/api", label: "API & White Label", icon: Code2, minRole: "viewer" },
       { to: "/faq", label: "FAQ", icon: MessageSquare, minRole: "viewer" },
+      { to: "/knowledge-base", label: "Knowledge Base", icon: MessageSquare, minRole: "viewer" },
     ],
   },
   {

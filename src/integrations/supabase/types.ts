@@ -279,6 +279,153 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          channel: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          metric_value: number | null
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          metric_value?: number | null
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          metric_value?: number | null
+        }
+        Relationships: []
+      }
+      canned_responses: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          shortcut: string | null
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+          shortcut?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+          shortcut?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
+      conversation_flows: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          edges: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+          nodes: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          edges?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          nodes?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          edges?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          nodes?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      conversation_sessions: {
+        Row: {
+          assigned_agent: string | null
+          channel: string | null
+          created_at: string | null
+          customer_language: string | null
+          customer_name: string | null
+          external_id: string | null
+          id: string
+          last_message_at: string | null
+          message_count: number | null
+          metadata: Json | null
+          started_at: string | null
+          status: string | null
+          summary: string | null
+        }
+        Insert: {
+          assigned_agent?: string | null
+          channel?: string | null
+          created_at?: string | null
+          customer_language?: string | null
+          customer_name?: string | null
+          external_id?: string | null
+          id?: string
+          last_message_at?: string | null
+          message_count?: number | null
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+          summary?: string | null
+        }
+        Update: {
+          assigned_agent?: string | null
+          channel?: string | null
+          created_at?: string | null
+          customer_language?: string | null
+          customer_name?: string | null
+          external_id?: string | null
+          id?: string
+          last_message_at?: string | null
+          message_count?: number | null
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+          summary?: string | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           channel: string | null
@@ -337,6 +484,44 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_messages: {
+        Row: {
+          channel: string | null
+          content: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          role: string
+          session_id: string
+        }
+        Insert: {
+          channel?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role: string
+          session_id: string
+        }
+        Update: {
+          channel?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -517,7 +702,10 @@ export type Database = {
           context: string | null
           conversation_id: string | null
           created_at: string
+          embedding: string | null
           id: string
+          labels: string[] | null
+          language: string | null
           question: string
           source: string
           status: string
@@ -528,7 +716,10 @@ export type Database = {
           context?: string | null
           conversation_id?: string | null
           created_at?: string
+          embedding?: string | null
           id?: string
+          labels?: string[] | null
+          language?: string | null
           question: string
           source?: string
           status?: string
@@ -539,7 +730,10 @@ export type Database = {
           context?: string | null
           conversation_id?: string | null
           created_at?: string
+          embedding?: string | null
           id?: string
+          labels?: string[] | null
+          language?: string | null
           question?: string
           source?: string
           status?: string
@@ -716,10 +910,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      knowledge_base_articles: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string | null
+          labels: string[] | null
+          title: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_usage_thresholds: { Args: never; Returns: undefined }
+      get_analytics_summary: {
+        Args: { _days?: number }
+        Returns: {
+          avg_messages_per_conversation: number
+          channel_breakdown: Json
+          response_accuracy: number
+          top_questions: Json
+          total_conversations: number
+          total_messages: number
+        }[]
+      }
       get_usage_aggregates: { Args: never; Returns: Json }
       has_role: {
         Args: {
@@ -741,6 +955,15 @@ export type Database = {
       }
       search_training_pairs: {
         Args: { _limit?: number; _query: string }
+        Returns: {
+          answer: string
+          id: string
+          question: string
+          score: number
+        }[]
+      }
+      search_training_pairs_semantic: {
+        Args: { _embedding: string; _limit?: number }
         Returns: {
           answer: string
           id: string

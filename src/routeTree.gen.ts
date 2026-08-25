@@ -11,30 +11,39 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ApiRouteImport } from './routes/api'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as DataDeletionRouteImport } from './routes/data-deletion'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as KnowledgeBaseRouteImport } from './routes/knowledge-base'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrivacyRequestRouteImport } from './routes/privacy-request'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminApiKeysRouteImport } from './routes/admin.api-keys'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAutoRepliesRouteImport } from './routes/admin.auto-replies'
+import { Route as AdminCannedResponsesRouteImport } from './routes/admin.canned-responses'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
 import { Route as AdminCredentialsRouteImport } from './routes/admin.credentials'
+import { Route as AdminFlowBuilderRouteImport } from './routes/admin.flow-builder'
+import { Route as AdminInboxRouteImport } from './routes/admin.inbox'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminOnboardingRouteImport } from './routes/admin.onboarding'
 import { Route as AdminPerformanceRouteImport } from './routes/admin.performance'
 import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
 import { Route as AdminProgressRouteImport } from './routes/admin.progress'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminSkillBuilderRouteImport } from './routes/admin.skill-builder'
 import { Route as AdminSyncRouteImport } from './routes/admin.sync'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
 import { Route as AdminUsageRouteImport } from './routes/admin.usage'
 import { Route as AdminWebhookDlqRouteImport } from './routes/admin.webhook-dlq'
 import { Route as AdminWebhookTestRouteImport } from './routes/admin.webhook-test'
+import { Route as AdminSettingsMimoRouteImport } from './routes/admin.settings.mimo'
 import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
 import { Route as ApiPublicAiSyncStatusRouteImport } from './routes/api/public/ai-sync/status'
@@ -52,6 +61,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRoute = ApiRouteImport.update({
+  id: '/api',
+  path: '/api',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -65,6 +79,16 @@ const ConnectRoute = ConnectRouteImport.update({
 const DataDeletionRoute = DataDeletionRouteImport.update({
   id: '/data-deletion',
   path: '/data-deletion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KnowledgeBaseRoute = KnowledgeBaseRouteImport.update({
+  id: '/knowledge-base',
+  path: '/knowledge-base',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -92,6 +116,11 @@ const AdminAddRoute = AdminAddRouteImport.update({
   path: '/add',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
   id: '/api-keys',
   path: '/api-keys',
@@ -107,6 +136,11 @@ const AdminAutoRepliesRoute = AdminAutoRepliesRouteImport.update({
   path: '/auto-replies',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCannedResponsesRoute = AdminCannedResponsesRouteImport.update({
+  id: '/canned-responses',
+  path: '/canned-responses',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
   id: '/connections',
   path: '/connections',
@@ -115,6 +149,16 @@ const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
 const AdminCredentialsRoute = AdminCredentialsRouteImport.update({
   id: '/credentials',
   path: '/credentials',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFlowBuilderRoute = AdminFlowBuilderRouteImport.update({
+  id: '/flow-builder',
+  path: '/flow-builder',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminInboxRoute = AdminInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminLogsRoute = AdminLogsRouteImport.update({
@@ -147,6 +191,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSkillBuilderRoute = AdminSkillBuilderRouteImport.update({
+  id: '/skill-builder',
+  path: '/skill-builder',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSyncRoute = AdminSyncRouteImport.update({
   id: '/sync',
   path: '/sync',
@@ -172,64 +221,78 @@ const AdminWebhookTestRoute = AdminWebhookTestRouteImport.update({
   path: '/webhook-test',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsMimoRoute = AdminSettingsMimoRouteImport.update({
+  id: '/mimo',
+  path: '/mimo',
+  getParentRoute: () => AdminSettingsRoute,
+} as any)
 const ApiPublicChatRoute = ApiPublicChatRouteImport.update({
-  id: '/api/public/chat',
-  path: '/api/public/chat',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/chat',
+  path: '/public/chat',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
-  id: '/api/public/webhook',
-  path: '/api/public/webhook',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/webhook',
+  path: '/public/webhook',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicAiSyncStatusRoute = ApiPublicAiSyncStatusRouteImport.update({
-  id: '/api/public/ai-sync/status',
-  path: '/api/public/ai-sync/status',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/ai-sync/status',
+  path: '/public/ai-sync/status',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicCronSyncRoute = ApiPublicCronSyncRouteImport.update({
-  id: '/api/public/cron/sync',
-  path: '/api/public/cron/sync',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/cron/sync',
+  path: '/public/cron/sync',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicMetaDeletionRoute = ApiPublicMetaDeletionRouteImport.update({
-  id: '/api/public/meta/deletion',
-  path: '/api/public/meta/deletion',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/meta/deletion',
+  path: '/public/meta/deletion',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicWebhooksMetaRoute = ApiPublicWebhooksMetaRouteImport.update({
-  id: '/api/public/webhooks/meta',
-  path: '/api/public/webhooks/meta',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/webhooks/meta',
+  path: '/public/webhooks/meta',
+  getParentRoute: () => ApiRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
+  '/faq': typeof FaqRoute
+  '/knowledge-base': typeof KnowledgeBaseRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
+  '/admin/canned-responses': typeof AdminCannedResponsesRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/credentials': typeof AdminCredentialsRoute
+  '/admin/flow-builder': typeof AdminFlowBuilderRoute
+  '/admin/inbox': typeof AdminInboxRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
-  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/settings': typeof AdminSettingsRouteWithChildren
+  '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/usage': typeof AdminUsageRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/settings/mimo': typeof AdminSettingsMimoRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
@@ -239,30 +302,39 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
+  '/faq': typeof FaqRoute
+  '/knowledge-base': typeof KnowledgeBaseRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
+  '/admin/canned-responses': typeof AdminCannedResponsesRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/credentials': typeof AdminCredentialsRoute
+  '/admin/flow-builder': typeof AdminFlowBuilderRoute
+  '/admin/inbox': typeof AdminInboxRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
-  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/settings': typeof AdminSettingsRouteWithChildren
+  '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/usage': typeof AdminUsageRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/settings/mimo': typeof AdminSettingsMimoRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
@@ -274,30 +346,39 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
   '/connect': typeof ConnectRoute
   '/data-deletion': typeof DataDeletionRoute
+  '/faq': typeof FaqRoute
+  '/knowledge-base': typeof KnowledgeBaseRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-request': typeof PrivacyRequestRoute
   '/terms': typeof TermsRoute
   '/admin/add': typeof AdminAddRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
+  '/admin/canned-responses': typeof AdminCannedResponsesRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/credentials': typeof AdminCredentialsRoute
+  '/admin/flow-builder': typeof AdminFlowBuilderRoute
+  '/admin/inbox': typeof AdminInboxRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
-  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/settings': typeof AdminSettingsRouteWithChildren
+  '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/usage': typeof AdminUsageRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/settings/mimo': typeof AdminSettingsMimoRoute
   '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
@@ -310,30 +391,39 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/api'
     | '/auth'
     | '/connect'
     | '/data-deletion'
+    | '/faq'
+    | '/knowledge-base'
     | '/privacy'
     | '/privacy-request'
     | '/terms'
     | '/admin/add'
+    | '/admin/analytics'
     | '/admin/api-keys'
     | '/admin/audit-logs'
     | '/admin/auto-replies'
+    | '/admin/canned-responses'
     | '/admin/connections'
     | '/admin/credentials'
+    | '/admin/flow-builder'
+    | '/admin/inbox'
     | '/admin/logs'
     | '/admin/onboarding'
     | '/admin/performance'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
+    | '/admin/skill-builder'
     | '/admin/sync'
     | '/admin/training'
     | '/admin/usage'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin/'
+    | '/admin/settings/mimo'
     | '/api/public/chat'
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
@@ -343,30 +433,39 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api'
     | '/auth'
     | '/connect'
     | '/data-deletion'
+    | '/faq'
+    | '/knowledge-base'
     | '/privacy'
     | '/privacy-request'
     | '/terms'
     | '/admin/add'
+    | '/admin/analytics'
     | '/admin/api-keys'
     | '/admin/audit-logs'
     | '/admin/auto-replies'
+    | '/admin/canned-responses'
     | '/admin/connections'
     | '/admin/credentials'
+    | '/admin/flow-builder'
+    | '/admin/inbox'
     | '/admin/logs'
     | '/admin/onboarding'
     | '/admin/performance'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
+    | '/admin/skill-builder'
     | '/admin/sync'
     | '/admin/training'
     | '/admin/usage'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin'
+    | '/admin/settings/mimo'
     | '/api/public/chat'
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
@@ -377,30 +476,39 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/api'
     | '/auth'
     | '/connect'
     | '/data-deletion'
+    | '/faq'
+    | '/knowledge-base'
     | '/privacy'
     | '/privacy-request'
     | '/terms'
     | '/admin/add'
+    | '/admin/analytics'
     | '/admin/api-keys'
     | '/admin/audit-logs'
     | '/admin/auto-replies'
+    | '/admin/canned-responses'
     | '/admin/connections'
     | '/admin/credentials'
+    | '/admin/flow-builder'
+    | '/admin/inbox'
     | '/admin/logs'
     | '/admin/onboarding'
     | '/admin/performance'
     | '/admin/playground'
     | '/admin/progress'
     | '/admin/settings'
+    | '/admin/skill-builder'
     | '/admin/sync'
     | '/admin/training'
     | '/admin/usage'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin/'
+    | '/admin/settings/mimo'
     | '/api/public/chat'
     | '/api/public/webhook'
     | '/api/public/ai-sync/status'
@@ -412,18 +520,15 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  ApiRoute: typeof ApiRouteWithChildren
   AuthRoute: typeof AuthRoute
   ConnectRoute: typeof ConnectRoute
   DataDeletionRoute: typeof DataDeletionRoute
+  FaqRoute: typeof FaqRoute
+  KnowledgeBaseRoute: typeof KnowledgeBaseRoute
   PrivacyRoute: typeof PrivacyRoute
   PrivacyRequestRoute: typeof PrivacyRequestRoute
   TermsRoute: typeof TermsRoute
-  ApiPublicChatRoute: typeof ApiPublicChatRoute
-  ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
-  ApiPublicAiSyncStatusRoute: typeof ApiPublicAiSyncStatusRoute
-  ApiPublicCronSyncRoute: typeof ApiPublicCronSyncRoute
-  ApiPublicMetaDeletionRoute: typeof ApiPublicMetaDeletionRoute
-  ApiPublicWebhooksMetaRoute: typeof ApiPublicWebhooksMetaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -440,6 +545,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api': {
+      id: '/api'
+      path: '/api'
+      fullPath: '/api'
+      preLoaderRoute: typeof ApiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -461,6 +573,20 @@ declare module '@tanstack/react-router' {
       path: '/data-deletion'
       fullPath: '/data-deletion'
       preLoaderRoute: typeof DataDeletionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/knowledge-base': {
+      id: '/knowledge-base'
+      path: '/knowledge-base'
+      fullPath: '/knowledge-base'
+      preLoaderRoute: typeof KnowledgeBaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -498,6 +624,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAddRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/api-keys': {
       id: '/admin/api-keys'
       path: '/api-keys'
@@ -519,6 +652,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAutoRepliesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/canned-responses': {
+      id: '/admin/canned-responses'
+      path: '/canned-responses'
+      fullPath: '/admin/canned-responses'
+      preLoaderRoute: typeof AdminCannedResponsesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/connections': {
       id: '/admin/connections'
       path: '/connections'
@@ -531,6 +671,20 @@ declare module '@tanstack/react-router' {
       path: '/credentials'
       fullPath: '/admin/credentials'
       preLoaderRoute: typeof AdminCredentialsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/flow-builder': {
+      id: '/admin/flow-builder'
+      path: '/flow-builder'
+      fullPath: '/admin/flow-builder'
+      preLoaderRoute: typeof AdminFlowBuilderRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/inbox': {
+      id: '/admin/inbox'
+      path: '/inbox'
+      fullPath: '/admin/inbox'
+      preLoaderRoute: typeof AdminInboxRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/logs': {
@@ -575,6 +729,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/skill-builder': {
+      id: '/admin/skill-builder'
+      path: '/skill-builder'
+      fullPath: '/admin/skill-builder'
+      preLoaderRoute: typeof AdminSkillBuilderRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/sync': {
       id: '/admin/sync'
       path: '/sync'
@@ -610,64 +771,88 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWebhookTestRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings/mimo': {
+      id: '/admin/settings/mimo'
+      path: '/mimo'
+      fullPath: '/admin/settings/mimo'
+      preLoaderRoute: typeof AdminSettingsMimoRouteImport
+      parentRoute: typeof AdminSettingsRoute
+    }
     '/api/public/chat': {
       id: '/api/public/chat'
-      path: '/api/public/chat'
+      path: '/public/chat'
       fullPath: '/api/public/chat'
       preLoaderRoute: typeof ApiPublicChatRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/webhook': {
       id: '/api/public/webhook'
-      path: '/api/public/webhook'
+      path: '/public/webhook'
       fullPath: '/api/public/webhook'
       preLoaderRoute: typeof ApiPublicWebhookRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/ai-sync/status': {
       id: '/api/public/ai-sync/status'
-      path: '/api/public/ai-sync/status'
+      path: '/public/ai-sync/status'
       fullPath: '/api/public/ai-sync/status'
       preLoaderRoute: typeof ApiPublicAiSyncStatusRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/cron/sync': {
       id: '/api/public/cron/sync'
-      path: '/api/public/cron/sync'
+      path: '/public/cron/sync'
       fullPath: '/api/public/cron/sync'
       preLoaderRoute: typeof ApiPublicCronSyncRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/meta/deletion': {
       id: '/api/public/meta/deletion'
-      path: '/api/public/meta/deletion'
+      path: '/public/meta/deletion'
       fullPath: '/api/public/meta/deletion'
       preLoaderRoute: typeof ApiPublicMetaDeletionRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/webhooks/meta': {
       id: '/api/public/webhooks/meta'
-      path: '/api/public/webhooks/meta'
+      path: '/public/webhooks/meta'
       fullPath: '/api/public/webhooks/meta'
       preLoaderRoute: typeof ApiPublicWebhooksMetaRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
   }
 }
 
+interface AdminSettingsRouteChildren {
+  AdminSettingsMimoRoute: typeof AdminSettingsMimoRoute
+}
+
+const AdminSettingsRouteChildren: AdminSettingsRouteChildren = {
+  AdminSettingsMimoRoute: AdminSettingsMimoRoute,
+}
+
+const AdminSettingsRouteWithChildren = AdminSettingsRoute._addFileChildren(
+  AdminSettingsRouteChildren,
+)
+
 interface AdminRouteChildren {
   AdminAddRoute: typeof AdminAddRoute
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminAutoRepliesRoute: typeof AdminAutoRepliesRoute
+  AdminCannedResponsesRoute: typeof AdminCannedResponsesRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
   AdminCredentialsRoute: typeof AdminCredentialsRoute
+  AdminFlowBuilderRoute: typeof AdminFlowBuilderRoute
+  AdminInboxRoute: typeof AdminInboxRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminOnboardingRoute: typeof AdminOnboardingRoute
   AdminPerformanceRoute: typeof AdminPerformanceRoute
   AdminPlaygroundRoute: typeof AdminPlaygroundRoute
   AdminProgressRoute: typeof AdminProgressRoute
-  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSettingsRoute: typeof AdminSettingsRouteWithChildren
+  AdminSkillBuilderRoute: typeof AdminSkillBuilderRoute
   AdminSyncRoute: typeof AdminSyncRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
   AdminUsageRoute: typeof AdminUsageRoute
@@ -678,17 +863,22 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAddRoute: AdminAddRoute,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminApiKeysRoute: AdminApiKeysRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminAutoRepliesRoute: AdminAutoRepliesRoute,
+  AdminCannedResponsesRoute: AdminCannedResponsesRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
   AdminCredentialsRoute: AdminCredentialsRoute,
+  AdminFlowBuilderRoute: AdminFlowBuilderRoute,
+  AdminInboxRoute: AdminInboxRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminOnboardingRoute: AdminOnboardingRoute,
   AdminPerformanceRoute: AdminPerformanceRoute,
   AdminPlaygroundRoute: AdminPlaygroundRoute,
   AdminProgressRoute: AdminProgressRoute,
-  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSettingsRoute: AdminSettingsRouteWithChildren,
+  AdminSkillBuilderRoute: AdminSkillBuilderRoute,
   AdminSyncRoute: AdminSyncRoute,
   AdminTrainingRoute: AdminTrainingRoute,
   AdminUsageRoute: AdminUsageRoute,
@@ -699,15 +889,16 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
-  AuthRoute: AuthRoute,
-  ConnectRoute: ConnectRoute,
-  DataDeletionRoute: DataDeletionRoute,
-  PrivacyRoute: PrivacyRoute,
-  PrivacyRequestRoute: PrivacyRequestRoute,
-  TermsRoute: TermsRoute,
+interface ApiRouteChildren {
+  ApiPublicChatRoute: typeof ApiPublicChatRoute
+  ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
+  ApiPublicAiSyncStatusRoute: typeof ApiPublicAiSyncStatusRoute
+  ApiPublicCronSyncRoute: typeof ApiPublicCronSyncRoute
+  ApiPublicMetaDeletionRoute: typeof ApiPublicMetaDeletionRoute
+  ApiPublicWebhooksMetaRoute: typeof ApiPublicWebhooksMetaRoute
+}
+
+const ApiRouteChildren: ApiRouteChildren = {
   ApiPublicChatRoute: ApiPublicChatRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicAiSyncStatusRoute: ApiPublicAiSyncStatusRoute,
@@ -715,16 +906,22 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicMetaDeletionRoute: ApiPublicMetaDeletionRoute,
   ApiPublicWebhooksMetaRoute: ApiPublicWebhooksMetaRoute,
 }
+
+const ApiRouteWithChildren = ApiRoute._addFileChildren(ApiRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  ApiRoute: ApiRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ConnectRoute: ConnectRoute,
+  DataDeletionRoute: DataDeletionRoute,
+  FaqRoute: FaqRoute,
+  KnowledgeBaseRoute: KnowledgeBaseRoute,
+  PrivacyRoute: PrivacyRoute,
+  PrivacyRequestRoute: PrivacyRequestRoute,
+  TermsRoute: TermsRoute,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -39,11 +39,64 @@ export type HistoryTurn = { role: "user" | "assistant"; content: string };
 
 const VALID_MIMO_MODELS = ["mimo-v2.5-pro", "mimo-v2.5"];
 
+// Increased history window for multi-turn memory
+const HISTORY_WINDOW = 20;
+
 function sanitizeModel(model: string | null | undefined): string {
   if (!model || !VALID_MIMO_MODELS.includes(model)) {
     return "mimo-v2.5";
   }
   return model;
+}
+
+/**
+ * Detect the primary language of a message.
+ * Returns ISO 639-1 code: 'bn', 'en', or 'mixed'.
+ */
+function detectLanguage(text: string): "bn" | "en" | "mixed" {
+  const bengaliScript = /[\u0980-\u09FF]/;
+  const latinScript = /[a-zA-Z]/;
+
+  const hasBengali = bengaliScript.test(text);
+  const hasLatin = latinScript.test(text);
+
+  if (hasBengali && hasLatin) {
+    // Check if it's Banglish (Bengali words in Latin script)
+    const banglishPattern = / ami | tumi | kemon | ache | naki | ki | hocche | dite | pari | na /i;
+    if (banglishPattern.test(text)) return "mixed";
+    return "mixed";
+  }
+  if (hasBengali) return "bn";
+  if (hasLatin) return "en";
+  return "bn"; // Default to Bengali for this platform
+}
+
+/**
+ * Generate a conversation summary for long sessions.
+ * Summarizes old turns to fit within context window.
+ */
+async function summarizeHistory(
+  turns: HistoryTurn[],
+  model: string,
+  apiKeyOverride?: string | null,
+): Promise<string> {
+  if (turns.length <= HISTORY_WINDOW) return "";
+
+  const oldTurns = turns.slice(0, turns.length - HISTORY_WINDOW);
+  const summaryPrompt = [
+    {
+      role: "system" as const,
+      content: "Summarize this conversation in 2-3 sentences in Bengali. Focus on key topics, customer needs, and decisions made. Be concise.",
+    },
+    ...oldTurns.map((t) => ({ role: t.role as "user" | "assistant", content: t.content })),
+  ];
+
+  try {
+    const summary = await chatComplete(summaryPrompt, model, apiKeyOverride);
+    return typeof summary === "string" ? summary : "";
+  } catch {
+    return "";
+  }
 }
 
 export async function getSettings() {
@@ -139,16 +192,36 @@ export async function generateReply(
     .join("\n\n")
     : "কোনো মিল পাওয়া যায়নি।";
 
+  // Multi-turn memory: summarize old turns if history exceeds window
+  const recentHistory = history.slice(-HISTORY_WINDOW);
+  const olderHistory = history.slice(0, history.length - HISTORY_WINDOW);
+  let summaryContext = "";
+  if (olderHistory.length > 0) {
+    summaryContext = await summarizeHistory(history, settings.model, settings.lovable_api_key_override);
+  }
+
+  // Language auto-detect from customer message
+  const detectedLang = detectLanguage(message);
+  const langInstruction = detectedLang === "en"
+    ? "The customer is writing in English. Respond in English."
+    : detectedLang === "mixed"
+    ? "The customer is using Banglish (Bengali in Latin script). Respond in standard Bengali."
+    : "The customer is writing in Bengali. Respond in Bengali.";
+
+  const summaryBlock = summaryContext
+    ? `\n\nPrevious conversation summary:\n${summaryContext}`
+    : "";
+
   const messages: ChatMessage[] = [
     {
       role: "system",
       content: `${settings.system_prompt}
 
-Language Priority: Respond in the language used by the customer (Bengali or English). If the customer uses Banglish (Bengali in Latin script), respond in standard Bengali or high-quality Banglish based on their preference. For social platforms, use the configured auto-reply templates when a matching context is found.
+Language Detection: ${langInstruction}
 
 Auto-Reply Context:
 {auto_reply_context}
-
+${summaryBlock}
 
 নিচে আমাদের আগের আসল কথোপকথন থেকে সবচেয়ে মিল থাকা উদাহরণ দেওয়া হলো। এই টোন, ভাষা ও তথ্য অনুসরণ করে উত্তর দাও। উত্তর ছোট রাখো (১-৩ লাইন), ঠিক যেভাবে পেজ থেকে রিপ্লাই দেওয়া হয়।
 
@@ -156,7 +229,7 @@ ${exampleBlock}
 
 ${autoReplyContext}`,
     },
-    ...history.slice(-10).map((h) => ({ role: h.role, content: h.content }) as ChatMessage),
+    ...recentHistory.map((h) => ({ role: h.role, content: h.content }) as ChatMessage),
     { role: "user", content: message },
   ];
 
@@ -201,6 +274,70 @@ export async function logConversation(
     })),
   );
 
+  // Session management: find or create session, save messages
+  const lastUserMsg = turns.filter((t) => t.role === "user").at(-1)?.content ?? "";
+  const detectedLang = detectLanguage(lastUserMsg);
+
+  let sessionId: string | null = null;
+  if (externalId) {
+    // Find or create session by external_id
+    const { data: existing } = await supabaseAdmin
+      .from("conversation_sessions")
+      .select("id")
+      .eq("external_id", externalId)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (existing) {
+      sessionId = existing.id;
+      await supabaseAdmin
+        .from("conversation_sessions")
+        .update({
+          message_count: turns.length,
+          last_message_at: new Date().toISOString(),
+          customer_language: detectedLang,
+        })
+        .eq("id", sessionId);
+    } else {
+      const { data: newSession } = await supabaseAdmin
+        .from("conversation_sessions")
+        .insert({
+          external_id: externalId,
+          channel: source,
+          customer_language: detectedLang,
+          message_count: turns.length,
+        })
+        .select("id")
+        .single();
+      sessionId = newSession?.id ?? null;
+    }
+  }
+
+  // Save to session_messages if session exists
+  if (sessionId) {
+    await supabaseAdmin.from("session_messages").insert(
+      turns.map((t) => ({
+        session_id: sessionId,
+        role: t.role,
+        content: t.content,
+        channel: source,
+      })),
+    );
+  }
+
+  // Log analytics event
+  try {
+    await supabaseAdmin.from("analytics_events").insert({
+      event_type: "conversation",
+      channel: source,
+      metadata: {
+        language: detectedLang,
+        message_count: turns.length,
+        session_id: sessionId,
+      },
+    });
+  } catch { /* Non-critical */ }
+
   const settings = await getSettings();
   const question = turns.filter((t) => t.role === "user").at(-1)?.content;
   const answer = turns.filter((t) => t.role === "assistant").at(-1)?.content;
@@ -211,6 +348,7 @@ export async function logConversation(
       source,
       status: settings.auto_approve ? "approved" : "pending",
       conversation_id: conv.id,
+      language: detectedLang,
     });
   }
 }
