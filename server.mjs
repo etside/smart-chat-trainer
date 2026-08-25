@@ -1,7 +1,7 @@
 // Daddy AI - Node.js server entry point
 // Wraps the TanStack Start handler into a proper HTTP server
 import { createServer } from 'http';
-import handler from './dist/server/server.js';
+import * as handler from './dist/server/server.js';
 
 const port = process.env.PORT || 3000;
 
@@ -26,7 +26,9 @@ const server = createServer(async (req, res) => {
       headers,
       body,
     });
-    const response = await handler.default.fetch(request, process.env, {});
+    const serverHandler = handler.default ?? handler;
+    const fetchFn = serverHandler.fetch ?? serverHandler.default?.fetch;
+    const response = await fetchFn.call(serverHandler, request, process.env, {});
     res.writeHead(response.status, Object.fromEntries(response.headers));
     if (response.body) {
       const reader = response.body.getReader();
