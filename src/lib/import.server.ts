@@ -67,8 +67,9 @@ export async function importConversationExport(json: string) {
   }
 
   for (let i = 0; i < pairs.length; i += 500) {
-    await supabaseAdmin.from("training_pairs").insert(
+    await supabaseAdmin.from("training_pairs").upsert(
       pairs.slice(i, i + 500).map((p) => ({ ...p, source: "upload", status: "approved" })),
+      { onConflict: "question" },
     );
   }
 

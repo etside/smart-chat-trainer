@@ -18,7 +18,7 @@ export const getWebhookLogs = createServerFn({ method: "GET" })
         created_at,
         conversations (
           id,
-          platform,
+          source,
           external_id
         )
       `)

@@ -185,15 +185,15 @@ export const importPairs = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("training_pairs").insert(
-      data.items.map((i) => ({
-        question: i.question.slice(0, 2000),
-        answer: i.answer.slice(0, 4000),
-        status: data.status,
-        source: data.source,
-      })),
-    );
-    return { inserted: data.items.length };
+    const items = data.items.map((i) => ({
+      question: i.question.slice(0, 2000),
+      answer: i.answer.slice(0, 4000),
+      status: data.status,
+      source: data.source,
+    }));
+    const result = await supabaseAdmin.from("training_pairs").upsert(items, { onConflict: "question" });
+    if (result.error) throw new Error(result.error.message);
+    return { inserted: items.length };
   });
 
 export const importConversationsJson = createServerFn({ method: "POST" })
