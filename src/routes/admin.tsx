@@ -24,7 +24,8 @@ import {
   MessageSquare,
   Menu,
   X,
-  Wand2
+  Wand2,
+  Sparkles
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -42,38 +43,80 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-const nav: Array<{
-  to: "/admin" | "/admin/training" | "/admin/add" | "/admin/playground" | "/admin/connections" | "/admin/settings" | "/admin/progress" | "/admin/webhook-test" | "/admin/sync" | "/connect" | "/admin/api-keys" | "/admin/credentials" | "/admin/webhook-dlq" | "/admin/onboarding" | "/admin/logs" | "/admin/audit-logs" | "/admin/usage" | "/admin/performance" | "/admin/auto-replies" | "/admin/skill-builder" | "/privacy" | "/terms" | "/privacy-request" | "/api" | "/faq";
+type NavItem = {
+  to: string;
   label: string;
   icon: typeof Database;
   exact?: boolean;
   minRole?: "admin" | "editor" | "viewer";
-  legal?: boolean;
-}> = [
-  { to: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, exact: true, minRole: "viewer" },
-  { to: "/admin/onboarding", label: "অনবোর্ডিং উইজার্ড", icon: PlusCircle, minRole: "admin" },
-  { to: "/admin/usage", label: "ইউজড ড্যাশবোর্ড", icon: BarChart3, minRole: "admin" },
-  { to: "/admin/training", label: "ট্রেনিং ডেটা", icon: Database, minRole: "viewer" },
-  { to: "/admin/add", label: "নতুন ডেটা", icon: PlusCircle, minRole: "editor" },
-  { to: "/admin/playground", label: "প্লেগ্রাউন্ড", icon: MessagesSquare, minRole: "viewer" },
-  { to: "/admin/auto-replies", label: "অটো-রিপ্লাই টেমপ্লেট", icon: MessageSquare, minRole: "editor" },
-  { to: "/admin/skill-builder", label: "স্কিল বিল্ডার", icon: Wand2, minRole: "editor" },
-  { to: "/admin/sync", label: "সিঙ্ক স্ট্যাটাস", icon: Activity, minRole: "viewer" },
-  { to: "/admin/audit-logs", label: "অডিট লগ", icon: History, minRole: "admin" },
-  { to: "/admin/progress", label: "ট্রেনিং লাইভ", icon: Activity, minRole: "viewer" },
-  { to: "/admin/api-keys", label: "API Keys", icon: KeyRound, minRole: "admin" },
-  { to: "/admin/connections", label: "কানেকশন", icon: KeyRound, minRole: "admin" },
-  { to: "/admin/webhook-test", label: "টেস্ট প্যানেল", icon: Terminal, minRole: "editor" },
-  { to: "/admin/settings", label: "সেটিংস", icon: Settings, minRole: "admin" },
-  { to: "/admin/webhook-dlq", label: "Webhook & DLQ", icon: Terminal, minRole: "editor" },
-  { to: "/admin/logs", label: "ইভেন্ট লগ ও পলিসি", icon: History, minRole: "admin" },
-  { to: "/connect", label: "AI কানেক্ট", icon: Terminal, minRole: "viewer" },
-  { to: "/api", label: "API & White Label", icon: Code2, minRole: "viewer" },
-  { to: "/faq", label: "FAQ", icon: MessageSquare, minRole: "viewer" },
-  { to: "/admin/performance", label: "পারফরম্যান্স", icon: Activity, minRole: "admin" },
-  { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck, legal: true },
-  { to: "/terms", label: "Terms of Service", icon: ShieldCheck, legal: true },
-  { to: "/privacy-request", label: "GDPR Request", icon: History, legal: true },
+};
+
+type NavSection = {
+  title: string;
+  items: NavItem[];
+};
+
+const navSections: NavSection[] = [
+  {
+    title: "Overview",
+    items: [
+      { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, minRole: "viewer" },
+      { to: "/admin/usage", label: "Usage", icon: BarChart3, minRole: "admin" },
+      { to: "/admin/onboarding", label: "Setup Wizard", icon: PlusCircle, minRole: "admin" },
+    ],
+  },
+  {
+    title: "Training",
+    items: [
+      { to: "/admin/training", label: "Training Data", icon: Database, minRole: "viewer" },
+      { to: "/admin/add", label: "Add Data", icon: PlusCircle, minRole: "editor" },
+      { to: "/admin/skill-builder", label: "Skill Builder", icon: Wand2, minRole: "editor" },
+      { to: "/admin/auto-replies", label: "Auto-Replies", icon: MessageSquare, minRole: "editor" },
+    ],
+  },
+  {
+    title: "Test & Monitor",
+    items: [
+      { to: "/admin/playground", label: "Playground", icon: MessagesSquare, minRole: "viewer" },
+      { to: "/admin/sync", label: "Sync Status", icon: Activity, minRole: "viewer" },
+      { to: "/admin/progress", label: "Training Live", icon: Activity, minRole: "viewer" },
+      { to: "/admin/webhook-test", label: "Webhook Test", icon: Terminal, minRole: "editor" },
+    ],
+  },
+  {
+    title: "Logs",
+    items: [
+      { to: "/admin/audit-logs", label: "Audit Logs", icon: History, minRole: "admin" },
+      { to: "/admin/logs", label: "Event Logs", icon: History, minRole: "admin" },
+      { to: "/admin/performance", label: "Performance", icon: Activity, minRole: "admin" },
+      { to: "/admin/webhook-dlq", label: "Webhook DLQ", icon: Terminal, minRole: "editor" },
+    ],
+  },
+  {
+    title: "Config",
+    items: [
+      { to: "/admin/settings", label: "Settings", icon: Settings, minRole: "admin" },
+      { to: "/admin/settings/mimo", label: "AI / MiMo", icon: Sparkles, minRole: "admin" },
+      { to: "/admin/api-keys", label: "API Keys", icon: KeyRound, minRole: "admin" },
+      { to: "/admin/connections", label: "Connections", icon: KeyRound, minRole: "admin" },
+    ],
+  },
+  {
+    title: "External",
+    items: [
+      { to: "/connect", label: "AI Connect", icon: Terminal, minRole: "viewer" },
+      { to: "/api", label: "API & White Label", icon: Code2, minRole: "viewer" },
+      { to: "/faq", label: "FAQ", icon: MessageSquare, minRole: "viewer" },
+    ],
+  },
+  {
+    title: "Legal",
+    items: [
+      { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck, minRole: "viewer" },
+      { to: "/terms", label: "Terms of Service", icon: ShieldCheck, minRole: "viewer" },
+      { to: "/privacy-request", label: "GDPR Request", icon: History, minRole: "viewer" },
+    ],
+  },
 ];
 
 function AdminLayout() {
@@ -118,12 +161,6 @@ function AdminLayout() {
     );
   }
 
-  const filteredNav = nav.filter((item) => {
-    if (item.legal) return true;
-    const requiredRoleIndex = roles.indexOf(item.minRole || "viewer");
-    return userRoleIndex >= requiredRoleIndex;
-  });
-
   return (
     <div className="flex min-h-screen bg-background selection:bg-primary/20 noise-overlay overflow-hidden mesh-bg transition-colors duration-500">
       {/* 2-Column Responsive Layout */}
@@ -141,24 +178,37 @@ function AdminLayout() {
           </div>
         </div>
 
-        <nav className="flex flex-col gap-1.5 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-          {filteredNav.map((item) => {
-            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+        <nav className="flex flex-col gap-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+          {navSections.map((section) => {
+            const visibleItems = section.items.filter((item) => {
+              const requiredRoleIndex = roles.indexOf(item.minRole || "viewer");
+              return userRoleIndex >= requiredRoleIndex;
+            });
+            if (visibleItems.length === 0) return null;
             return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 relative group border-l-4",
-                  active
-                    ? "bg-black text-white shadow-lg shadow-black/20 scale-[1.02] border-primary"
-                    : "text-muted-foreground hover:bg-black/5 hover:text-black border-transparent",
-                )}
-              >
-                <item.icon className={cn("size-4.5", active ? "text-white" : "group-hover:scale-110 transition-transform")} />
-                {item.label}
-                {active && <div className="absolute right-2 size-1.5 rounded-full bg-white/50" />}
-              </Link>
+              <div key={section.title}>
+                <p className="text-[9px] uppercase tracking-widest text-muted-foreground/50 font-bold px-4 mb-1">{section.title}</p>
+                <div className="flex flex-col gap-0.5">
+                  {visibleItems.map((item) => {
+                    const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-150",
+                          active
+                            ? "bg-black text-white shadow-md shadow-black/20"
+                            : "text-muted-foreground hover:bg-black/5 hover:text-black",
+                        )}
+                      >
+                        <item.icon className={cn("size-3.5", active ? "text-white" : "group-hover:scale-110 transition-transform")} />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </nav>
@@ -215,25 +265,39 @@ function AdminLayout() {
         {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
           <div className="lg:hidden fixed inset-0 z-30 bg-background/95 backdrop-blur-lg pt-20 pb-6 px-4 flex flex-col animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar-hide">
-              {filteredNav.map((item) => {
-                const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+            <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar-hide">
+              {navSections.map((section) => {
+                const visibleItems = section.items.filter((item) => {
+                  const requiredRoleIndex = roles.indexOf(item.minRole || "viewer");
+                  return userRoleIndex >= requiredRoleIndex;
+                });
+                if (visibleItems.length === 0) return null;
                 return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      "flex items-center gap-4 rounded-2xl px-5 py-4 text-lg font-black transition-all border-2",
-                      active
-                        ? "bg-black text-white border-black shadow-xl"
-                        : "text-muted-foreground border-transparent hover:bg-black/5 active:bg-black/10"
-                    )}
-                  >
-                    <item.icon className={cn("size-6", active && "animate-pulse")} />
-                    {item.label}
-                    {active && <div className="ml-auto size-2 rounded-full bg-primary" />}
-                  </Link>
+                  <div key={section.title}>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-bold px-5 mb-1">{section.title}</p>
+                    <div className="flex flex-col gap-1">
+                      {visibleItems.map((item) => {
+                        const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+                        return (
+                          <Link
+                            key={item.to}
+                            to={item.to}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={cn(
+                              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all",
+                              active
+                                ? "bg-black text-white shadow-lg"
+                                : "text-muted-foreground hover:bg-black/5 active:bg-black/10"
+                            )}
+                          >
+                            <item.icon className={cn("size-5", active && "animate-pulse")} />
+                            {item.label}
+                            {active && <div className="ml-auto size-1.5 rounded-full bg-primary" />}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>

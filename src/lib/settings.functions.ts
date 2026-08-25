@@ -3,6 +3,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { assertAdmin } from "./admin.server";
 
+const WEAR_IMPRESSIVE_API = "https://api.v2.wearimpressive.com/api/ai/webhook";
+
+async function signPayload(body: string, secret: string): Promise<string> {
+  const { createHmac } = await import("crypto");
+  return createHmac("sha256", secret).update(body).digest("hex");
+}
+
 export const getSyncCredentials = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -96,7 +103,50 @@ export const updateMetaCredentials = createServerFn({ method: "POST" })
       .from("agent_settings")
       .update(updateData)
       .eq("id", 1);
-      
+
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const testWearImpressiveConnection = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({ action: z.enum(["catalog", "stock", "store_info"]).optional(), productId: z.number().optional() }).parse(d)
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
+      .from("agent_settings")
+      .select("sync_token, sync_secret")
+      .eq("id", 1)
+      .maybeSingle();
+
+    const token = settings?.sync_token;
+    const secret = settings?.sync_secret;
+    if (!token || !secret) {
+      return { ok: false, error: "Sync credentials not configured." };
+    }
+
+    const action = data.action || "store_info";
+    const payload: Record<string, any> = { action, per_page: 3 };
+    if (data.productId) payload["product_id"] = data.productId;
+    const body = JSON.stringify(payload);
+    const sig = await signPayload(body, secret);
+
+    try {
+      const res = await fetch(WEAR_IMPRESSIVE_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-AI-Signature": `sha256=${sig}`,
+        },
+        body,
+      });
+      const json = await res.json();
+      return { ok: json.success, data: json.data, error: json.message };
+    } catch (e: any) {
+      return { ok: false, error: e.message || "Connection failed" };
+    }
   });

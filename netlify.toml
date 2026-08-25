@@ -1,14 +1,13 @@
 [build]
-  command = "bun run build"
-  publish = "dist/client"
+  command = "npm run build"
+  publish = ".netlify"
 
 [build.environment]
   NODE_VERSION = "20"
-  BUN_VERSION = "latest"
   AWS_LAMBDA_JS_RUNTIME = "nodejs20.x"
 
 [context.deploy-preview]
-  command = "bun run build"
+  command = "npm run build"
 
 [[redirects]]
   from = "/*"
@@ -16,7 +15,7 @@
   status = 200
 
 [functions]
-  directory = "dist/server"
+  directory = ".netlify/functions-internal"
 
 [[headers]]
   for = "/*"
