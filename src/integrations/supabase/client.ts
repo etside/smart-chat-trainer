@@ -43,7 +43,7 @@ const auth = {
       if (token) {
         try {
           const fns = await loadFns();
-          const result = await fns.serverGetSession({ data: { token } });
+          const result: any = await fns.serverGetSession({ data: { token } });
           if (result.data?.session) {
             _currentSession = result.data.session as { user: AuthUser; session: AuthSession };
             return { data: { session: _currentSession }, error: null };
@@ -59,7 +59,7 @@ const auth = {
   async signInWithPassword({ email, password }: { email: string; password: string }) {
     try {
       const fns = await loadFns();
-      const result = await fns.serverSignIn({ data: { email, password } });
+      const result: any = await fns.serverSignIn({ data: { email, password } });
       if (result.error) return { data: { user: null, session: null }, error: result.error };
 
       _currentSession = result.data as { user: AuthUser; session: AuthSession };
@@ -79,7 +79,7 @@ const auth = {
   async signUp({ email, password }: { email: string; password: string }) {
     try {
       const fns = await loadFns();
-      const result = await fns.serverSignUp({ data: { email, password } });
+      const result: any = await fns.serverSignUp({ data: { email, password } });
       if (result.error) return { data: { user: null, session: null }, error: result.error };
 
       _currentSession = result.data as { user: AuthUser; session: AuthSession };
