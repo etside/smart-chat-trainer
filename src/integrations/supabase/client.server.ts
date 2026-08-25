@@ -19,7 +19,7 @@ const serverAuth = {
   },
   admin: {
     async createUser(email: string, password: string, metadata?: Record<string, unknown>) {
-      return pgAuthClient.admin.createUser({ email, password, data: metadata });
+      return pgAuthClient.admin.createUser({ email, password, ...(metadata ? { data: metadata } : {}) });
     },
   },
   getSession: async () => ({ data: { session: null } }),

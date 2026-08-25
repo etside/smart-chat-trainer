@@ -1,15 +1,21 @@
-// Self-hosted Supabase-compatible client using direct PostgreSQL
-// Drop-in replacement for @supabase/supabase-js
-import { createClient, type SupabaseCompat } from './pg-client';
-import { pgAuthClient, type AuthUser, type AuthSession } from './pg-auth';
-
-// ─── localStorage auth adapter (client-side only) ───
+// Self-hosted Supabase-compatible client for BROWSER
+// Uses TanStack Start server functions to talk to PostgreSQL — no direct DB in browser
+import type { AuthUser, AuthSession } from './pg-auth';
 
 const AUTH_TOKEN_KEY = 'daddyai_auth_token';
 
 function getClientStorage() {
   if (typeof window === 'undefined') return null;
   return localStorage;
+}
+
+// ─── Lazy-loaded server functions ───
+
+let _fns: typeof import('@/lib/auth.functions') | null = null;
+
+async function loadFns() {
+  if (!_fns) _fns = await import('@/lib/auth.functions');
+  return _fns;
 }
 
 // ─── Session management ───
@@ -35,14 +41,14 @@ const auth = {
     if (storage) {
       const token = storage.getItem(AUTH_TOKEN_KEY);
       if (token) {
-        const { data } = await pgAuthClient.getUser(token);
-        if (data.user) {
-          _currentSession = {
-            user: data.user,
-            session: { id: '', user_id: data.user.id, token, access_token: token, refresh_token: '', expires_at: '' },
-          };
-          return { data: { session: _currentSession }, error: null };
-        }
+        try {
+          const fns = await loadFns();
+          const result = await fns.serverGetSession({ data: { token } });
+          if (result.data?.session) {
+            _currentSession = result.data.session as { user: AuthUser; session: AuthSession };
+            return { data: { session: _currentSession }, error: null };
+          }
+        } catch {}
         storage.removeItem(AUTH_TOKEN_KEY);
       }
     }
@@ -51,40 +57,53 @@ const auth = {
   },
 
   async signInWithPassword({ email, password }: { email: string; password: string }) {
-    const result = await pgAuthClient.signInWithPassword({ email, password });
-    if (result.error) return { data: { user: null, session: null }, error: result.error };
+    try {
+      const fns = await loadFns();
+      const result = await fns.serverSignIn({ data: { email, password } });
+      if (result.error) return { data: { user: null, session: null }, error: result.error };
 
-    _currentSession = result.data as { user: AuthUser; session: AuthSession };
+      _currentSession = result.data as { user: AuthUser; session: AuthSession };
 
-    const storage = getClientStorage();
-    if (storage && result.data.session) {
-      storage.setItem(AUTH_TOKEN_KEY, result.data.session.token);
+      const storage = getClientStorage();
+      if (storage && result.data.session) {
+        storage.setItem(AUTH_TOKEN_KEY, result.data.session.access_token ?? result.data.session.token ?? '');
+      }
+
+      notifyAuthListeners('SIGNED_IN', _currentSession);
+      return { data: result.data, error: null };
+    } catch (err) {
+      return { data: { user: null, session: null }, error: { message: (err as Error).message, code: 'AUTH_ERROR' } };
     }
-
-    notifyAuthListeners('SIGNED_IN', _currentSession);
-    return { data: result.data, error: null };
   },
 
   async signUp({ email, password }: { email: string; password: string }) {
-    const result = await pgAuthClient.signUp({ email, password });
-    if (result.error) return { data: { user: null, session: null }, error: result.error };
+    try {
+      const fns = await loadFns();
+      const result = await fns.serverSignUp({ data: { email, password } });
+      if (result.error) return { data: { user: null, session: null }, error: result.error };
 
-    _currentSession = result.data as { user: AuthUser; session: AuthSession };
+      _currentSession = result.data as { user: AuthUser; session: AuthSession };
 
-    const storage = getClientStorage();
-    if (storage && result.data.session) {
-      storage.setItem(AUTH_TOKEN_KEY, result.data.session.token);
+      const storage = getClientStorage();
+      if (storage && result.data.session) {
+        storage.setItem(AUTH_TOKEN_KEY, result.data.session.access_token ?? result.data.session.token ?? '');
+      }
+
+      notifyAuthListeners('SIGNED_IN', _currentSession);
+      return { data: result.data, error: null };
+    } catch (err) {
+      return { data: { user: null, session: null }, error: { message: (err as Error).message, code: 'AUTH_ERROR' } };
     }
-
-    notifyAuthListeners('SIGNED_IN', _currentSession);
-    return { data: result.data, error: null };
   },
 
   async signOut() {
     const storage = getClientStorage();
     const token = storage?.getItem(AUTH_TOKEN_KEY);
     if (token) {
-      await pgAuthClient.signOut(token);
+      try {
+        const fns = await loadFns();
+        await fns.serverSignOut({ data: { token } });
+      } catch {}
       storage.removeItem(AUTH_TOKEN_KEY);
     }
     _currentSession = null;
@@ -93,6 +112,12 @@ const auth = {
   },
 
   async getUser(token: string) {
+    if (typeof window !== 'undefined') {
+      // Browser: use cached session
+      return { data: { user: _currentSession?.user ?? null }, error: null };
+    }
+    // Server: direct call
+    const { pgAuthClient } = await import('./pg-auth');
     return pgAuthClient.getUser(token);
   },
 
@@ -100,7 +125,11 @@ const auth = {
     if (!_currentSession) {
       return { data: { user: null }, error: { message: 'Not authenticated', code: 'AUTH_NO_SESSION' } };
     }
-    return pgAuthClient.updateUser(_currentSession.session.access_token, updates);
+    const { pgAuthClient } = await import('./pg-auth');
+    return pgAuthClient.updateUser(
+      _currentSession.session.access_token ?? _currentSession.session.token ?? '',
+      updates,
+    );
   },
 
   onAuthStateChange(callback: (event: string, session: { user: AuthUser; session: AuthSession } | null) => void) {
@@ -118,6 +147,7 @@ const auth = {
 
   admin: {
     async createUser(email: string, password: string, metadata?: Record<string, unknown>) {
+      const { pgAuthClient } = await import('./pg-auth');
       return pgAuthClient.admin.createUser({ email, password, data: metadata });
     },
   },
@@ -125,11 +155,21 @@ const auth = {
 
 // ─── Main client ───
 
-const db = createClient();
+function throwClientQueryError(): never {
+  throw new Error(
+    '[DaddyAI] Direct DB queries are not available in the browser. Use createServerFn() instead.',
+  );
+}
 
-const supabaseClient: SupabaseCompat & { auth: typeof auth } = {
-  from: db.from.bind(db),
-  rpc: db.rpc.bind(db),
+export interface SupabaseCompat {
+  from: (table: string) => never;
+  rpc: (name: string, params?: Record<string, unknown>) => Promise<never>;
+  auth: typeof auth;
+}
+
+const supabaseClient: SupabaseCompat = {
+  from: throwClientQueryError,
+  rpc: throwClientQueryError,
   auth,
 };
 
