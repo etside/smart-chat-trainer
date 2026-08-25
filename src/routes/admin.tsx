@@ -22,6 +22,7 @@ import {
   BarChart3,
   ShieldCheck,
   MessageSquare,
+  BookOpen,
   Menu,
   X,
   Wand2,
@@ -108,6 +109,7 @@ const navSections: NavSection[] = [
       { to: "/admin/settings/mimo", label: "AI / MiMo", icon: Sparkles, minRole: "admin" },
       { to: "/admin/api-keys", label: "API Keys", icon: KeyRound, minRole: "admin" },
       { to: "/admin/connections", label: "Connections", icon: KeyRound, minRole: "admin" },
+      { to: "/admin/tutorials", label: "Tutorials", icon: BookOpen, minRole: "viewer" },
     ],
   },
   {

@@ -40,6 +40,7 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSkillBuilderRouteImport } from './routes/admin.skill-builder'
 import { Route as AdminSyncRouteImport } from './routes/admin.sync'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
+import { Route as AdminTutorialsRouteImport } from './routes/admin.tutorials'
 import { Route as AdminUsageRouteImport } from './routes/admin.usage'
 import { Route as AdminWebhookDlqRouteImport } from './routes/admin.webhook-dlq'
 import { Route as AdminWebhookTestRouteImport } from './routes/admin.webhook-test'
@@ -206,6 +207,11 @@ const AdminTrainingRoute = AdminTrainingRouteImport.update({
   path: '/training',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminTutorialsRoute = AdminTutorialsRouteImport.update({
+  id: '/tutorials',
+  path: '/tutorials',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminUsageRoute = AdminUsageRouteImport.update({
   id: '/usage',
   path: '/usage',
@@ -288,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/usage': typeof AdminUsageRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
@@ -330,6 +337,7 @@ export interface FileRoutesByTo {
   '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/usage': typeof AdminUsageRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
   '/admin/training': typeof AdminTrainingRoute
+  '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/usage': typeof AdminUsageRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
@@ -419,6 +428,7 @@ export interface FileRouteTypes {
     | '/admin/skill-builder'
     | '/admin/sync'
     | '/admin/training'
+    | '/admin/tutorials'
     | '/admin/usage'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
@@ -461,6 +471,7 @@ export interface FileRouteTypes {
     | '/admin/skill-builder'
     | '/admin/sync'
     | '/admin/training'
+    | '/admin/tutorials'
     | '/admin/usage'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
@@ -504,6 +515,7 @@ export interface FileRouteTypes {
     | '/admin/skill-builder'
     | '/admin/sync'
     | '/admin/training'
+    | '/admin/tutorials'
     | '/admin/usage'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
@@ -750,6 +762,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTrainingRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/tutorials': {
+      id: '/admin/tutorials'
+      path: '/tutorials'
+      fullPath: '/admin/tutorials'
+      preLoaderRoute: typeof AdminTutorialsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/usage': {
       id: '/admin/usage'
       path: '/usage'
@@ -855,6 +874,7 @@ interface AdminRouteChildren {
   AdminSkillBuilderRoute: typeof AdminSkillBuilderRoute
   AdminSyncRoute: typeof AdminSyncRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
+  AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminUsageRoute: typeof AdminUsageRoute
   AdminWebhookDlqRoute: typeof AdminWebhookDlqRoute
   AdminWebhookTestRoute: typeof AdminWebhookTestRoute
@@ -881,6 +901,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSkillBuilderRoute: AdminSkillBuilderRoute,
   AdminSyncRoute: AdminSyncRoute,
   AdminTrainingRoute: AdminTrainingRoute,
+  AdminTutorialsRoute: AdminTutorialsRoute,
   AdminUsageRoute: AdminUsageRoute,
   AdminWebhookDlqRoute: AdminWebhookDlqRoute,
   AdminWebhookTestRoute: AdminWebhookTestRoute,
