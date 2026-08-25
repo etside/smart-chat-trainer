@@ -16,9 +16,9 @@
  *
  *   const { data, error } = await supabase.rpc('my_function', { param: 'val' })
  */
-import * as pg from 'pg';
+import pg from 'pg';
 
-const { Pool } = pg;
+const { Pool } = pg as typeof pg & { Pool: typeof pg.Pool };
 
 // ---------------------------------------------------------------------------
 // Connection pool
