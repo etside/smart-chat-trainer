@@ -52,13 +52,18 @@ jobs:
             git pull origin main
             export BUN_INSTALL=/root/.bun
             export PATH=$BUN_INSTALL/bin:$PATH
-            bun install
+            # Use npm for build (bun may have issues with TanStack Start SSR bundling)
+            npm install
             # Ensure swap is available for build (1GB VPS needs swap)
             if [ ! -f /swapfile ]; then
               fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
               echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
             fi
-            NITRO_PRESET=node-server bun run build
+            NITRO_PRESET=node-server npm run build
+            echo "=== Build output check ==="
+            ls -la .output/server/index.mjs 2>/dev/null || echo "No .output/server"
+            ls -la .output/public/ 2>/dev/null || echo "No .output/public"
+            grep -l "compliance\|cookies\|tutorials" .output/server/*.mjs 2>/dev/null || echo "Routes NOT found in server bundle"
             pm2 delete daddyai 2>/dev/null || true
             pm2 start ecosystem.config.cjs
             pm2 save
