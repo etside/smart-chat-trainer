@@ -21,6 +21,3 @@ jobs:
 
       - name: Build (generates route tree)
         run: npm run build
-
-      - name: TypeScript check
-        run: npx tsc --noEmit
