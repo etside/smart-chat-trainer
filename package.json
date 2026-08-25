@@ -73,6 +73,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.62.1",
+    "@tanstack/router-cli": "^1.167.33",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.16.5",
