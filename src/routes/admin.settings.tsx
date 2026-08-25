@@ -368,12 +368,15 @@ function SettingsPage() {
         </div>
       </div>
 
-      <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl mb-8 border-primary/20">
+      <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl mb-8 border-red-500/30 ring-1 ring-red-500/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <KeyRound className="size-6 text-primary" />
+            <div className="size-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <KeyRound className="size-6 text-red-500" />
+            </div>
             <div>
               <h2 className="text-lg font-bold">সিঙ্ক ক্রেডেনশিয়াল রোটেশন (Secret Rotation)</h2>
+              <p className="text-[10px] text-red-400 mt-1 font-semibold">⚠ Warning: This action invalidates old tokens.</p>
               <p className="text-xs text-muted-foreground italic">নিরাপত্তার জন্য নিয়মিত Webhook Secret এবং API Token পরিবর্তন করুন।</p>
             </div>
           </div>
@@ -391,11 +394,12 @@ function SettingsPage() {
                   await rollbackSyncMutation.mutateAsync(old);
                 }
               }}
-            >
+ className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300" >
               রোলব্যাক (Rollback)
             </Button>
             <Button 
               size="sm"
+              className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/20"
               onClick={async () => {
                 if (confirm("ক্রেডেনশিয়াল রোটেশন করলে পুরাতন টোকেনগুলো আর কাজ করবে না। চালিয়ে যেতে চান?")) {
                   const res = await rotateSyncMutation.mutateAsync();
