@@ -5,7 +5,7 @@
 
 -- Extensions
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
-CREATE EXTENSION IF NOT EXISTS vector;
+-- CREATE EXTENSION IF NOT EXISTS vector; -- Requires pgvector installation
 
 -- =============================================================================
 -- SCHEMA: auth (local replacement for Supabase auth)
@@ -82,7 +82,7 @@ CREATE TABLE public.training_pairs (
     source text NOT NULL DEFAULT 'import',
     status text NOT NULL DEFAULT 'approved' CHECK (status IN ('approved', 'pending', 'rejected')),
     conversation_id uuid REFERENCES public.conversations(id) ON DELETE SET NULL,
-    embedding vector(1536),
+    embedding jsonb,
     labels text[] DEFAULT '{}',
     language text DEFAULT 'bn',
     created_at timestamptz NOT NULL DEFAULT now(),
@@ -457,29 +457,21 @@ LANGUAGE sql STABLE AS $$
     LIMIT LEAST(COALESCE(_limit, 8), 25)
 $$;
 
--- search_training_pairs_semantic: vector similarity search using pgvector
-CREATE OR REPLACE FUNCTION search_training_pairs_semantic(
-    _embedding vector(1536),
-    _limit int DEFAULT 8
-)
-RETURNS TABLE (
-    question text,
-    answer text,
-    score real,
-    id uuid
-)
-LANGUAGE sql STABLE AS $$
-    SELECT
-        tp.question,
-        tp.answer,
-        1 - (tp.embedding <=> _embedding) AS score,
-        tp.id
-    FROM training_pairs tp
-    WHERE tp.status = 'approved'
-        AND tp.embedding IS NOT NULL
-    ORDER BY tp.embedding <=> _embedding
-    LIMIT _limit;
-$$;
+-- search_training_pairs_semantic: vector similarity search (requires pgvector extension)
+-- Install pgvector first: -- CREATE EXTENSION IF NOT EXISTS vector; -- Requires pgvector installation
+-- Then uncomment and change embedding column type to vector(1536)
+-- CREATE OR REPLACE FUNCTION search_training_pairs_semantic(
+--     _embedding vector(1536),
+--     _limit int DEFAULT 8
+-- )
+-- RETURNS TABLE (question text, answer text, score real, id uuid)
+-- LANGUAGE sql STABLE AS $$
+--     SELECT tp.question, tp.answer,
+--            1 - (tp.embedding <=> _embedding) AS score, tp.id
+--     FROM training_pairs tp
+--     WHERE tp.status = 'approved' AND tp.embedding IS NOT NULL
+--     ORDER BY tp.embedding <=> _embedding LIMIT _limit;
+-- $$;
 
 -- log_audit: insert an audit log entry
 CREATE OR REPLACE FUNCTION public.log_audit(
