@@ -33,8 +33,8 @@
  *     expires_at TIMESTAMPTZ NOT NULL
  *   );
  */
-import * as jwt from 'jsonwebtoken';
-import * as bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import { pool } from './pg-client';
 
