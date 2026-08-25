@@ -58,7 +58,7 @@ jobs:
             bun install
             NITRO_PRESET=node-server bun run build
             pm2 delete daddyai 2>/dev/null || true
-            pm2 start ecosystem.config.js
+            pm2 start ecosystem.config.cjs
             pm2 save
             systemctl restart nginx 2>/dev/null || true
 
