@@ -57,7 +57,9 @@ const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
 
     // Serve static assets from dist/client
-    if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/favicon')) {
+    const pathname = url.pathname;
+    const ext = extname(pathname);
+    if (pathname.startsWith('/assets/') || ext in MIME_TYPES) {
       const served = await serveStaticFile(url.pathname, res);
       if (served) return;
     }
