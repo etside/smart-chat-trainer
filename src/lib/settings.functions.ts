@@ -61,7 +61,7 @@ export const getMetaCredentials = createServerFn({ method: "GET" })
       .select("meta_app_id, meta_app_secret, meta_access_token, meta_page_id, meta_whatsapp_business_account_id, meta_webhook_verify_token, meta_api_version")
       .eq("id", 1)
       .maybeSingle();
-    
+
     return {
       appId: data?.meta_app_id || "",
       appSecret: data?.meta_app_secret ? "••••••••" : "",
@@ -70,6 +70,22 @@ export const getMetaCredentials = createServerFn({ method: "GET" })
       whatsappId: data?.meta_whatsapp_business_account_id || "",
       verifyToken: data?.meta_webhook_verify_token || "",
       apiVersion: data?.meta_api_version || "v19.0"
+    };
+  });
+
+/** Public subset — no auth, for __root.tsx Meta SDK init */
+export const getMetaCredentialsPublic = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("agent_settings")
+      .select("meta_app_id, meta_api_version")
+      .eq("id", 1)
+      .maybeSingle();
+
+    return {
+      appId: data?.meta_app_id || "",
+      apiVersion: (data as any)?.meta_api_version || "v19.0"
     };
   });
 

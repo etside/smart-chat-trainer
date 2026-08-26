@@ -72,10 +72,10 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
               });
             }
           } else if (!signature && !request.headers.get("x-secret")) {
-            // No signature and no secret configured - allow if coming from internal
+            // No HMAC and no x-secret — require Bearer auth
             const authHeader = request.headers.get("authorization");
             const cronSecret = settings?.sync_secret || process.env["CRON_SECRET"];
-            if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+            if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
               return new Response(JSON.stringify({ error: "Unauthorized" }), {
                 status: 401,
                 headers: { "Content-Type": "application/json" },

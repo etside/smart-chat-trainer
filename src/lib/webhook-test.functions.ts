@@ -46,7 +46,7 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
     const { data: conv } = await supabaseAdmin
       .from("conversations")
       .insert({
-        platform: "webhook_test",
+        source: "webhook_test",
         external_id: data.sender,
       } as any)
       .select()

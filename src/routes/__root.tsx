@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode, useState } from "react";
-import { getMetaCredentials } from "../lib/settings.functions";
+import { getMetaCredentials, getMetaCredentialsPublic } from "../lib/settings.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { getExtraSettings } from "../lib/extra-settings.functions";
 import { useQuery } from "@tanstack/react-query";
@@ -142,7 +142,7 @@ function RootComponent() {
 }
 
 function InnerRoot() {
-  const fetchMetaCreds = useServerFn(getMetaCredentials);
+  const fetchMetaCreds = useServerFn(getMetaCredentialsPublic);
   const fetchExtra = useServerFn(getExtraSettings);
   
   const { data: extra } = useQuery({ 

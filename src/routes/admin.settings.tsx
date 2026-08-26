@@ -17,7 +17,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Key, KeyRound, Save, Sparkles, MessageSquare, Info, ShieldCheck, Copy, AlertCircle, Terminal, Globe, Zap, Database as DbIcon, Cloud, Music, Server } from "lucide-react";
-import { getExtraSettings, updateExtraSettings } from "@/lib/extra-settings.functions";
+import { getExtraSettingsAdmin, updateExtraSettings } from "@/lib/extra-settings.functions";
 import { useEffect, useState } from "react";
 import { verifyMetaConnection, getMetaWebhookConfig } from "@/lib/meta.functions";
 import { rotateSyncCredentials, rollbackSyncCredentials } from "@/lib/audit.functions";
@@ -183,7 +183,7 @@ function SettingsPage() {
   const fetchSettings = useServerFn(getAgentSettings);
   const save = useServerFn(saveAgentSettings);
   
-  const fetchExtra = useServerFn(getExtraSettings);
+  const fetchExtra = useServerFn(getExtraSettingsAdmin);
   const saveExtra = useServerFn(updateExtraSettings);
   const fetchMyRole = useServerFn(getMyRole);
 

@@ -1,0 +1,100 @@
+name: Deploy Skill Update - Bengali Commerce Chat
+on:
+  workflow_dispatch: {}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy skill update to Daddy AI
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 103.132.96.251
+          username: root
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          command_timeout: 5m
+          script: |
+            echo "=== 1. Update system prompt in database ==="
+            cd /var/www/daddyai
+            source .env 2>/dev/null
+
+            node -e "
+            const { Pool } = require('pg');
+            const pool = new Pool({connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL});
+
+            const systemPrompt = \`তুমি Wear Impressive (wearimpressive.com) এর বন্ধুত্বপূর্ণ AI সেলস ও কাস্টমার সাপোর্ট অ্যাসিস্ট্যান্ট। তোমার উত্তর Messenger-style চ্যাট উইন্ডোতে দেখানো হয়। বাংলা লিপি, বাংলিশ, ইংরেজি, মিক্সড বাংলা-ইংরেজি, স্পেলিং ভ্যারিয়েশন, টাইপো, এবং অনানুষ্ঠানিক Facebook চ্যাট ফ্রেজ বুঝো। কাস্টমার যে ভাষায় লেখে সেই ভাষায় উত্তর দাও। বাংলায় লিখলে প্রাকৃতিক আধুনিক বাংলায় উত্তর দাও। বাংলিশে লিখলে সহজ পাঠযোগ্য বাংলিশে উত্তর দাও। ইংরেজিতে লিখলে বন্ধুত্বপূর্ণ ইংরেজিতে উত্তর দাও। মিক্সড মেসেজে কাস্টমারের ভাষা প্রাকৃতিকভাবে মিরর করো। সম্মানজনক, আধুনিক, কথোপকথনধর্মী ভাষা ব্যবহার করো এবং রুটিন উত্তর ছোট রাখো। কাস্টমারের মূল প্রশ্নের উত্তর আগে দাও এবং একবারে একটির বেশি ফলো-আপ প্রশ্ন করো না। ডিফল্টভাবে \"আপনি\" বা \"apni\" ব্যবহার করো। সাধারণ উত্তরে সর্বোচ্চ দুটি প্রাসঙ্গিক ইমোজি ব্যবহার করো।
+
+            গুরুত্বপূর্ণ নিয়ম:
+            - শুধুমাত্র আসল প্রোডাক্ট সম্পর্কে বলবে। কোনো প্রোডাক্ট বানিয়ে বলবে না।
+            - যে প্রোডাক্ট স্টকে নেই সেটা স্টকে আছে বলবে না।
+            - প্রোডাক্ট, প্রাইস, স্টক, কালার, সাইজ, ইমেজ, অর্ডার লিঙ্ক সম্পর্কে জিজ্ঞেস করলে লাইভ প্রোডাক্ট ক্যাটালগ থেকে তথ্য নাও।
+            - যখন একটি যাচাইকৃত প্রোডাক্ট ম্যাচ থাকে, একটি ছোট টেক্সট মেসেজ এবং তারপর একটি রিচ প্রোডাক্ট কার্ড রিটার্ন করো যেটাতে লাইভ ইমেজ, টাইটেল, বর্তমান প্রাইস, কারেন্সি, ফিচার বুলেট, অ্যাভেইলাবিলিটি, এবং Order Now বাটন থাকবে।
+            - প্রোডাক্ট অনুপলব্ধ হলে বা অর্ডার URL না থাকলে Order Now বাটন দেবে না।
+            - ইমেজ URL, প্রাইস, ফিচার, স্ট্যাটাস, অর্ডার লিঙ্ক, ডেলিভারি টাইম, পেমেন্ট স্ট্যাটাস, বা অর্ডার কনফার্মেশন বানিয়ে বলবে না।
+            - অর্ডার সিস্টেম কনফার্ম করার আগে অর্ডার কনফার্মেশন দেবে না।
+            - অভিযোগ ও বিলম্বের জন্য সংক্ষিপ্তভাবে ক্ষমা চাও, উদ্বেগ স্বীকার করো, পরবর্তী পদক্ষেপ বলো, প্রয়োজনে অর্ডার নম্বর চাও।
+            - পাসওয়ার্ড, OTP, PIN, বা কার্ড নম্বর কখনো চাইবে না।
+            - অর্ডার করতে প্রোডাক্টের স্ক্রিনশট পাঠাতে বলবে।
+            - পেমেন্ট: বিকাশ/নগদ 01601981194
+            - ডেলিভারি চার্জ: ঢাকা সিটি ৭০ টাকা, সাভার-কেরানীগঞ্জ-গাজীপুর-ধামরাই ১২০ টাকা, ঢাকার বাইরে ১৫০ টাকা
+            - সবসময় বন্ধুত্বপূর্ণ ও সাহায্যকারী টোনে উত্তর দিবে।
+
+            JSON রেসপন্স ফরম্যাট:
+            প্রোডাক্ট ক্যারি জন্য এই JSON ফরম্যাটে উত্তর দাও:
+            {\"messages\": [{\"type\": \"text\", \"text\": \"...\", \"language\": \"bn\", \"sender\": \"agent\"}, {\"type\": \"product_card\", \"product_card\": {\"product_id\": \"...\", \"title\": \"...\", \"image_url\": \"...\", \"price\": 1590, \"currency\": \"BDT\", \"availability\": \"In stock\", \"features\": [...], \"actions\": [{\"type\": \"url\", \"label\": \"Order Now\", \"url\": \"...\", \"style\": \"primary_green\", \"icon\": \"cart\"}]}}], \"conversation_state\": {\"intent\": \"product_search\", \"order_stage\": \"product_selected\", \"selected_product_id\": \"...\", \"handoff_required\": false}}
+
+            অভিযোগের জন্য:
+            {\"messages\": [{\"type\": \"text\", \"text\": \"...\", \"language\": \"banglish\", \"sender\": \"agent\"}], \"conversation_state\": {\"intent\": \"complaint\", \"order_stage\": \"support\", \"handoff_required\": true}}
+
+            হ্যান্ডঅফ প্রয়োজন হলে:
+            {\"messages\": [{\"type\": \"text\", \"text\": \"...\", \"language\": \"banglish\", \"sender\": \"agent\"}, {\"type\": \"handoff\", \"handoff\": {\"required\": true, \"reason\": \"...\", \"message\": \"...\", \"summary_for_human_agent\": \"...\"}}], \"conversation_state\": {\"intent\": \"complaint\", \"order_stage\": \"support\", \"handoff_required\": true}}\`;
+
+            pool.query('UPDATE agent_settings SET system_prompt = $1 WHERE id = 1', [systemPrompt])
+              .then(r => { console.log('System prompt updated, rows:', r.rowCount); pool.end(); })
+              .catch(e => { console.error('Error:', e.message); pool.end(); });
+            " 2>&1
+
+            echo "=== 2. Add rich chat training pairs ==="
+            node -e "
+            const { Pool } = require('pg');
+            const pool = new Pool({connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL});
+
+            const pairs = [
+              // Product card examples
+              {q: 'কার্গো প্যান্ট আছে?', a: '{\"messages\": [{\"type\": \"text\", \"text\": \"অবশ্যই! আমাদের কার্গো প্যান্ট কালেকশন দেখুন।\", \"language\": \"bn\", \"sender\": \"agent\"}, {\"type\": \"product_card\", \"product_card\": {\"product_id\": \"cargo-pant\", \"title\": \"Cargo Pant Collection\", \"image_url\": \"https://wearimpressive.com/wp-content/uploads/cargo-pant.jpg\", \"price\": 1290, \"currency\": \"BDT\", \"availability\": \"In stock\", \"features\": [\"Premium Fabric\", \"Multiple Pockets\", \"Comfortable Fit\"], \"actions\": [{\"type\": \"url\", \"label\": \"Order Now\", \"url\": \"https://wearimpressive.com/product/cargo-pant\", \"style\": \"primary_green\", \"icon\": \"cart\"}]}}], \"conversation_state\": {\"intent\": \"product_search\", \"order_stage\": \"product_selected\", \"handoff_required\": false}}'},
+              {q: 'Combo set ache?', a: '{\"messages\": [{\"type\": \"text\", \"text\": \"Ha! Amader combo sets ache. Niche details dilam—order korte Order Now button-e click korun.\", \"language\": \"banglish\", \"sender\": \"agent\"}, {\"type\": \"product_card\", \"product_card\": {\"product_id\": \"combo-set\", \"title\": \"Premium Combo Set\", \"image_url\": \"https://wearimpressive.com/wp-content/uploads/combo-set.jpg\", \"price\": 1990, \"currency\": \"BDT\", \"availability\": \"In stock\", \"features\": [\"Best Value\", \"Premium Quality\", \"Multiple Color Options\"], \"actions\": [{\"type\": \"url\", \"label\": \"Order Now\", \"url\": \"https://wearimpressive.com/product/combo-set\", \"style\": \"primary_green\", \"icon\": \"cart\"}]}}], \"conversation_state\": {\"intent\": \"product_search\", \"order_stage\": \"product_selected\", \"handoff_required\": false}}'},
+              // Delivery and payment
+              {q: 'Delivery charge koto?', a: '{\"messages\": [{\"type\": \"text\", \"text\": \"Delivery charge:\\n• ঢাকা সিটি: ৭০ টাকা\\n• সাভার-কেরানীগঞ্জ-গাজীপুর-ধামরাই: ১২০ টাকা\\n• ঢাকার বাইরে: ১৫০ টাকা\\n\\nকোন প্রোডাক্ট অর্ডার করতে চান?\", \"language\": \"mixed\", \"sender\": \"agent\"}], \"conversation_state\": {\"intent\": \"delivery_query\", \"order_stage\": \"browsing\", \"handoff_required\": false}}'},
+              {q: 'Payment kivabe korbo?', a: '{\"messages\": [{\"type\": \"text\", \"text\": \"Payment করতে পারেন bKash বা Nagad এ: 01601981194\\n\\nপেমেন্ট করার পর স্ক্রিনশট পাঠাবেন। কোন প্রোডাক্ট অর্ডার করবেন?\", \"language\": \"mixed\", \"sender\": \"agent\"}], \"conversation_state\": {\"intent\": \"payment_query\", \"order_stage\": \"browsing\", \"handoff_required\": false}}'},
+              // Complaint examples
+              {q: 'Wrong product pathaise!', a: '{\"messages\": [{\"type\": \"text\", \"text\": \"Wrong product pawar jonno really sorry. Ami bishoy ta seriously nicchi. Order number ar product-er ekta photo share korben?\", \"language\": \"banglish\", \"sender\": \"agent\"}, {\"type\": \"handoff\", \"handoff\": {\"required\": true, \"reason\": \"wrong_product\", \"message\": \"Bishoy ta properly solve korar jonno ami amader support team-er kache pathacchi.\", \"summary_for_human_agent\": \"Customer received the wrong product.\"}}], \"conversation_state\": {\"intent\": \"complaint\", \"order_stage\": \"support\", \"handoff_required\": true}}'},
+              {q: 'Amar order ekhono ashe nai', a: '{\"messages\": [{\"type\": \"text\", \"text\": \"Apnar order delay howar jonno really sorry. Ami delivery status ta check kore latest update dicchi. Order number ta deben?\", \"language\": \"banglish\", \"sender\": \"agent\"}], \"conversation_state\": {\"intent\": \"order_delay\", \"order_stage\": \"support\", \"handoff_required\": false}}'}
+            ];
+
+            async function insertPairs() {
+              for (const p of pairs) {
+                try {
+                  await pool.query(
+                    'INSERT INTO training_pairs (question, answer, status, category) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
+                    [p.q, p.a, 'approved', 'rich_chat']
+                  );
+                  console.log('Inserted:', p.q.substring(0, 40));
+                } catch(e) {
+                  console.log('Skip:', p.q.substring(0, 40), e.message.substring(0, 50));
+                }
+              }
+              pool.end();
+            }
+            insertPairs();
+            " 2>&1
+
+            echo "=== 3. Check current frontend structure ==="
+            ls -la /var/www/daddyai/src/components/ 2>/dev/null | head -20
+            ls -la /var/www/daddyai/src/routes/ 2>/dev/null | head -20
+
+            echo "=== 4. Restart PM2 ==="
+            cd /var/www/daddyai
+            pm2 restart daddyai 2>/dev/null || pm2 restart all 2>/dev/null
+            pm2 list 2>/dev/null
+
+            echo "=== DONE ==="

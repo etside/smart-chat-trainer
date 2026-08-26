@@ -3,15 +3,33 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { assertAdmin } from "./admin.server";
 
+/** Public subset — no auth required, called from __root.tsx on every page load */
 export const getExtraSettings = createServerFn({ method: "GET" })
   .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("agent_settings")
+      .select("reduce_motion")
+      .eq("id", 1)
+      .maybeSingle();
+
+    return {
+      reduceMotion: (data as any)?.reduce_motion ?? false,
+    };
+  });
+
+/** Admin-only full settings — requires auth */
+export const getExtraSettingsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
       .select("*")
       .eq("id", 1)
       .maybeSingle();
-    
+
     const row = data as any;
     return {
       reduceMotion: row?.reduce_motion ?? false,

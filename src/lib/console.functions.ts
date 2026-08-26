@@ -389,7 +389,6 @@ export const triggerTraining = createServerFn({ method: "POST" })
           .from("training_jobs")
           .update({
             status: "completed",
-            account_id: job.id, // Not using job.id as account_id usually, but let's stick to status
             finished_at: new Date().toISOString()
           } as any)
           .eq("id", job.id);

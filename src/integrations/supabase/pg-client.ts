@@ -113,6 +113,7 @@ export class QueryBuilder<TData = unknown> {
   private _rpcParams: Record<string, unknown> | null = null;
   private _countMode: 'exact' | 'planned' | null = null;
   private _headOnly = false;
+  private _upsertConflictCols: string[] | null = null;
 
   // -- Table ----------------------------------------------------------------
 
@@ -144,9 +145,10 @@ export class QueryBuilder<TData = unknown> {
     return this;
   }
 
-  upsert(body: unknown): this {
+  upsert(body: unknown, opts?: { onConflict?: string }): this {
     this._mode = 'upsert';
     this._body = body;
+    this._upsertConflictCols = opts?.onConflict?.split(',').map((c) => c.trim()) ?? null;
     return this;
   }
 
@@ -287,6 +289,16 @@ export class QueryBuilder<TData = unknown> {
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): Promise<TResult1 | TResult2> {
     return this._execute().then(onfulfilled, onrejected);
+  }
+
+  catch<TResult = never>(
+    onrejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null,
+  ): Promise<PgResult<TData> | TResult> {
+    return this._execute().catch(onrejected);
+  }
+
+  finally(onfinally?: (() => void) | null): Promise<PgResult<TData>> {
+    return this._execute().finally(onfinally);
   }
 
   // -----------------------------------------------------------------------
@@ -551,9 +563,8 @@ export class QueryBuilder<TData = unknown> {
     const cols = Array.from(colSet);
     const colStr = cols.map((c) => `"${c}"`).join(', ');
 
-    // Build conflict target from columns that likely form the PK/unique.
-    // Prefer 'id' if present; otherwise use all columns (safe for full-row upserts).
-    const conflictCols = cols.includes('id') ? ['id'] : cols;
+    // Build conflict target from onConflict option or auto-detect
+    const conflictCols = this._upsertConflictCols ?? (cols.includes('id') ? ['id'] : cols);
     const onConflict = `(${conflictCols.map((c) => `"${c}"`).join(', ')})`;
 
     // UPDATE SET all non-conflict columns
