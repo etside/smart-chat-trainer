@@ -8,8 +8,8 @@ jobs:
       - name: Deploy skill update to Daddy AI
         uses: appleboy/ssh-action@v1
         with:
-          host: 103.132.96.251
-          username: root
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           command_timeout: 5m
@@ -92,7 +92,17 @@ jobs:
             ls -la /var/www/daddyai/src/components/ 2>/dev/null | head -20
             ls -la /var/www/daddyai/src/routes/ 2>/dev/null | head -20
 
-            echo "=== 4. Restart PM2 ==="
+            echo "=== 4. Check Meta page ID and messenger access ==="
+            node -e "
+            const { Pool } = require('pg');
+            const pool = new Pool({connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL});
+            pool.query(\"SELECT id, meta_page_id, meta_access_token IS NOT NULL as has_token, meta_app_secret IS NOT NULL as has_secret, meta_webhook_verify_token, meta_whatsapp_business_account_id FROM agent_settings WHERE id = 1\").then(r => {
+              console.log('Meta Settings:', JSON.stringify(r.rows[0], null, 2));
+              pool.end();
+            }).catch(e => { console.error('Error:', e.message); pool.end(); });
+            " 2>&1
+
+            echo "=== 5. Restart PM2 ==="
             cd /var/www/daddyai
             pm2 restart daddyai 2>/dev/null || pm2 restart all 2>/dev/null
             pm2 list 2>/dev/null
