@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Puter auth capture</title></head>
+<body style="font-family: monospace; background:#111; color:#0f0; padding:20px;">
+<h3>Puter token capture</h3>
+<pre id="out">starting…</pre>
+<script src="https://js.puter.com/v2/"></script>
+<script>
+const out = document.getElementById('out');
+const log = (m) => { out.textContent += "\n" + m; console.log(m); };
+(async () => {
+  try {
+    log('calling puter.auth.signIn({attempt_temp_user_creation:true})…');
+    const res = await puter.auth.signIn({ attempt_temp_user_creation: true });
+    log('SIGNIN RESULT: ' + JSON.stringify(res));
+    if (res && res.token) {
+      log('TOKEN_START' + res.token + 'TOKEN_END');
+      const u = await puter.auth.getUser().catch(e => ({ err: String(e) }));
+      log('USER: ' + JSON.stringify(u));
+    }
+  } catch (e) {
+    log('ERR: ' + (e && (e.message || JSON.stringify(e))));
+    log('error_code: ' + (e && (e.error_code || e.code)));
+  }
+})();
+</script>
+</body>
+</html>

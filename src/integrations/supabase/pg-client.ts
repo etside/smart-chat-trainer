@@ -74,6 +74,10 @@ function fromPgError(err: unknown): PgError {
 export interface PgResult<T = unknown> {
   data: T;
   error: PgError | null;
+  /** Total row count from COUNT(*) queries (set by _shapeResult when present). */
+  count?: number;
+  /** Raw rows array (set by _shapeResult for select/insert/update/delete). */
+  rows?: unknown[];
 }
 
 // ---------------------------------------------------------------------------
@@ -114,6 +118,7 @@ export class QueryBuilder<TData = unknown> {
   private _countMode: 'exact' | 'planned' | null = null;
   private _headOnly = false;
   private _upsertConflictCols: string[] | null = null;
+  private _upsertIgnoreDuplicates = false;
 
   // -- Table ----------------------------------------------------------------
 
@@ -126,7 +131,13 @@ export class QueryBuilder<TData = unknown> {
   // -- Mutating operations --------------------------------------------------
 
   select(columns = '*', opts?: { count?: 'exact' | 'planned' | 'estimated'; head?: boolean }): this {
-    this._mode = 'select';
+    // Only switch to select mode for read queries. When chained after
+    // insert/update/upsert/delete, `.select()` in supabase-js merely requests
+    // the RETURNING representation — it must NOT turn the mutation into a
+    // plain SELECT (mutations already RETURNING * below).
+    if (this._mode === 'select' || this._mode === 'rpc') {
+      this._mode = 'select';
+    }
     this._columns = columns;
     if (opts?.count === 'exact') this._countMode = 'exact';
     if (opts?.head) this._headOnly = true;
@@ -145,10 +156,11 @@ export class QueryBuilder<TData = unknown> {
     return this;
   }
 
-  upsert(body: unknown, opts?: { onConflict?: string }): this {
+  upsert(body: unknown, opts?: { onConflict?: string; ignoreDuplicates?: boolean }): this {
     this._mode = 'upsert';
     this._body = body;
     this._upsertConflictCols = opts?.onConflict?.split(',').map((c) => c.trim()) ?? null;
+    this._upsertIgnoreDuplicates = opts?.ignoreDuplicates ?? false;
     return this;
   }
 
@@ -213,6 +225,17 @@ export class QueryBuilder<TData = unknown> {
     return this;
   }
 
+  /** Supabase-compatible alias for `IN` filter (`in_` is reserved in TS). */
+  in(col: string, vals: unknown[]): this {
+    return this.in_(col, vals);
+  }
+
+  /** Supabase-compatible `contains` filter (array @> or JSONB containment). */
+  contains(col: string, val: unknown): this {
+    this._filters.push({ col, op: '@>', val });
+    return this;
+  }
+
   is(col: string, val: null): this {
     this._filters.push({ col, op: 'IS', val });
     return this;
@@ -272,14 +295,23 @@ export class QueryBuilder<TData = unknown> {
 
   // -- Terminal shaping ------------------------------------------------------
 
-  single(): Promise<PgResult<TData>> {
+  /**
+   * Fetch a single row. When `TData` is the default array-of-rows type, the
+   * result data is typed as one row (runtime returns `rows[0]`).
+   */
+  single(): Promise<PgResult<TData extends Row[] ? Row : TData>> {
     this._single = true;
-    return this._execute();
+    return this._execute() as Promise<PgResult<TData extends Row[] ? Row : TData>>;
   }
 
-  maybeSingle(): Promise<PgResult<TData>> {
+  /**
+   * Fetch a single row or null. When `TData` is the default array-of-rows
+   * type, the result data is typed as one row or null (runtime returns
+   * `rows[0] ?? null`).
+   */
+  maybeSingle(): Promise<PgResult<TData extends Row[] ? Row | null : TData>> {
     this._maybeSingle = true;
-    return this._execute();
+    return this._execute() as Promise<PgResult<TData extends Row[] ? Row | null : TData>>;
   }
 
   // -- Thenable so `await builder` works -------------------------------------
@@ -586,7 +618,9 @@ export class QueryBuilder<TData = unknown> {
       placeholders.push(`(${rowPlaceholders.join(', ')})`);
     }
 
-    const doClause = updateCols.length > 0 ? `DO UPDATE SET ${updateSet}` : `DO ${updateSet}`;
+    const doClause = this._upsertIgnoreDuplicates
+      ? 'DO NOTHING'
+      : updateCols.length > 0 ? `DO UPDATE SET ${updateSet}` : `DO ${updateSet}`;
     const sql = `INSERT INTO "${this._table}" (${colStr}) VALUES ${placeholders.join(', ')} ON CONFLICT ${onConflict} ${doClause} RETURNING *`;
     const { rows } = await pool.query(sql, allVals);
     return this._shapeResult(rows as TData[]);
@@ -625,14 +659,18 @@ export class QueryBuilder<TData = unknown> {
 
 export interface SupabaseCompat {
   /** Start a query on a table: `supabase.from('my_table').select('*')` */
-  from<TData = Record<string, unknown>>(table: string): QueryBuilder<TData>;
+  from<TData = Row[]>(table: string): QueryBuilder<TData>;
   /** Call a Postgres function: `supabase.rpc('my_fn', { arg: val })` */
   rpc<TData = unknown>(fn: string, params?: Record<string, unknown>): Promise<PgResult<TData>>;
 }
 
+/** Permissive database row: any property, so untyped selects behave as arrays of objects. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Row = Record<string, any>;
+
 export function createClient(): SupabaseCompat {
   return {
-    from<TData = Record<string, unknown>>(table: string): QueryBuilder<TData> {
+    from<TData = Row[]>(table: string): QueryBuilder<TData> {
       return new QueryBuilder<TData>().from(table);
     },
     rpc<TData = unknown>(

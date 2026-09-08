@@ -390,9 +390,11 @@ export type Database = {
           last_message_at: string | null
           message_count: number | null
           metadata: Json | null
+          priority_score: number | null
           started_at: string | null
           status: string | null
           summary: string | null
+          vip_flag: boolean | null
         }
         Insert: {
           assigned_agent?: string | null
@@ -405,9 +407,11 @@ export type Database = {
           last_message_at?: string | null
           message_count?: number | null
           metadata?: Json | null
+          priority_score?: number | null
           started_at?: string | null
           status?: string | null
           summary?: string | null
+          vip_flag?: boolean | null
         }
         Update: {
           assigned_agent?: string | null
@@ -420,9 +424,11 @@ export type Database = {
           last_message_at?: string | null
           message_count?: number | null
           metadata?: Json | null
+          priority_score?: number | null
           started_at?: string | null
           status?: string | null
           summary?: string | null
+          vip_flag?: boolean | null
         }
         Relationships: []
       }

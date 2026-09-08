@@ -1,11 +1,11 @@
 /**
- * Daddy AI Sales Agent - Sentiment Analysis, Lead Scoring & Human Diversion
+ * Daddy AI Sales Agent v2 - Sentiment Analysis, Lead Scoring & Smart Escalation
  *
- * Handles:
- * - Real-time sentiment analysis per message
- * - Lead qualification scoring (0-100)
- * - Automatic human escalation when needed
- * - Concurrent conversation management (10-15 rush capacity)
+ * Improvements:
+ * - Better escalation reasons (specific, not generic)
+ * - Lead scoring signals properly persisted
+ * - AI-powered escalation detection for complex scenarios
+ * - Smart human handoff for complaints, custom orders, returns
  */
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -23,16 +23,17 @@ export type EscalationStatus = "pending" | "assigned" | "in_progress" | "resolve
 
 export interface SentimentResult {
   sentiment: Sentiment;
-  score: number; // -1.0 to 1.0
+  score: number;
   emotions: string[];
   urgency: Urgency;
 }
 
 export interface LeadScoreResult {
-  score: number; // 0-100
+  score: number;
   tier: LeadTier;
   signals: string[];
   shouldEscalate: boolean;
+  escalationReason?: string;
 }
 
 export interface SalesAgentConfig {
@@ -45,18 +46,29 @@ export interface SalesAgentConfig {
 }
 
 // ============================================================
-// Sentiment Analysis (AI-powered, no external dependency)
+// Sentiment Analysis
 // ============================================================
 
-/**
- * Analyze sentiment of a customer message using the AI model.
- * Uses a structured prompt to get consistent scoring.
- */
 export async function analyzeSentiment(
   message: string,
   conversationHistory: Array<{ role: "user" | "assistant"; content: string }> = [],
   apiKeyOverride?: string | null,
 ): Promise<SentimentResult> {
+  // Fast path: use keyword analysis first — skip AI call for obvious cases
+  // This saves ~1-2s latency and an AI call per message
+  const keywordResult = keywordSentiment(message);
+  
+  // If keyword analysis gives a clear signal (not neutral), use it directly
+  if (keywordResult.sentiment !== "neutral" || keywordResult.urgency !== "low") {
+    return keywordResult;
+  }
+  
+  // Only call AI for ambiguous/neutral messages where nuance matters
+  // And only if conversation has some depth (skip for first messages)
+  if (conversationHistory.length < 2) {
+    return keywordResult;
+  }
+
   const prompt: ChatMessage[] = [
     {
       role: "system",
@@ -64,7 +76,7 @@ export async function analyzeSentiment(
 {
   "sentiment": "very_negative" | "negative" | "neutral" | "positive" | "very_positive",
   "score": <number -1.0 to 1.0>,
-  "emotions": [<array of detected emotions like "frustrated", "interested", "urgent", "confused", "satisfied", "angry", "excited", "hesitant">],
+  "emotions": [<array of detected emotions>],
   "urgency": "low" | "medium" | "high" | "critical"
 }
 
@@ -72,36 +84,29 @@ Scoring guide:
 - -1.0 to -0.6: very_negative (angry, threatening, demanding refund)
 - -0.6 to -0.2: negative (frustrated, dissatisfied, complaining)
 - -0.2 to 0.2: neutral (general inquiry, browsing)
-- 0.2 to 0.6: positive (interested, asking follow-ups, considering purchase)
-- 0.6 to 1.0: very_positive (ready to buy, excited, confirming order)
+- 0.2 to 0.6: positive (interested, asking follow-ups)
+- 0.6 to 1.0: very_positive (ready to buy, excited)
 
 Urgency:
-- critical: explicit complaint, legal threat, refund demand, stock-out frustration
-- high: price negotiation, purchase intent, time-sensitive request
+- critical: explicit complaint, legal threat, refund demand, "I want to return", "this is broken"
+- high: price negotiation, purchase intent, "I want to order", "how to pay"
 - medium: product inquiry, comparison question
 - low: casual browsing, general question
 
-Context: This is a clothing/fashion e-commerce store in Bangladesh. Messages may be in Bengali, English, or Banglish.`,
+Context: Bangladeshi clothing/fashion e-commerce. Messages in Bengali, English, or Banglish.`,
     },
     ...conversationHistory.slice(-6).map((h) => ({
       role: h.role as "user" | "assistant",
       content: h.content,
     })),
-    {
-      role: "user",
-      content: `Analyze this customer message: "${message}"`,
-    },
+    { role: "user", content: `Analyze: "${message}"` },
   ];
 
   try {
-    const response = await chatComplete(prompt, "mimo-v2.5", apiKeyOverride);
+    const response = await chatComplete(prompt, undefined, apiKeyOverride);
     const text = typeof response === "string" ? response : "";
-
-    // Extract JSON from response (handle markdown code blocks)
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return getDefaultSentiment();
-    }
+    if (!jsonMatch) return keywordSentiment(message);
 
     const parsed = JSON.parse(jsonMatch[0]);
     return {
@@ -112,22 +117,18 @@ Context: This is a clothing/fashion e-commerce store in Bangladesh. Messages may
     };
   } catch (err) {
     console.error("[SalesAgent] Sentiment analysis failed:", err);
-    // Fallback: keyword-based sentiment
     return keywordSentiment(message);
   }
 }
 
-/**
- * Fast keyword-based sentiment fallback (no AI call needed).
- */
 function keywordSentiment(message: string): SentimentResult {
   const lower = message.toLowerCase();
 
-  const veryNegative = ["refund", "ফেরত", "complain", "অভিযোগ", "terrible", "awful", "ইউনিটেড", "legal", "আইনি"];
-  const negative = ["problem", "সমস্যা", "broken", "নষ্ট", "wrong", "ভুল", "slow", "ধীর", "frustrated", "angry", "রাগ"];
-  const positive = ["good", "ভালো", "like", "পছন্দ", "interested", "আগ্রহী", "nice", "wonderful", "thank", "ধন্যবাদ"];
-  const veryPositive = ["buy", "কিনব", "order", "অর্ডার", "confirm", "নিশ্চিত", "payment", "বিকাশ", "nagad", "rocket"];
-  const urgent = ["urgent", "জরুরি", "asap", "immediately", "এখনই", "now", "এখন"];
+  const veryNegative = ["refund", "ফেরত", "complain", "অভিযোগ", "terrible", "awful", "legal", "আইনি", "return", "ফেরান", "broken", "নষ্ট", "damaged"];
+  const negative = ["problem", "সমস্যা", "wrong", "ভুল", "slow", "ধীর", "frustrated", "angry", "রাগ", "disappointed"];
+  const positive = ["good", "ভালো", "like", "পছন্দ", "interested", "আগ্রহী", "nice", "thank", "ধন্যবাদ"];
+  const veryPositive = ["buy", "কিনব", "order", "অর্ডার", "confirm", "নিশ্চিত", "payment", "বিকাশ", "nagad"];
+  const urgent = ["urgent", "জরুরি", "asap", "immediately", "এখনই", "now"];
 
   let score = 0;
   let sentiment: Sentiment = "neutral";
@@ -143,6 +144,7 @@ function keywordSentiment(message: string): SentimentResult {
     score = -0.8;
     sentiment = "very_negative";
     emotions.push("frustrated");
+    if (urgency === "low") urgency = "high";
   } else if (negative.some((w) => lower.includes(w))) {
     score = -0.4;
     sentiment = "negative";
@@ -162,13 +164,9 @@ function keywordSentiment(message: string): SentimentResult {
 }
 
 // ============================================================
-// Lead Scoring
+// Lead Scoring (improved with signal persistence)
 // ============================================================
 
-/**
- * Calculate lead qualification score based on conversation signals.
- * Score 0-100, higher = more likely to convert.
- */
 export async function calculateLeadScore(
   conversationId: string | null,
   sessionId: string | null,
@@ -179,45 +177,46 @@ export async function calculateLeadScore(
 ): Promise<LeadScoreResult> {
   const signals: string[] = [];
   let score = 0;
+  let escalationReason: string | undefined;
 
   // 1. Sentiment contribution (0-25 points)
   const sentimentScore = Math.round(((sentimentResult.score + 1) / 2) * 25);
   score += sentimentScore;
   if (sentimentResult.score > 0.3) signals.push("positive_sentiment");
   if (sentimentResult.score > 0.6) signals.push("very_positive_sentiment");
+  if (sentimentResult.score < -0.3) signals.push("negative_sentiment");
+  if (sentimentResult.score < -0.6) signals.push("very_negative_sentiment");
 
   // 2. Purchase intent signals (0-30 points)
   const purchaseKeywords = [
     "কিনব", "buy", "order", "অর্ডার", "payment", "নাম্বার", "দিন",
-    "bKash", "Nagad", "Rocket", "card", "checkout", "cart", "টাকা", "price",
-    "কত", "how much", "delivery", "ডেলিভারি", "ship", "কতদিন",
+    "bKash", "Nagad", "Rocket", "card", "checkout", "cart", "টাকা",
+    "কত", "how much", "delivery", "ডেলিভারি", "ship", "confirm",
   ];
   const lowerMsg = currentMessage.toLowerCase();
   const purchaseMatches = purchaseKeywords.filter((k) => lowerMsg.includes(k.toLowerCase()));
   if (purchaseMatches.length > 0) {
     score += Math.min(30, purchaseMatches.length * 10);
-    signals.push(`purchase_intent: ${purchaseMatches.join(",")}`);
+    signals.push(`purchase_intent: ${purchaseMatches.join(", ")}`);
   }
 
   // 3. Conversation depth (0-20 points)
   const msgCount = conversationHistory.length;
-  if (msgCount >= 2) score += 5;
-  if (msgCount >= 4) score += 5;
-  if (msgCount >= 6) score += 5;
-  if (msgCount >= 10) score += 5;
-  if (msgCount >= 2) signals.push("multi_turn_conversation");
-  if (msgCount >= 6) signals.push("deep_engagement");
+  if (msgCount >= 2) { score += 5; signals.push("multi_turn"); }
+  if (msgCount >= 4) { score += 5; signals.push("engaged"); }
+  if (msgCount >= 6) { score += 5; signals.push("deep_engagement"); }
+  if (msgCount >= 10) { score += 5; signals.push("highly_engaged"); }
 
   // 4. Product-specific inquiry (0-15 points)
-  const productKeywords = ["স্টক", "stock", "আছে", "available", "size", "সাইজ", "color", "রং", "variant", "ফিচার", "detail"];
+  const productKeywords = ["স্টক", "stock", "আছে", "available", "size", "সাইজ", "color", "রং", "variant"];
   const productMatches = productKeywords.filter((k) => lowerMsg.includes(k.toLowerCase()));
   if (productMatches.length > 0) {
     score += Math.min(15, productMatches.length * 5);
-    signals.push(`product_interest: ${productMatches.join(",")}`);
+    signals.push(`product_interest: ${productMatches.join(", ")}`);
   }
 
-  // 5. Price sensitivity (0-10 points) - high when discussing price = engaged
-  const priceKeywords = ["দাম", "price", "discount", "ছাড়", "offer", "প্রমোশন", "সেল", "sale"];
+  // 5. Price engagement (0-10 points)
+  const priceKeywords = ["দাম", "price", "discount", "ছাড়", "offer", "সেল", "sale"];
   const priceMatches = priceKeywords.filter((k) => lowerMsg.includes(k.toLowerCase()));
   if (priceMatches.length > 0) {
     score += Math.min(10, priceMatches.length * 5);
@@ -230,14 +229,13 @@ export async function calculateLeadScore(
 
   // Clamp to 0-100
   score = Math.min(100, Math.max(0, score));
-
-  // Determine tier
   const tier = scoreToTier(score);
 
-  // Check escalation need
-  const shouldEscalate = checkEscalationNeed(score, sentimentResult, conversationHistory);
+  // 7. Smart escalation detection
+  const { shouldEscalate, reason } = checkEscalationNeed(score, sentimentResult, conversationHistory, currentMessage);
+  if (reason) escalationReason = reason;
 
-  return { score, tier, signals, shouldEscalate };
+  return { score, tier, signals, shouldEscalate, escalationReason };
 }
 
 function scoreToTier(score: number): LeadTier {
@@ -251,34 +249,78 @@ function checkEscalationNeed(
   score: number,
   sentiment: SentimentResult,
   history: Array<{ role: "user" | "assistant"; content: string }>,
-): boolean {
-  // Escalate on very negative sentiment
-  if (sentiment.sentiment === "very_negative") return true;
+  currentMessage: string,
+): { shouldEscalate: boolean; reason?: string } {
+  const lower = currentMessage.toLowerCase();
 
-  // Escalate on critical urgency
-  if (sentiment.urgency === "critical") return true;
+  // Complaint detection
+  const complaintKeywords = ["complaint", "অভিযোগ", "refund", "ফেরত", "return", "ফেরান", "broken", "নষ্ট", "damaged", "defective", "ত্রুটি"];
+  if (complaintKeywords.some(k => lower.includes(k))) {
+    return { shouldEscalate: true, reason: "Customer complaint detected — needs human attention" };
+  }
 
-  // Escalate on high score (hot lead needs human)
-  if (score >= 75) return true;
+  // Return/refund request
+  const returnKeywords = ["return", "ফেরত দিতে", "refund", "টাকা ফেরত", "exchange", "পরিবর্তন"];
+  if (returnKeywords.some(k => lower.includes(k))) {
+    return { shouldEscalate: true, reason: "Return/refund request — requires human processing" };
+  }
 
-  // Escalate if repeated negative messages
+  // Custom order request
+  const customKeywords = ["custom", "কাস্টম", "bespoke", "নিজের ডিজাইন", "made to order", "সেলাই", "stitching", "alteration"];
+  if (customKeywords.some(k => lower.includes(k))) {
+    return { shouldEscalate: true, reason: "Custom order request — needs human consultation" };
+  }
+
+  // Bulk/wholesale inquiry
+  const bulkKeywords = ["bulk", "বাল্ক", "wholesale", "পাইকারি", "একসাথে অনেক", "reseller", "ব্যবসায়ী"];
+  if (bulkKeywords.some(k => lower.includes(k))) {
+    return { shouldEscalate: true, reason: "Bulk/wholesale inquiry — needs sales team" };
+  }
+
+  // Payment issue
+  const paymentKeywords = ["payment failed", "পেমেন্ট হয়নি", "bKash problem", "নগদ সমস্যা", "double charged", "দুইবার টাকা"];
+  if (paymentKeywords.some(k => lower.includes(k))) {
+    return { shouldEscalate: true, reason: "Payment issue reported — needs immediate attention" };
+  }
+
+  // Delivery complaint
+  const deliveryKeywords = ["late delivery", "ডেলিভারি দেরি", "not received", "পাইনি", "wrong item", "ভুল পণ্য", "missing item"];
+  if (deliveryKeywords.some(k => lower.includes(k))) {
+    return { shouldEscalate: true, reason: "Delivery issue reported — needs logistics team" };
+  }
+
+  // Very negative sentiment
+  if (sentiment.sentiment === "very_negative") {
+    return { shouldEscalate: true, reason: "Customer frustrated — needs empathetic human response" };
+  }
+
+  // Critical urgency
+  if (sentiment.urgency === "critical") {
+    return { shouldEscalate: true, reason: "Critical urgency detected — time-sensitive issue" };
+  }
+
+  // High-value lead (score >= 75)
+  if (score >= 75) {
+    return { shouldEscalate: true, reason: `High-value lead (score: ${score}) — ready to convert` };
+  }
+
+  // Repeated negative messages
   const recentUserMsgs = history.slice(-4).filter((h) => h.role === "user");
-  const negativeCount = recentUserMsgs.filter((_, i) => {
-    const lower = recentUserMsgs[i]?.content.toLowerCase() || "";
-    return ["problem", "সমস্যা", "wrong", "ভুল", "bad", "নষ্ট", "refund", "ফেরত"].some((w) => lower.includes(w));
+  const negativeCount = recentUserMsgs.filter((h) => {
+    const msg = h.content.toLowerCase();
+    return ["problem", "সমস্যা", "wrong", "ভুল", "bad", "নষ্ট", "refund", "ফেরত"].some((w) => msg.includes(w));
   }).length;
-  if (negativeCount >= 2) return true;
+  if (negativeCount >= 2) {
+    return { shouldEscalate: true, reason: "Multiple negative messages — customer needs human support" };
+  }
 
-  return false;
+  return { shouldEscalate: false };
 }
 
 // ============================================================
-// Human Diversion / Escalation
+// Human Escalation
 // ============================================================
 
-/**
- * Create an escalation entry and notify webhook if configured.
- */
 export async function escalateToHuman(params: {
   conversationId: string | null;
   sessionId: string | null;
@@ -305,7 +347,6 @@ export async function escalateToHuman(params: {
     .select("id")
     .single();
 
-  // Update session escalation status
   if (params.sessionId) {
     await supabaseAdmin
       .from("conversation_sessions")
@@ -356,7 +397,6 @@ export async function escalateToHuman(params: {
     },
   }).catch(console.error);
 
-  // Get takeover message
   const { data: agentSettings } = await supabaseAdmin
     .from("agent_settings")
     .select("human_takeover_message")
@@ -370,12 +410,9 @@ export async function escalateToHuman(params: {
 }
 
 // ============================================================
-// Concurrent Conversation Manager
+// Concurrency Manager
 // ============================================================
 
-/**
- * Check if we can accept a new conversation.
- */
 export async function canAcceptConversation(): Promise<{
   allowed: boolean;
   currentLoad: number;
@@ -388,8 +425,6 @@ export async function canAcceptConversation(): Promise<{
     .maybeSingle();
 
   const maxConcurrent = settings?.max_concurrent_conversations ?? 15;
-
-  // Count active conversations in last 5 minutes
   const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
   const { count } = await supabaseAdmin
     .from("usage_logs")
@@ -397,16 +432,11 @@ export async function canAcceptConversation(): Promise<{
     .eq("action", "ai_message")
     .gt("created_at", fiveMinAgo);
 
-  const currentLoad = count ?? 0;
-  return {
-    allowed: currentLoad < maxConcurrent,
-    currentLoad,
-    maxConcurrent,
-  };
+  return { allowed: (count ?? 0) < maxConcurrent, currentLoad: count ?? 0, maxConcurrent };
 }
 
 // ============================================================
-// Main: Process Message Through Sales Pipeline
+// Main Pipeline
 // ============================================================
 
 export interface SalesPipelineResult {
@@ -417,9 +447,6 @@ export interface SalesPipelineResult {
   escalationMessage?: string;
 }
 
-/**
- * Full sales pipeline: sentiment -> lead score -> escalation check -> reply.
- */
 export async function processSalesMessage(params: {
   message: string;
   conversationId: string | null;
@@ -449,7 +476,7 @@ export async function processSalesMessage(params: {
   // 1. Analyze sentiment
   const sentiment = await analyzeSentiment(message, history, apiKeyOverride);
 
-  // 2. Calculate lead score
+  // 2. Calculate lead score with signals
   const leadScore = await calculateLeadScore(
     conversationId, sessionId, externalId, message, sentiment, history,
   );
@@ -466,8 +493,8 @@ export async function processSalesMessage(params: {
     urgency: sentiment.urgency,
   }).catch(console.error);
 
-  // 4. Update lead score
-  if (conversationId || sessionId) {
+  // 4. Update lead score with proper signal persistence
+  if (sessionId || conversationId) {
     const updateData: Record<string, unknown> = {
       score: leadScore.score,
       tier: leadScore.tier,
@@ -476,43 +503,46 @@ export async function processSalesMessage(params: {
       updated_at: new Date().toISOString(),
     };
 
-    // Upsert lead score
-    const existingQuery = conversationId
-      ? { conversation_id: conversationId }
-      : { session_id: sessionId };
-
-    const { data: existing } = await supabaseAdmin
-      .from("lead_scores")
-      .select("id")
-      .eq(conversationId ? "conversation_id" : "session_id", conversationId || sessionId)
-      .maybeSingle();
-
-    if (existing) {
-      await supabaseAdmin
+    // Find existing lead score by session_id (primary) or conversation_id
+    let existingId: string | null = null;
+    if (sessionId) {
+      const { data } = await supabaseAdmin
         .from("lead_scores")
-        .update(updateData)
-        .eq("id", existing.id);
+        .select("id")
+        .eq("session_id", sessionId)
+        .maybeSingle();
+      existingId = data?.id ?? null;
+    }
+    if (!existingId && conversationId) {
+      const { data } = await supabaseAdmin
+        .from("lead_scores")
+        .select("id")
+        .eq("conversation_id", conversationId)
+        .maybeSingle();
+      existingId = data?.id ?? null;
+    }
+
+    if (existingId) {
+      await supabaseAdmin.from("lead_scores").update(updateData).eq("id", existingId);
     } else {
       await supabaseAdmin.from("lead_scores").insert({
-        ...existingQuery,
+        conversation_id: conversationId,
+        session_id: sessionId,
         external_id: externalId,
         ...updateData,
       });
     }
 
-    // Update session with latest sentiment/score
+    // Update session with latest score
     if (sessionId) {
       await supabaseAdmin
         .from("conversation_sessions")
-        .update({
-          lead_score: leadScore.score,
-          last_sentiment: sentiment.sentiment,
-        })
+        .update({ lead_score: leadScore.score, last_sentiment: sentiment.sentiment })
         .eq("id", sessionId);
     }
   }
 
-  // 5. Check escalation
+  // 5. Check escalation with specific reason
   let escalated = false;
   let escalationMessage: string | undefined;
 
@@ -520,15 +550,10 @@ export async function processSalesMessage(params: {
     const priority: EscalationPriority =
       sentiment.urgency === "critical" ? "urgent"
         : leadScore.score >= 75 ? "high"
-          : "medium";
+          : sentiment.sentiment === "very_negative" ? "high"
+            : "medium";
 
-    const reason = sentiment.sentiment === "very_negative"
-      ? "Customer frustration detected"
-      : leadScore.score >= 75
-        ? `High-value lead (score: ${leadScore.score})`
-        : sentiment.urgency === "critical"
-          ? "Urgent customer need"
-          : "Multiple negative signals";
+    const reason = leadScore.escalationReason || "General escalation — needs human review";
 
     const result = await escalateToHuman({
       conversationId, sessionId, externalId, channel,
@@ -539,6 +564,7 @@ export async function processSalesMessage(params: {
         score: sentiment.score,
         emotions: sentiment.emotions,
         urgency: sentiment.urgency,
+        signals: leadScore.signals,
       },
     });
 
@@ -587,8 +613,4 @@ function validateUrgency(u: string): Urgency {
 function clampScore(score: number, min: number, max: number): number {
   if (typeof score !== "number" || isNaN(score)) return 0;
   return Math.min(max, Math.max(min, score));
-}
-
-function getDefaultSentiment(): SentimentResult {
-  return { sentiment: "neutral", score: 0, emotions: [], urgency: "low" };
 }

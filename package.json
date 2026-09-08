@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && node -e \"const{symlinkSync,existsSync,unlinkSync,mkdirSync}=require('fs');['dist/server/node_modules','dist/server/assets/node_modules'].forEach(t=>{try{unlinkSync(t)}catch(e){}});symlinkSync('../../node_modules','dist/server/node_modules');symlinkSync('../../../node_modules','dist/server/assets/node_modules');console.log('symlinked node_modules into dist/server/ and dist/server/assets/')\"",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -54,6 +54,8 @@
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.31.0",
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^1.1.1",
     "pg": "^8.23.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",

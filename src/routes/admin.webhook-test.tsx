@@ -9,22 +9,114 @@ import { syncCatalog } from "@/lib/sync.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode, Copy, Download, History, Activity, ShieldCheck, PlayCircle } from "lucide-react";
-import { useState } from "react";
+import {
+  MessageSquare, Mic, Send, Terminal, Zap, RefreshCw, FileCode,
+  Copy, Download, History, Activity, ShieldCheck, PlayCircle,
+  Bot, User, CheckCircle2, AlertCircle, Loader2, Sparkles, ArrowRight
+} from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/webhook-test")({
   component: WebhookTest,
 });
 
+// ── Chat message type ────────────────────────────────────────────────────────
+type TestMessage = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: Date;
+  source?: string;
+  templateName?: string | null;
+  confidence?: number;
+  transcription?: string | null;
+};
+
+function ChatBubble({ msg }: { msg: TestMessage }) {
+  const isUser = msg.role === "user";
+  const isSystem = msg.role === "system";
+
+  if (isSystem) {
+    return (
+      <div className="flex justify-center my-2 animate-in fade-in duration-200">
+        <div className="flex items-center gap-2 bg-muted/40 border border-border/30 rounded-full px-4 py-1.5 text-[11px] text-muted-foreground">
+          {msg.source === "auto-reply template" ? (
+            <>
+              <CheckCircle2 className="size-3 text-emerald-500" />
+              <span>Template: <strong className="text-foreground">{msg.templateName}</strong></span>
+              {msg.confidence && (
+                <span className="text-[9px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-full font-bold">
+                  {Math.round(msg.confidence * 100)}% match
+                </span>
+              )}
+            </>
+          ) : msg.source === "AI generation" ? (
+            <>
+              <Sparkles className="size-3 text-primary" />
+              <span>AI generated reply</span>
+            </>
+          ) : (
+            <>
+              <AlertCircle className="size-3 text-amber-500" />
+              <span>{msg.content}</span>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn(
+      "flex gap-3 my-3 animate-in fade-in slide-in-from-bottom-2 duration-300",
+      isUser ? "justify-end" : "justify-start"
+    )}>
+      {!isUser && (
+        <div className="size-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-1">
+          <Bot className="size-4 text-primary" />
+        </div>
+      )}
+      <div className={cn(
+        "max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
+        isUser
+          ? "bg-primary text-primary-foreground rounded-br-md"
+          : "bg-muted/60 border border-border/30 rounded-bl-md"
+      )}>
+        {msg.transcription && (
+          <div className="mb-2 pb-2 border-b border-border/20 text-[11px] text-muted-foreground">
+            <Mic className="size-3 inline mr-1" /> Transcribed: {msg.transcription}
+          </div>
+        )}
+        <p className="whitespace-pre-wrap">{msg.content}</p>
+      </div>
+      {isUser && (
+        <div className="size-8 rounded-full bg-blue-500/15 flex items-center justify-center shrink-0 mt-1">
+          <User className="size-4 text-blue-500" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WebhookTest() {
   const [activeTab, setActiveTab] = useState<"text" | "voice">("text");
   const [message, setMessage] = useState("");
   const [sender, setSender] = useState("tester_123");
-  const [localLogs, setLocalLogs] = useState<any[]>([]);
+  const [messages, setMessages] = useState<TestMessage[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      content: "Welcome to the Webhook Test Panel! Type a message below to test how the AI responds. The system will first check auto-reply templates, then fall back to AI generation.",
+      timestamp: new Date(),
+    },
+  ]);
+  const [isSending, setIsSending] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
-  const [testResponse, setTestResponse] = useState<any>(null);
   const testFn = useServerFn(testWebhookPayload);
   const fetchLogs = useServerFn(getWebhookLogs);
   const triggerSync = useServerFn(syncCatalog);
@@ -36,22 +128,164 @@ function WebhookTest() {
   });
 
   const syncMutation = useMutation({
-    mutationFn: async () => {
-      return triggerSync();
-    },
+    mutationFn: async () => triggerSync(),
     onSuccess: (data: any) => {
-      setTestResponse(data);
-      toast.success(`Sync finished: ${data.message || "Operation completed"}`);
+      toast.success(`Sync finished: ${data.message || "Done"}`);
       queryClient.invalidateQueries({ queryKey: ["webhook-db-logs"] });
     },
     onError: (error: any) => {
-      setTestResponse({ error: error.message || "Failed to trigger sync" });
-      toast.error("Failed to trigger sync");
+      toast.error("Sync failed");
     },
   });
 
-  const handleTestSync = () => {
-    syncMutation.mutate();
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSendText = async () => {
+    const text = message.trim();
+    if (!text || isSending) return;
+
+    const userMsg: TestMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: text,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setMessage("");
+    setIsSending(true);
+
+    try {
+      const result = await testFn({
+        data: { type: "text", message: text, sender },
+      });
+
+      // System message about match source
+      const sysMsg: TestMessage = {
+        id: crypto.randomUUID(),
+        role: "system",
+        content: "",
+        timestamp: new Date(),
+        source: result.source,
+        templateName: result.templateName,
+        confidence: result.matchConfidence,
+      };
+      setMessages(prev => [...prev, sysMsg]);
+
+      // Assistant reply
+      const assistantMsg: TestMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: result.reply,
+        timestamp: new Date(),
+        source: result.source,
+        templateName: result.templateName,
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+
+      queryClient.invalidateQueries({ queryKey: ["webhook-db-logs"] });
+      toast.success("Test completed");
+    } catch (err: any) {
+      const errMsg: TestMessage = {
+        id: crypto.randomUUID(),
+        role: "system",
+        content: `Error: ${err.message || "Test failed"}`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errMsg]);
+      toast.error("Test failed");
+    } finally {
+      setIsSending(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleVoice = async (blob: Blob) => {
+    setIsSending(true);
+    const userMsg: TestMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: "[Voice message]",
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = async () => {
+        const result_str = reader.result as string;
+        const base64 = result_str.split(",")[1];
+        if (base64) {
+          const result = await testFn({
+            data: { type: "voice", audio: base64, mimeType: blob.type, sender },
+          });
+
+          if (result.transcription) {
+            // Update user message with transcription
+            setMessages(prev => prev.map(m =>
+              m.id === userMsg.id ? { ...m, content: result.transcription || "[Voice message]" } : m
+            ));
+          }
+
+          const sysMsg: TestMessage = {
+            id: crypto.randomUUID(),
+            role: "system",
+            content: "",
+            timestamp: new Date(),
+            source: result.source,
+            templateName: result.templateName,
+            confidence: result.matchConfidence,
+          };
+          setMessages(prev => [...prev, sysMsg]);
+
+          const assistantMsg: TestMessage = {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: result.reply,
+            timestamp: new Date(),
+            transcription: result.transcription,
+          };
+          setMessages(prev => [...prev, assistantMsg]);
+
+          queryClient.invalidateQueries({ queryKey: ["webhook-db-logs"] });
+          toast.success("Voice test completed");
+        }
+        setIsSending(false);
+      };
+    } catch (err: any) {
+      const errMsg: TestMessage = {
+        id: crypto.randomUUID(),
+        role: "system",
+        content: `Error: ${err.message}`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errMsg]);
+      setIsSending(false);
+    }
+  };
+
+  const clearChat = () => {
+    setMessages([{
+      id: "welcome",
+      role: "assistant",
+      content: "Chat cleared. Type a message to test.",
+      timestamp: new Date(),
+    }]);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied");
+  };
+
+  const handleExport = (data: any[], filename: string) => {
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
+    const link = document.createElement("a");
+    link.setAttribute("href", jsonString);
+    link.setAttribute("download", filename);
+    link.click();
   };
 
   const textPayload = JSON.stringify({
@@ -60,319 +294,179 @@ function WebhookTest() {
     sender: "user_123"
   }, null, 2);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("ক্লিপবোর্ডে কপি হয়েছে");
-  };
-
-  const handleExport = (data: any[], filename: string) => {
-    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
-      JSON.stringify(data, null, 2)
-    )}`;
-    const link = document.createElement("a");
-    link.setAttribute("href", jsonString);
-    link.setAttribute("download", filename);
-    link.click();
-  };
-
-  const mutation = useMutation({
-    mutationFn: async (payload: { type: "text" | "voice"; message?: string; audio?: string; mimeType?: string }) => {
-      return testFn({
-        data: {
-          type: payload.type,
-          message: payload.message,
-          audio: payload.audio,
-          mimeType: payload.mimeType,
-          sender,
-        },
-      });
-    },
-    onSuccess: (data) => {
-      setLocalLogs((prev) => [
-        {
-          timestamp: new Date().toLocaleTimeString(),
-          type: "success",
-          ...data,
-        },
-        ...prev,
-      ]);
-      queryClient.invalidateQueries({ queryKey: ["webhook-db-logs"] });
-      toast.success("টেস্ট সম্পন্ন হয়েছে");
-    },
-    onError: (err: any) => {
-      setLocalLogs((prev) => [
-        {
-          timestamp: new Date().toLocaleTimeString(),
-          type: "error",
-          error: err.message,
-        },
-        ...prev,
-      ]);
-      toast.error("টেস্ট ব্যর্থ হয়েছে");
-    },
-  });
-
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Terminal className="size-6 text-primary" />
-          <h1 className="text-2xl font-semibold">ওয়েবহুক টেস্ট প্যানেল</h1>
+    <div className="mx-auto max-w-6xl animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 md:mb-6">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-3">
+            <Terminal className="size-6 text-primary" />
+            Webhook Test Panel
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Test auto-reply templates and AI responses in real-time
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => handleExport(localLogs, "test_session_logs.json")}>
-             <Download className="mr-2 size-4" /> সেশন এক্সপোর্ট
+          <Button variant="outline" size="sm" onClick={() => handleExport(dbLogs || [], "webhook_logs.json")}>
+            <Download className="mr-2 size-4" /> Export Logs
           </Button>
-          <Button variant="outline" size="sm" onClick={() => handleExport(dbLogs || [], "webhook_audit_logs.json")}>
-             <History className="mr-2 size-4" /> অডিট লগ এক্সপোর্ট
+          <Button variant="outline" size="sm" onClick={clearChat}>
+            <RefreshCw className="mr-2 size-4" /> Clear
           </Button>
         </div>
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">
-        এক্সটার্নাল প্লাটফর্ম থেকে আসা ভয়েস বা টেক্সট পেলোড সিমুলেট করুন এবং AI-এর রেসপন্স যাচাই করুন।
-      </p>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
-          <div className="panel p-5">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Zap className="size-4 text-warning" /> টেস্ট পেলোড
-            </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="sender">সেন্ডার আইডি (Sender ID)</Label>
-                <Input 
-                  id="sender" 
-                  value={sender} 
-                  onChange={(e) => setSender(e.target.value)} 
-                  placeholder="customer_99"
-                  className="mt-1"
-                />
-              </div>
-
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="text" className="gap-2">
-                    <MessageSquare className="size-4" /> টেক্সট
-                  </TabsTrigger>
-                  <TabsTrigger value="voice" className="gap-2">
-                    <Mic className="size-4" /> ভয়েস
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="text" className="mt-4 space-y-4">
-                  <div>
-                    <Label htmlFor="message">মেসেজ কন্টেন্ট</Label>
-                    <Input 
-                      id="message" 
-                      value={message} 
-                      onChange={(e) => setMessage(e.target.value)} 
-                      placeholder="যেমন: আপনাদের ডেলিভারি চার্জ কত?"
-                      className="mt-1"
-                    />
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => mutation.mutate({ type: "text", message })}
-                    disabled={!message || mutation.isPending}
-                  >
-                    {mutation.isPending ? "প্রসেসিং..." : "টেস্ট টেক্সট পাঠান"} <Send className="ml-2 size-4" />
-                  </Button>
-                </TabsContent>
-
-                <TabsContent value="voice" className="mt-4">
-                  <div className="rounded-lg border bg-card p-4 text-center">
-                    <p className="text-sm text-muted-foreground mb-4">অডিও রেকর্ড করে ওয়েববহুক পেলোড হিসেবে পাঠান</p>
-                    <div className="flex justify-center">
-                      <VoiceRecorder 
-                        onText={() => {}}
-                        onAudioBlob={async (blob: Blob) => {
-                          const reader = new FileReader();
-                          reader.readAsDataURL(blob);
-                          reader.onloadend = () => {
-                            const result = reader.result as string;
-                            const base64 = result.split(",")[1];
-                            if (base64) {
-                              mutation.mutate({ type: "voice", audio: base64, mimeType: blob.type });
-                            }
-                          };
-                        }}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="panel p-5">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ShieldCheck className="size-4 text-primary" /> API Webhook টেস্টার
-            </h2>
-            <div className="space-y-4">
-              <div className="rounded-lg border bg-muted/50 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Wear Impressive API Endpoint</span>
-                  <span className="text-[10px] uppercase bg-primary/20 text-primary px-2 py-0.5 rounded font-bold">HMAC-SHA256 Secured</span>
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-3">
+        {/* ── Chat Area (main) ──────────────────────────────────────────── */}
+        <div className="lg:col-span-2 flex flex-col h-[60vh] md:h-[calc(100vh-16rem)] rounded-xl border border-border/40 bg-background/50 overflow-hidden">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 custom-scrollbar">
+            {messages.map((msg) => (
+              <ChatBubble key={msg.id} msg={msg} />
+            ))}
+            {isSending && (
+              <div className="flex gap-3 my-3 justify-start">
+                <div className="size-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-1">
+                  <Bot className="size-4 text-primary" />
                 </div>
-                <code className="text-xs break-all block p-2 bg-background rounded border">
-                  POST https://api.v2.wearimpressive.com/api/ai/webhook
-                </code>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  variant="outline"
-                  onClick={() => window.open('https://api.v2.wearimpressive.com/api/ai/webhook', '_blank')}
-                  className="gap-2"
-                >
-                  <Activity className="size-4" /> স্ট্যাটাস চেক
-                </Button>
-                <Button 
-                  onClick={handleTestSync}
-                  disabled={syncMutation.isPending}
-                  className="gap-2"
-                >
-                  {syncMutation.isPending ? (
-                    <RefreshCw className="size-4 animate-spin" />
-                  ) : (
-                    <PlayCircle className="size-4" />
-                  )}
-                  টেস্ট রান শুরু করুন
-                </Button>
-              </div>
-
-              {testResponse && (
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs uppercase tracking-wider text-muted-foreground font-bold">সার্ভার রেসপন্স</Label>
-                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${testResponse.error ? 'bg-destructive/20 text-destructive' : 'bg-green-500/20 text-green-500'}`}>
-                      {testResponse.error ? 'FAILED' : 'SUCCESS'}
-                    </span>
+                <div className="bg-muted/60 border border-border/30 rounded-2xl rounded-bl-md px-4 py-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Processing...</span>
                   </div>
-                  <pre className="p-3 bg-slate-950 text-slate-300 text-[10px] font-mono rounded-lg border border-white/5 overflow-x-auto max-h-[250px] whitespace-pre-wrap break-all">
-                    {typeof testResponse === 'object' ? JSON.stringify(testResponse, null, 2) : testResponse}
-                  </pre>
-                  {testResponse.error && (
-                    <div className="p-2 bg-destructive/10 border border-destructive/20 rounded text-[10px] text-destructive-foreground">
-                      টিপস: টোকেন বা সিক্রেট ভুল থাকলে লারাভেল ৪০১ এরর দেয়। সঠিক কি ব্যবহার করছেন নিশ্চিত করুন।
-                    </div>
-                  )}
                 </div>
-              )}
-
-              <div className="text-[10px] text-muted-foreground italic">
-                * এটি একটি রিয়েল-টাইম সাইনড পেলোড পাঠাবে এবং আপনার শপ থেকে ডাটা সিঙ্ক করার চেষ্টা করবে।
-              </div>
-            </div>
-          </div>
-
-
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Terminal className="size-4" /> আউটপুট লগ
-          </h2>
-          <div className="panel h-[500px] overflow-y-auto bg-slate-950 p-4 font-mono text-xs text-slate-300">
-            {localLogs.length === 0 ? (
-              <p className="text-slate-500 italic">এখনো কোনো টেস্ট করা হয়নি...</p>
-            ) : (
-              <div className="space-y-4">
-                {localLogs.map((log, i) => (
-                  <div key={i} className={`border-l-2 pl-3 ${log.type === 'error' ? 'border-red-500' : 'border-green-500'}`}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-slate-500">[{log.timestamp}]</span>
-                      <span className={log.type === 'error' ? 'text-red-400' : 'text-green-400'}>
-                        {log.type.toUpperCase()}
-                      </span>
-                    </div>
-                    {log.type === 'error' ? (
-                      <p className="text-red-300">{log.error}</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {log.transcription && (
-                          <div>
-                            <span className="text-primary">TRANSCRIPTION:</span> {log.transcription}
-                          </div>
-                        )}
-                        <div>
-                          <span className="text-primary">AI REPLY:</span> {log.reply}
-                        </div>
-                        {log.examplesCount !== undefined && (
-                          <div>
-                            <span className="text-primary">SOURCES:</span> {log.examplesCount} matches found
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
               </div>
             )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="border-t border-border/30 p-3 md:p-4 bg-background/50">
+            <div className="flex items-center gap-2 mb-2">
+              <Label className="text-[10px] text-muted-foreground">Sender:</Label>
+              <Input
+                value={sender}
+                onChange={(e) => setSender(e.target.value)}
+                className="h-7 w-40 text-xs"
+                placeholder="sender_id"
+              />
+            </div>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+              <TabsList className="grid w-full grid-cols-2 mb-3">
+                <TabsTrigger value="text" className="gap-2 text-xs">
+                  <MessageSquare className="size-3.5" /> Text
+                </TabsTrigger>
+                <TabsTrigger value="voice" className="gap-2 text-xs">
+                  <Mic className="size-3.5" /> Voice
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="text" className="mt-0">
+                <form onSubmit={(e) => { e.preventDefault(); handleSendText(); }} className="flex gap-2">
+                  <Input
+                    ref={inputRef}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Type a customer message... (e.g., 'দাম কত?' or 'Do you have this in blue?')"
+                    className="flex-1 h-10"
+                    disabled={isSending}
+                  />
+                  <Button type="submit" disabled={!message.trim() || isSending} className="h-10 px-4">
+                    {isSending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="voice" className="mt-0">
+                <div className="flex items-center justify-center py-2">
+                  <VoiceRecorder
+                    onText={() => {}}
+                    onAudioBlob={handleVoice}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+            <div className="flex items-center gap-4 mt-2 text-[10px] text-muted-foreground/60">
+              <span className="flex items-center gap-1"><Zap className="size-3" /> Auto-reply templates checked first</span>
+              <span className="flex items-center gap-1"><Sparkles className="size-3" /> AI fallback if no template matches</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-12 grid gap-6 lg:grid-cols-2">
-        <div className="panel p-5">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <RefreshCw className="size-4 text-primary" /> কুইক সিঙ্ক লিঙ্ক
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-             সিঙ্ক প্রগ্রেস এবং স্ট্যাটাস দেখতে নিচের বাটনে ক্লিক করুন।
-          </p>
-          <Link to="/admin/sync">
-            <Button variant="outline" className="w-full">
-              সিঙ্ক স্ট্যাটাস পেজ দেখুন <Activity className="ml-2 size-4" />
+        {/* ── Side Panel ────────────────────────────────────────────────── */}
+        <div className="space-y-6">
+          {/* Sync */}
+          <div className="panel p-5">
+            <h2 className="text-sm font-bold mb-3 flex items-center gap-2">
+              <RefreshCw className="size-4 text-primary" /> Quick Sync
+            </h2>
+            <p className="text-xs text-muted-foreground mb-3">
+              Sync product catalog from external platform.
+            </p>
+            <Button
+              onClick={() => syncMutation.mutate()}
+              disabled={syncMutation.isPending}
+              className="w-full"
+              size="sm"
+            >
+              {syncMutation.isPending ? <Loader2 className="size-4 animate-spin mr-2" /> : <PlayCircle className="size-4 mr-2" />}
+              Run Sync
             </Button>
-          </Link>
-        </div>
+          </div>
 
-        <div className="panel p-5">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <FileCode className="size-4 text-primary" /> API স্কিমা ও পেলোড
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-medium">টেক্সট পেলোড উদাহরণ (JSON POST)</span>
-                <button onClick={() => copyToClipboard(textPayload)} className="text-primary hover:underline text-[10px] flex items-center gap-1">
-                  <Copy className="size-3" /> কপি করুন
-                </button>
+          {/* API Schema */}
+          <div className="panel p-5">
+            <h2 className="text-sm font-bold mb-3 flex items-center gap-2">
+              <FileCode className="size-4 text-primary" /> API Schema
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-medium text-muted-foreground">Text Payload</span>
+                  <button onClick={() => copyToClipboard(textPayload)} className="text-primary hover:underline text-[10px] flex items-center gap-1">
+                    <Copy className="size-3" /> Copy
+                  </button>
+                </div>
+                <pre className="bg-muted text-foreground p-2 rounded text-[10px] overflow-x-auto">
+                  {textPayload}
+                </pre>
               </div>
-              <pre className="bg-slate-900 text-slate-300 p-3 rounded text-[10px] overflow-x-auto">
-                {textPayload}
-              </pre>
-            </div>
-            
-            <div className="rounded border border-primary/20 bg-primary/5 p-3">
-              <span className="text-xs font-bold text-primary block mb-2 uppercase tracking-tighter">AI Sync Webhook (Backend Integration)</span>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[10px] text-muted-foreground">Catalog Sync Payload</span>
-                <button 
-                  onClick={() => copyToClipboard(JSON.stringify({action: "catalog", per_page: 50, session: "sync_12345"}, null, 2))} 
-                  className="text-primary hover:underline text-[10px] flex items-center gap-1"
-                >
-                  <Copy className="size-3" /> কপি করুন
-                </button>
+              <div className="text-[10px] text-muted-foreground space-y-1">
+                <p><strong>Endpoint:</strong> POST /api/public/webhook</p>
+                <p><strong>Auth:</strong> x-api-key or x-webhook-signature (HMAC)</p>
+                <p><strong>Response:</strong> reply, transcription, status</p>
               </div>
-              <pre className="bg-slate-900/50 text-slate-400 p-2 rounded text-[9px] overflow-x-auto">
-                {JSON.stringify({
-                  action: "catalog",
-                  per_page: 50,
-                  session: "sync_12345"
-                }, null, 2)}
-              </pre>
             </div>
+          </div>
 
-            <div className="text-xs space-y-2">
-              <p className="font-medium">রেসপন্স স্কিমা:</p>
-              <ul className="list-disc list-inside text-muted-foreground">
-                <li><code>reply</code>: AI দ্বারা জেনারেটেড টেক্সট উত্তর।</li>
-                <li><code>transcription</code>: (শুধুমাত্র ভয়েস) অডিওর টেক্সট রূপ।</li>
-                <li><code>status</code>: 'success' অথবা 'error'।</li>
-              </ul>
+          {/* Recent Logs */}
+          <div className="panel p-5">
+            <h2 className="text-sm font-bold mb-3 flex items-center gap-2">
+              <History className="size-4 text-primary" /> Recent Logs
+            </h2>
+            <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+              {dbLogs?.slice(0, 10).map((log: any) => (
+                <div key={log.id} className="flex items-center justify-between text-[10px] p-2 rounded bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "size-1.5 rounded-full",
+                      log.processing_status === "success" ? "bg-emerald-500" :
+                      log.processing_status === "failed" ? "bg-destructive" :
+                      log.processing_status === "pending" ? "bg-amber-500" :
+                      "bg-muted-foreground"
+                    )} />
+                    <span className="text-muted-foreground truncate max-w-[120px]">
+                      {log.event_type || "message"}
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground/60">
+                    {new Date(log.created_at).toLocaleTimeString()}
+                  </span>
+                </div>
+              ))}
+              {(!dbLogs || dbLogs.length === 0) && (
+                <p className="text-[10px] text-muted-foreground italic">No logs yet</p>
+              )}
             </div>
           </div>
         </div>

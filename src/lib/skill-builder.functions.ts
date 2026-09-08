@@ -79,7 +79,7 @@ ${pairBlock}`,
 
     const response = await chatComplete(
       messages,
-      "mimo-v2.5",
+      undefined,
       (settings as any)?.lovable_api_key_override,
     );
 
@@ -153,7 +153,7 @@ ${exampleBlock}`,
 
       const response = await chatComplete(
         messages,
-        "mimo-v2.5",
+        undefined,
         settings?.lovable_api_key_override,
       );
 

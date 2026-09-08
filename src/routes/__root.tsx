@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode, useState } from "react";
+import { useEffect, type ReactNode, useState, createContext, useContext } from "react";
 import { getMetaCredentials, getMetaCredentialsPublic } from "../lib/settings.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { getExtraSettings } from "../lib/extra-settings.functions";
@@ -17,6 +17,11 @@ import { Toaster } from "../components/ui/sonner";
 import { SupportModal } from "../components/SupportModal";
 import { CookieConsent } from "../components/CookieConsent";
 import appCss from "../styles.css?url";
+
+// ── Theme context ─────────────────────────────────────────────────────────
+interface ThemeCtx { theme: "light" | "dark"; toggle: () => void }
+export const ThemeContext = createContext<ThemeCtx>({ theme: "dark", toggle: () => {} });
+export function useTheme() { return useContext(ThemeContext); }
 function reportError(error: unknown, context: Record<string, unknown> = {}) {
   if (typeof window === "undefined") return;
   console.error("[DaddyAI Error]", error, context);
@@ -86,33 +91,46 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Daddy AI Console" },
-      {
-        name: "description",
-        content: "Daddy AI-এর সেলস এজেন্ট ট্রেনিং কনসোল।",
-      },
-      { name: "author", content: "Daddy AI" },
-      { property: "og:title", content: "Daddy AI Console" },
-      {
-        property: "og:description",
-        content: "Daddy AI-এর সেলস এজেন্ট ট্রেনিং কনসোল।",
-      },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { title: "DaddyAI — AI Sales Agent for Bangladesh" },
+      { name: "description", content: "DaddyAI replies to customers 24/7 in Bangla, Banglish & English on Messenger, Instagram and WhatsApp. Auto-replies, vision AI, live inbox." },
+      { name: "author", content: "DaddyAI" },
+      { name: "application-name", content: "DaddyAI" },
+      { name: "theme-color", content: "#68f044" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "DaddyAI" },
+      { name: "msapplication-TileColor", content: "#68f044" },
+      { name: "msapplication-TileImage", content: "/icon-144x144.png" },
+      // Open Graph
+      { property: "og:title", content: "DaddyAI — AI Sales Agent for Bangladesh" },
+      { property: "og:description", content: "Auto-replies in Bangla, Banglish & English on Messenger, Instagram and WhatsApp. Vision AI, live inbox, 24/7." },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:site_name", content: "DaddyAI" },
+      // Twitter
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "DaddyAI — AI Sales Agent" },
+      { name: "twitter:description", content: "AI sales agent for Bangladeshi businesses on Messenger, Instagram & WhatsApp." },
+      { name: "twitter:image", content: "/og-image.png" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap",
-      },
-      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" },
+      // Icons
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { rel: "icon", href: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { rel: "icon", href: "/icon-192x192.png", type: "image/png", sizes: "192x192" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "apple-touch-icon", href: "/icon-152x152.png", sizes: "152x152" },
+      // PWA manifest
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   component: RootComponent,
@@ -122,22 +140,63 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+
+  // Load saved theme on mount
+  useEffect(() => {
+    const saved = typeof localStorage !== "undefined" ? localStorage.getItem("daddyai-theme") : null;
+    const preferred = saved ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    setTheme(preferred as "light" | "dark");
+  }, []);
+
+  // Apply theme class to <html>
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("daddyai-theme", theme);
+    }
+  }, [theme]);
+
+  const toggle = () => setTheme(t => t === "dark" ? "light" : "dark");
+
   return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <QueryClientProvider client={queryClient}>
-          <InnerRoot />
-          <Toaster position="top-center" richColors />
-          <SupportModal />
-          <CookieConsent />
-        </QueryClientProvider>
-        <Scripts />
-      </body>
-    </html>
+    <ThemeContext.Provider value={{ theme, toggle }}>
+      <html lang="en" className={theme}>
+        <head>
+          <HeadContent />
+          {/* Prevent flash of wrong theme */}
+          <script dangerouslySetInnerHTML={{ __html: `
+            (function(){
+              var t = localStorage.getItem('daddyai-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+              document.documentElement.className = t;
+            })();
+          ` }} />
+        </head>
+        <body>
+          <QueryClientProvider client={queryClient}>
+            <InnerRoot />
+            <Toaster position="top-center" richColors />
+            <SupportModal />
+            <CookieConsent />
+          </QueryClientProvider>
+          <Scripts />
+          <script dangerouslySetInnerHTML={{ __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                  .then(function(reg) { console.log('[SW] registered', reg.scope); })
+                  .catch(function(err) { console.warn('[SW] registration failed', err); });
+              });
+            }
+          ` }} />
+        </body>
+      </html>
+    </ThemeContext.Provider>
   );
 }
 

@@ -19,40 +19,67 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as DataDeletionRouteImport } from './routes/data-deletion'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as KnowledgeBaseRouteImport } from './routes/knowledge-base'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PrivacyRequestRouteImport } from './routes/privacy-request'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ValidateRouteImport } from './routes/validate'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAddRouteImport } from './routes/admin.add'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as AdminApiHubRouteImport } from './routes/admin.api-hub'
 import { Route as AdminApiKeysRouteImport } from './routes/admin.api-keys'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAutoRepliesRouteImport } from './routes/admin.auto-replies'
+import { Route as AdminBackupRouteImport } from './routes/admin.backup'
 import { Route as AdminCannedResponsesRouteImport } from './routes/admin.canned-responses'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
 import { Route as AdminCredentialsRouteImport } from './routes/admin.credentials'
+import { Route as AdminEscalationRouteImport } from './routes/admin.escalation'
 import { Route as AdminFlowBuilderRouteImport } from './routes/admin.flow-builder'
 import { Route as AdminInboxRouteImport } from './routes/admin.inbox'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminMcpRouteImport } from './routes/admin.mcp'
 import { Route as AdminOnboardingRouteImport } from './routes/admin.onboarding'
 import { Route as AdminPerformanceRouteImport } from './routes/admin.performance'
 import { Route as AdminPlaygroundRouteImport } from './routes/admin.playground'
 import { Route as AdminProgressRouteImport } from './routes/admin.progress'
+import { Route as AdminReadinessRouteImport } from './routes/admin.readiness'
+import { Route as AdminResponsivenessRouteImport } from './routes/admin.responsiveness'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSkillBuilderRouteImport } from './routes/admin.skill-builder'
 import { Route as AdminSyncRouteImport } from './routes/admin.sync'
+import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminTrainingRouteImport } from './routes/admin.training'
 import { Route as AdminTutorialsRouteImport } from './routes/admin.tutorials'
 import { Route as AdminUsageRouteImport } from './routes/admin.usage'
+import { Route as AdminVoiceRouteImport } from './routes/admin.voice'
 import { Route as AdminWebhookDlqRouteImport } from './routes/admin.webhook-dlq'
 import { Route as AdminWebhookTestRouteImport } from './routes/admin.webhook-test'
 import { Route as AdminSettingsMimoRouteImport } from './routes/admin.settings.mimo'
+import { Route as ApiAdminPinCheckRouteImport } from './routes/api.admin.pin-check'
+import { Route as ApiAdminTtsTestRouteImport } from './routes/api.admin.tts-test'
+import { Route as ApiCronLearnRouteImport } from './routes/api.cron.learn'
+import { Route as ApiCronTrainingPipelineRouteImport } from './routes/api.cron.training-pipeline'
+import { Route as ApiMetaCallbackRouteImport } from './routes/api.meta.callback'
+import { Route as ApiMetaOauthUrlRouteImport } from './routes/api.meta.oauth-url'
+import { Route as ApiMetaPagesRouteImport } from './routes/api.meta.pages'
 import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
+import { Route as ApiPublicFacebookMcpRouteImport } from './routes/api.public.facebook-mcp'
+import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
+import { Route as ApiPublicMetaMcpRouteImport } from './routes/api.public.meta-mcp'
+import { Route as ApiPublicValidateStreamRouteImport } from './routes/api/public/validate-stream'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api.public.webhook'
+import { Route as ApiPublicWsRouteImport } from './routes/api.public.ws'
+import { Route as ApiSaasCreateTenantRouteImport } from './routes/api.saas.create-tenant'
 import { Route as ApiPublicAiSyncStatusRouteImport } from './routes/api/public/ai-sync/status'
+import { Route as ApiPublicCronAutoTrainRouteImport } from './routes/api.public.cron.auto-train'
 import { Route as ApiPublicCronSyncRouteImport } from './routes/api.public.cron.sync'
 import { Route as ApiPublicMetaDeletionRouteImport } from './routes/api.public.meta.deletion'
+import { Route as ApiPublicWebhookStockChangeRouteImport } from './routes/api.public.webhook.stock-change'
 import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api.public.webhooks.meta'
+import { Route as ApiPublicWebhooksTelegramRouteImport } from './routes/api.public.webhooks.telegram'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -104,6 +131,11 @@ const KnowledgeBaseRoute = KnowledgeBaseRouteImport.update({
   path: '/knowledge-base',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -114,9 +146,19 @@ const PrivacyRequestRoute = PrivacyRequestRouteImport.update({
   path: '/privacy-request',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ValidateRoute = ValidateRouteImport.update({
+  id: '/validate',
+  path: '/validate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -134,6 +176,11 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminApiHubRoute = AdminApiHubRouteImport.update({
+  id: '/api-hub',
+  path: '/api-hub',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
   id: '/api-keys',
   path: '/api-keys',
@@ -147,6 +194,11 @@ const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
 const AdminAutoRepliesRoute = AdminAutoRepliesRouteImport.update({
   id: '/auto-replies',
   path: '/auto-replies',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBackupRoute = AdminBackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCannedResponsesRoute = AdminCannedResponsesRouteImport.update({
@@ -164,6 +216,11 @@ const AdminCredentialsRoute = AdminCredentialsRouteImport.update({
   path: '/credentials',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminEscalationRoute = AdminEscalationRouteImport.update({
+  id: '/escalation',
+  path: '/escalation',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminFlowBuilderRoute = AdminFlowBuilderRouteImport.update({
   id: '/flow-builder',
   path: '/flow-builder',
@@ -177,6 +234,11 @@ const AdminInboxRoute = AdminInboxRouteImport.update({
 const AdminLogsRoute = AdminLogsRouteImport.update({
   id: '/logs',
   path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMcpRoute = AdminMcpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminOnboardingRoute = AdminOnboardingRouteImport.update({
@@ -199,6 +261,16 @@ const AdminProgressRoute = AdminProgressRouteImport.update({
   path: '/progress',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminReadinessRoute = AdminReadinessRouteImport.update({
+  id: '/readiness',
+  path: '/readiness',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminResponsivenessRoute = AdminResponsivenessRouteImport.update({
+  id: '/responsiveness',
+  path: '/responsiveness',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -212,6 +284,11 @@ const AdminSkillBuilderRoute = AdminSkillBuilderRouteImport.update({
 const AdminSyncRoute = AdminSyncRouteImport.update({
   id: '/sync',
   path: '/sync',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTenantsRoute = AdminTenantsRouteImport.update({
+  id: '/tenants',
+  path: '/tenants',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminTrainingRoute = AdminTrainingRouteImport.update({
@@ -229,6 +306,11 @@ const AdminUsageRoute = AdminUsageRouteImport.update({
   path: '/usage',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminVoiceRoute = AdminVoiceRouteImport.update({
+  id: '/voice',
+  path: '/voice',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminWebhookDlqRoute = AdminWebhookDlqRouteImport.update({
   id: '/webhook-dlq',
   path: '/webhook-dlq',
@@ -244,9 +326,64 @@ const AdminSettingsMimoRoute = AdminSettingsMimoRouteImport.update({
   path: '/mimo',
   getParentRoute: () => AdminSettingsRoute,
 } as any)
+const ApiAdminPinCheckRoute = ApiAdminPinCheckRouteImport.update({
+  id: '/admin/pin-check',
+  path: '/admin/pin-check',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiAdminTtsTestRoute = ApiAdminTtsTestRouteImport.update({
+  id: '/admin/tts-test',
+  path: '/admin/tts-test',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiCronLearnRoute = ApiCronLearnRouteImport.update({
+  id: '/cron/learn',
+  path: '/cron/learn',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiCronTrainingPipelineRoute = ApiCronTrainingPipelineRouteImport.update({
+  id: '/cron/training-pipeline',
+  path: '/cron/training-pipeline',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiMetaCallbackRoute = ApiMetaCallbackRouteImport.update({
+  id: '/meta/callback',
+  path: '/meta/callback',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiMetaOauthUrlRoute = ApiMetaOauthUrlRouteImport.update({
+  id: '/meta/oauth-url',
+  path: '/meta/oauth-url',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiMetaPagesRoute = ApiMetaPagesRouteImport.update({
+  id: '/meta/pages',
+  path: '/meta/pages',
+  getParentRoute: () => ApiRoute,
+} as any)
 const ApiPublicChatRoute = ApiPublicChatRouteImport.update({
   id: '/public/chat',
   path: '/public/chat',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiPublicFacebookMcpRoute = ApiPublicFacebookMcpRouteImport.update({
+  id: '/public/facebook-mcp',
+  path: '/public/facebook-mcp',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/public/health',
+  path: '/public/health',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiPublicMetaMcpRoute = ApiPublicMetaMcpRouteImport.update({
+  id: '/public/meta-mcp',
+  path: '/public/meta-mcp',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiPublicValidateStreamRoute = ApiPublicValidateStreamRouteImport.update({
+  id: '/public/validate-stream',
+  path: '/public/validate-stream',
   getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
@@ -254,9 +391,24 @@ const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   path: '/public/webhook',
   getParentRoute: () => ApiRoute,
 } as any)
+const ApiPublicWsRoute = ApiPublicWsRouteImport.update({
+  id: '/public/ws',
+  path: '/public/ws',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiSaasCreateTenantRoute = ApiSaasCreateTenantRouteImport.update({
+  id: '/saas/create-tenant',
+  path: '/saas/create-tenant',
+  getParentRoute: () => ApiRoute,
+} as any)
 const ApiPublicAiSyncStatusRoute = ApiPublicAiSyncStatusRouteImport.update({
   id: '/public/ai-sync/status',
   path: '/public/ai-sync/status',
+  getParentRoute: () => ApiRoute,
+} as any)
+const ApiPublicCronAutoTrainRoute = ApiPublicCronAutoTrainRouteImport.update({
+  id: '/public/cron/auto-train',
+  path: '/public/cron/auto-train',
   getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicCronSyncRoute = ApiPublicCronSyncRouteImport.update({
@@ -269,11 +421,23 @@ const ApiPublicMetaDeletionRoute = ApiPublicMetaDeletionRouteImport.update({
   path: '/public/meta/deletion',
   getParentRoute: () => ApiRoute,
 } as any)
+const ApiPublicWebhookStockChangeRoute =
+  ApiPublicWebhookStockChangeRouteImport.update({
+    id: '/stock-change',
+    path: '/stock-change',
+    getParentRoute: () => ApiPublicWebhookRoute,
+  } as any)
 const ApiPublicWebhooksMetaRoute = ApiPublicWebhooksMetaRouteImport.update({
   id: '/public/webhooks/meta',
   path: '/public/webhooks/meta',
   getParentRoute: () => ApiRoute,
 } as any)
+const ApiPublicWebhooksTelegramRoute =
+  ApiPublicWebhooksTelegramRouteImport.update({
+    id: '/public/webhooks/telegram',
+    path: '/public/webhooks/telegram',
+    getParentRoute: () => ApiRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -286,40 +450,67 @@ export interface FileRoutesByFullPath {
   '/data-deletion': typeof DataDeletionRoute
   '/faq': typeof FaqRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-request': typeof PrivacyRequestRoute
+  '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/validate': typeof ValidateRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/api-hub': typeof AdminApiHubRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
+  '/admin/backup': typeof AdminBackupRoute
   '/admin/canned-responses': typeof AdminCannedResponsesRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/credentials': typeof AdminCredentialsRoute
+  '/admin/escalation': typeof AdminEscalationRoute
   '/admin/flow-builder': typeof AdminFlowBuilderRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/mcp': typeof AdminMcpRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
+  '/admin/readiness': typeof AdminReadinessRoute
+  '/admin/responsiveness': typeof AdminResponsivenessRoute
   '/admin/settings': typeof AdminSettingsRouteWithChildren
   '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
+  '/admin/tenants': typeof AdminTenantsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/usage': typeof AdminUsageRoute
+  '/admin/voice': typeof AdminVoiceRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/settings/mimo': typeof AdminSettingsMimoRoute
+  '/api/admin/pin-check': typeof ApiAdminPinCheckRoute
+  '/api/admin/tts-test': typeof ApiAdminTtsTestRoute
+  '/api/cron/learn': typeof ApiCronLearnRoute
+  '/api/cron/training-pipeline': typeof ApiCronTrainingPipelineRoute
+  '/api/meta/callback': typeof ApiMetaCallbackRoute
+  '/api/meta/oauth-url': typeof ApiMetaOauthUrlRoute
+  '/api/meta/pages': typeof ApiMetaPagesRoute
   '/api/public/chat': typeof ApiPublicChatRoute
-  '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/facebook-mcp': typeof ApiPublicFacebookMcpRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/meta-mcp': typeof ApiPublicMetaMcpRoute
+  '/api/public/validate-stream': typeof ApiPublicValidateStreamRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRouteWithChildren
+  '/api/public/ws': typeof ApiPublicWsRoute
+  '/api/saas/create-tenant': typeof ApiSaasCreateTenantRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
+  '/api/public/cron/auto-train': typeof ApiPublicCronAutoTrainRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
   '/api/public/meta/deletion': typeof ApiPublicMetaDeletionRoute
+  '/api/public/webhook/stock-change': typeof ApiPublicWebhookStockChangeRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
+  '/api/public/webhooks/telegram': typeof ApiPublicWebhooksTelegramRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -331,40 +522,67 @@ export interface FileRoutesByTo {
   '/data-deletion': typeof DataDeletionRoute
   '/faq': typeof FaqRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-request': typeof PrivacyRequestRoute
+  '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/validate': typeof ValidateRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/api-hub': typeof AdminApiHubRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
+  '/admin/backup': typeof AdminBackupRoute
   '/admin/canned-responses': typeof AdminCannedResponsesRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/credentials': typeof AdminCredentialsRoute
+  '/admin/escalation': typeof AdminEscalationRoute
   '/admin/flow-builder': typeof AdminFlowBuilderRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/mcp': typeof AdminMcpRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
+  '/admin/readiness': typeof AdminReadinessRoute
+  '/admin/responsiveness': typeof AdminResponsivenessRoute
   '/admin/settings': typeof AdminSettingsRouteWithChildren
   '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
+  '/admin/tenants': typeof AdminTenantsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/usage': typeof AdminUsageRoute
+  '/admin/voice': typeof AdminVoiceRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin': typeof AdminIndexRoute
   '/admin/settings/mimo': typeof AdminSettingsMimoRoute
+  '/api/admin/pin-check': typeof ApiAdminPinCheckRoute
+  '/api/admin/tts-test': typeof ApiAdminTtsTestRoute
+  '/api/cron/learn': typeof ApiCronLearnRoute
+  '/api/cron/training-pipeline': typeof ApiCronTrainingPipelineRoute
+  '/api/meta/callback': typeof ApiMetaCallbackRoute
+  '/api/meta/oauth-url': typeof ApiMetaOauthUrlRoute
+  '/api/meta/pages': typeof ApiMetaPagesRoute
   '/api/public/chat': typeof ApiPublicChatRoute
-  '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/facebook-mcp': typeof ApiPublicFacebookMcpRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/meta-mcp': typeof ApiPublicMetaMcpRoute
+  '/api/public/validate-stream': typeof ApiPublicValidateStreamRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRouteWithChildren
+  '/api/public/ws': typeof ApiPublicWsRoute
+  '/api/saas/create-tenant': typeof ApiSaasCreateTenantRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
+  '/api/public/cron/auto-train': typeof ApiPublicCronAutoTrainRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
   '/api/public/meta/deletion': typeof ApiPublicMetaDeletionRoute
+  '/api/public/webhook/stock-change': typeof ApiPublicWebhookStockChangeRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
+  '/api/public/webhooks/telegram': typeof ApiPublicWebhooksTelegramRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -378,40 +596,67 @@ export interface FileRoutesById {
   '/data-deletion': typeof DataDeletionRoute
   '/faq': typeof FaqRoute
   '/knowledge-base': typeof KnowledgeBaseRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-request': typeof PrivacyRequestRoute
+  '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/validate': typeof ValidateRoute
   '/admin/add': typeof AdminAddRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/api-hub': typeof AdminApiHubRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/auto-replies': typeof AdminAutoRepliesRoute
+  '/admin/backup': typeof AdminBackupRoute
   '/admin/canned-responses': typeof AdminCannedResponsesRoute
   '/admin/connections': typeof AdminConnectionsRoute
   '/admin/credentials': typeof AdminCredentialsRoute
+  '/admin/escalation': typeof AdminEscalationRoute
   '/admin/flow-builder': typeof AdminFlowBuilderRoute
   '/admin/inbox': typeof AdminInboxRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/mcp': typeof AdminMcpRoute
   '/admin/onboarding': typeof AdminOnboardingRoute
   '/admin/performance': typeof AdminPerformanceRoute
   '/admin/playground': typeof AdminPlaygroundRoute
   '/admin/progress': typeof AdminProgressRoute
+  '/admin/readiness': typeof AdminReadinessRoute
+  '/admin/responsiveness': typeof AdminResponsivenessRoute
   '/admin/settings': typeof AdminSettingsRouteWithChildren
   '/admin/skill-builder': typeof AdminSkillBuilderRoute
   '/admin/sync': typeof AdminSyncRoute
+  '/admin/tenants': typeof AdminTenantsRoute
   '/admin/training': typeof AdminTrainingRoute
   '/admin/tutorials': typeof AdminTutorialsRoute
   '/admin/usage': typeof AdminUsageRoute
+  '/admin/voice': typeof AdminVoiceRoute
   '/admin/webhook-dlq': typeof AdminWebhookDlqRoute
   '/admin/webhook-test': typeof AdminWebhookTestRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/settings/mimo': typeof AdminSettingsMimoRoute
+  '/api/admin/pin-check': typeof ApiAdminPinCheckRoute
+  '/api/admin/tts-test': typeof ApiAdminTtsTestRoute
+  '/api/cron/learn': typeof ApiCronLearnRoute
+  '/api/cron/training-pipeline': typeof ApiCronTrainingPipelineRoute
+  '/api/meta/callback': typeof ApiMetaCallbackRoute
+  '/api/meta/oauth-url': typeof ApiMetaOauthUrlRoute
+  '/api/meta/pages': typeof ApiMetaPagesRoute
   '/api/public/chat': typeof ApiPublicChatRoute
-  '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/facebook-mcp': typeof ApiPublicFacebookMcpRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/meta-mcp': typeof ApiPublicMetaMcpRoute
+  '/api/public/validate-stream': typeof ApiPublicValidateStreamRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRouteWithChildren
+  '/api/public/ws': typeof ApiPublicWsRoute
+  '/api/saas/create-tenant': typeof ApiSaasCreateTenantRoute
   '/api/public/ai-sync/status': typeof ApiPublicAiSyncStatusRoute
+  '/api/public/cron/auto-train': typeof ApiPublicCronAutoTrainRoute
   '/api/public/cron/sync': typeof ApiPublicCronSyncRoute
   '/api/public/meta/deletion': typeof ApiPublicMetaDeletionRoute
+  '/api/public/webhook/stock-change': typeof ApiPublicWebhookStockChangeRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
+  '/api/public/webhooks/telegram': typeof ApiPublicWebhooksTelegramRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -426,40 +671,67 @@ export interface FileRouteTypes {
     | '/data-deletion'
     | '/faq'
     | '/knowledge-base'
+    | '/mcp'
     | '/privacy'
     | '/privacy-request'
+    | '/signup'
     | '/terms'
+    | '/validate'
     | '/admin/add'
     | '/admin/analytics'
+    | '/admin/api-hub'
     | '/admin/api-keys'
     | '/admin/audit-logs'
     | '/admin/auto-replies'
+    | '/admin/backup'
     | '/admin/canned-responses'
     | '/admin/connections'
     | '/admin/credentials'
+    | '/admin/escalation'
     | '/admin/flow-builder'
     | '/admin/inbox'
     | '/admin/logs'
+    | '/admin/mcp'
     | '/admin/onboarding'
     | '/admin/performance'
     | '/admin/playground'
     | '/admin/progress'
+    | '/admin/readiness'
+    | '/admin/responsiveness'
     | '/admin/settings'
     | '/admin/skill-builder'
     | '/admin/sync'
+    | '/admin/tenants'
     | '/admin/training'
     | '/admin/tutorials'
     | '/admin/usage'
+    | '/admin/voice'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin/'
     | '/admin/settings/mimo'
+    | '/api/admin/pin-check'
+    | '/api/admin/tts-test'
+    | '/api/cron/learn'
+    | '/api/cron/training-pipeline'
+    | '/api/meta/callback'
+    | '/api/meta/oauth-url'
+    | '/api/meta/pages'
     | '/api/public/chat'
+    | '/api/public/facebook-mcp'
+    | '/api/public/health'
+    | '/api/public/meta-mcp'
+    | '/api/public/validate-stream'
     | '/api/public/webhook'
+    | '/api/public/ws'
+    | '/api/saas/create-tenant'
     | '/api/public/ai-sync/status'
+    | '/api/public/cron/auto-train'
     | '/api/public/cron/sync'
     | '/api/public/meta/deletion'
+    | '/api/public/webhook/stock-change'
     | '/api/public/webhooks/meta'
+    | '/api/public/webhooks/telegram'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -471,40 +743,67 @@ export interface FileRouteTypes {
     | '/data-deletion'
     | '/faq'
     | '/knowledge-base'
+    | '/mcp'
     | '/privacy'
     | '/privacy-request'
+    | '/signup'
     | '/terms'
+    | '/validate'
     | '/admin/add'
     | '/admin/analytics'
+    | '/admin/api-hub'
     | '/admin/api-keys'
     | '/admin/audit-logs'
     | '/admin/auto-replies'
+    | '/admin/backup'
     | '/admin/canned-responses'
     | '/admin/connections'
     | '/admin/credentials'
+    | '/admin/escalation'
     | '/admin/flow-builder'
     | '/admin/inbox'
     | '/admin/logs'
+    | '/admin/mcp'
     | '/admin/onboarding'
     | '/admin/performance'
     | '/admin/playground'
     | '/admin/progress'
+    | '/admin/readiness'
+    | '/admin/responsiveness'
     | '/admin/settings'
     | '/admin/skill-builder'
     | '/admin/sync'
+    | '/admin/tenants'
     | '/admin/training'
     | '/admin/tutorials'
     | '/admin/usage'
+    | '/admin/voice'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin'
     | '/admin/settings/mimo'
+    | '/api/admin/pin-check'
+    | '/api/admin/tts-test'
+    | '/api/cron/learn'
+    | '/api/cron/training-pipeline'
+    | '/api/meta/callback'
+    | '/api/meta/oauth-url'
+    | '/api/meta/pages'
     | '/api/public/chat'
+    | '/api/public/facebook-mcp'
+    | '/api/public/health'
+    | '/api/public/meta-mcp'
+    | '/api/public/validate-stream'
     | '/api/public/webhook'
+    | '/api/public/ws'
+    | '/api/saas/create-tenant'
     | '/api/public/ai-sync/status'
+    | '/api/public/cron/auto-train'
     | '/api/public/cron/sync'
     | '/api/public/meta/deletion'
+    | '/api/public/webhook/stock-change'
     | '/api/public/webhooks/meta'
+    | '/api/public/webhooks/telegram'
   id:
     | '__root__'
     | '/'
@@ -517,40 +816,67 @@ export interface FileRouteTypes {
     | '/data-deletion'
     | '/faq'
     | '/knowledge-base'
+    | '/mcp'
     | '/privacy'
     | '/privacy-request'
+    | '/signup'
     | '/terms'
+    | '/validate'
     | '/admin/add'
     | '/admin/analytics'
+    | '/admin/api-hub'
     | '/admin/api-keys'
     | '/admin/audit-logs'
     | '/admin/auto-replies'
+    | '/admin/backup'
     | '/admin/canned-responses'
     | '/admin/connections'
     | '/admin/credentials'
+    | '/admin/escalation'
     | '/admin/flow-builder'
     | '/admin/inbox'
     | '/admin/logs'
+    | '/admin/mcp'
     | '/admin/onboarding'
     | '/admin/performance'
     | '/admin/playground'
     | '/admin/progress'
+    | '/admin/readiness'
+    | '/admin/responsiveness'
     | '/admin/settings'
     | '/admin/skill-builder'
     | '/admin/sync'
+    | '/admin/tenants'
     | '/admin/training'
     | '/admin/tutorials'
     | '/admin/usage'
+    | '/admin/voice'
     | '/admin/webhook-dlq'
     | '/admin/webhook-test'
     | '/admin/'
     | '/admin/settings/mimo'
+    | '/api/admin/pin-check'
+    | '/api/admin/tts-test'
+    | '/api/cron/learn'
+    | '/api/cron/training-pipeline'
+    | '/api/meta/callback'
+    | '/api/meta/oauth-url'
+    | '/api/meta/pages'
     | '/api/public/chat'
+    | '/api/public/facebook-mcp'
+    | '/api/public/health'
+    | '/api/public/meta-mcp'
+    | '/api/public/validate-stream'
     | '/api/public/webhook'
+    | '/api/public/ws'
+    | '/api/saas/create-tenant'
     | '/api/public/ai-sync/status'
+    | '/api/public/cron/auto-train'
     | '/api/public/cron/sync'
     | '/api/public/meta/deletion'
+    | '/api/public/webhook/stock-change'
     | '/api/public/webhooks/meta'
+    | '/api/public/webhooks/telegram'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -564,9 +890,12 @@ export interface RootRouteChildren {
   DataDeletionRoute: typeof DataDeletionRoute
   FaqRoute: typeof FaqRoute
   KnowledgeBaseRoute: typeof KnowledgeBaseRoute
+  McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   PrivacyRequestRoute: typeof PrivacyRequestRoute
+  SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
+  ValidateRoute: typeof ValidateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -641,6 +970,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KnowledgeBaseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -655,11 +991,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/validate': {
+      id: '/validate'
+      path: '/validate'
+      fullPath: '/validate'
+      preLoaderRoute: typeof ValidateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -683,6 +1033,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/api-hub': {
+      id: '/admin/api-hub'
+      path: '/api-hub'
+      fullPath: '/admin/api-hub'
+      preLoaderRoute: typeof AdminApiHubRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/api-keys': {
       id: '/admin/api-keys'
       path: '/api-keys'
@@ -702,6 +1059,13 @@ declare module '@tanstack/react-router' {
       path: '/auto-replies'
       fullPath: '/admin/auto-replies'
       preLoaderRoute: typeof AdminAutoRepliesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/backup': {
+      id: '/admin/backup'
+      path: '/backup'
+      fullPath: '/admin/backup'
+      preLoaderRoute: typeof AdminBackupRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/canned-responses': {
@@ -725,6 +1089,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCredentialsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/escalation': {
+      id: '/admin/escalation'
+      path: '/escalation'
+      fullPath: '/admin/escalation'
+      preLoaderRoute: typeof AdminEscalationRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/flow-builder': {
       id: '/admin/flow-builder'
       path: '/flow-builder'
@@ -744,6 +1115,13 @@ declare module '@tanstack/react-router' {
       path: '/logs'
       fullPath: '/admin/logs'
       preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/mcp': {
+      id: '/admin/mcp'
+      path: '/mcp'
+      fullPath: '/admin/mcp'
+      preLoaderRoute: typeof AdminMcpRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/onboarding': {
@@ -774,6 +1152,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProgressRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/readiness': {
+      id: '/admin/readiness'
+      path: '/readiness'
+      fullPath: '/admin/readiness'
+      preLoaderRoute: typeof AdminReadinessRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/responsiveness': {
+      id: '/admin/responsiveness'
+      path: '/responsiveness'
+      fullPath: '/admin/responsiveness'
+      preLoaderRoute: typeof AdminResponsivenessRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/settings'
@@ -793,6 +1185,13 @@ declare module '@tanstack/react-router' {
       path: '/sync'
       fullPath: '/admin/sync'
       preLoaderRoute: typeof AdminSyncRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tenants': {
+      id: '/admin/tenants'
+      path: '/tenants'
+      fullPath: '/admin/tenants'
+      preLoaderRoute: typeof AdminTenantsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/training': {
@@ -816,6 +1215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsageRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/voice': {
+      id: '/admin/voice'
+      path: '/voice'
+      fullPath: '/admin/voice'
+      preLoaderRoute: typeof AdminVoiceRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/webhook-dlq': {
       id: '/admin/webhook-dlq'
       path: '/webhook-dlq'
@@ -837,11 +1243,88 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsMimoRouteImport
       parentRoute: typeof AdminSettingsRoute
     }
+    '/api/admin/pin-check': {
+      id: '/api/admin/pin-check'
+      path: '/admin/pin-check'
+      fullPath: '/api/admin/pin-check'
+      preLoaderRoute: typeof ApiAdminPinCheckRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/admin/tts-test': {
+      id: '/api/admin/tts-test'
+      path: '/admin/tts-test'
+      fullPath: '/api/admin/tts-test'
+      preLoaderRoute: typeof ApiAdminTtsTestRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/cron/learn': {
+      id: '/api/cron/learn'
+      path: '/cron/learn'
+      fullPath: '/api/cron/learn'
+      preLoaderRoute: typeof ApiCronLearnRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/cron/training-pipeline': {
+      id: '/api/cron/training-pipeline'
+      path: '/cron/training-pipeline'
+      fullPath: '/api/cron/training-pipeline'
+      preLoaderRoute: typeof ApiCronTrainingPipelineRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/meta/callback': {
+      id: '/api/meta/callback'
+      path: '/meta/callback'
+      fullPath: '/api/meta/callback'
+      preLoaderRoute: typeof ApiMetaCallbackRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/meta/oauth-url': {
+      id: '/api/meta/oauth-url'
+      path: '/meta/oauth-url'
+      fullPath: '/api/meta/oauth-url'
+      preLoaderRoute: typeof ApiMetaOauthUrlRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/meta/pages': {
+      id: '/api/meta/pages'
+      path: '/meta/pages'
+      fullPath: '/api/meta/pages'
+      preLoaderRoute: typeof ApiMetaPagesRouteImport
+      parentRoute: typeof ApiRoute
+    }
     '/api/public/chat': {
       id: '/api/public/chat'
       path: '/public/chat'
       fullPath: '/api/public/chat'
       preLoaderRoute: typeof ApiPublicChatRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/public/facebook-mcp': {
+      id: '/api/public/facebook-mcp'
+      path: '/public/facebook-mcp'
+      fullPath: '/api/public/facebook-mcp'
+      preLoaderRoute: typeof ApiPublicFacebookMcpRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/public/meta-mcp': {
+      id: '/api/public/meta-mcp'
+      path: '/public/meta-mcp'
+      fullPath: '/api/public/meta-mcp'
+      preLoaderRoute: typeof ApiPublicMetaMcpRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/public/validate-stream': {
+      id: '/api/public/validate-stream'
+      path: '/public/validate-stream'
+      fullPath: '/api/public/validate-stream'
+      preLoaderRoute: typeof ApiPublicValidateStreamRouteImport
       parentRoute: typeof ApiRoute
     }
     '/api/public/webhook': {
@@ -851,11 +1334,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookRouteImport
       parentRoute: typeof ApiRoute
     }
+    '/api/public/ws': {
+      id: '/api/public/ws'
+      path: '/public/ws'
+      fullPath: '/api/public/ws'
+      preLoaderRoute: typeof ApiPublicWsRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/saas/create-tenant': {
+      id: '/api/saas/create-tenant'
+      path: '/saas/create-tenant'
+      fullPath: '/api/saas/create-tenant'
+      preLoaderRoute: typeof ApiSaasCreateTenantRouteImport
+      parentRoute: typeof ApiRoute
+    }
     '/api/public/ai-sync/status': {
       id: '/api/public/ai-sync/status'
       path: '/public/ai-sync/status'
       fullPath: '/api/public/ai-sync/status'
       preLoaderRoute: typeof ApiPublicAiSyncStatusRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/public/cron/auto-train': {
+      id: '/api/public/cron/auto-train'
+      path: '/public/cron/auto-train'
+      fullPath: '/api/public/cron/auto-train'
+      preLoaderRoute: typeof ApiPublicCronAutoTrainRouteImport
       parentRoute: typeof ApiRoute
     }
     '/api/public/cron/sync': {
@@ -872,11 +1376,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMetaDeletionRouteImport
       parentRoute: typeof ApiRoute
     }
+    '/api/public/webhook/stock-change': {
+      id: '/api/public/webhook/stock-change'
+      path: '/stock-change'
+      fullPath: '/api/public/webhook/stock-change'
+      preLoaderRoute: typeof ApiPublicWebhookStockChangeRouteImport
+      parentRoute: typeof ApiPublicWebhookRoute
+    }
     '/api/public/webhooks/meta': {
       id: '/api/public/webhooks/meta'
       path: '/public/webhooks/meta'
       fullPath: '/api/public/webhooks/meta'
       preLoaderRoute: typeof ApiPublicWebhooksMetaRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/public/webhooks/telegram': {
+      id: '/api/public/webhooks/telegram'
+      path: '/public/webhooks/telegram'
+      fullPath: '/api/public/webhooks/telegram'
+      preLoaderRoute: typeof ApiPublicWebhooksTelegramRouteImport
       parentRoute: typeof ApiRoute
     }
   }
@@ -897,25 +1415,33 @@ const AdminSettingsRouteWithChildren = AdminSettingsRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminAddRoute: typeof AdminAddRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminApiHubRoute: typeof AdminApiHubRoute
   AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminAutoRepliesRoute: typeof AdminAutoRepliesRoute
+  AdminBackupRoute: typeof AdminBackupRoute
   AdminCannedResponsesRoute: typeof AdminCannedResponsesRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
   AdminCredentialsRoute: typeof AdminCredentialsRoute
+  AdminEscalationRoute: typeof AdminEscalationRoute
   AdminFlowBuilderRoute: typeof AdminFlowBuilderRoute
   AdminInboxRoute: typeof AdminInboxRoute
   AdminLogsRoute: typeof AdminLogsRoute
+  AdminMcpRoute: typeof AdminMcpRoute
   AdminOnboardingRoute: typeof AdminOnboardingRoute
   AdminPerformanceRoute: typeof AdminPerformanceRoute
   AdminPlaygroundRoute: typeof AdminPlaygroundRoute
   AdminProgressRoute: typeof AdminProgressRoute
+  AdminReadinessRoute: typeof AdminReadinessRoute
+  AdminResponsivenessRoute: typeof AdminResponsivenessRoute
   AdminSettingsRoute: typeof AdminSettingsRouteWithChildren
   AdminSkillBuilderRoute: typeof AdminSkillBuilderRoute
   AdminSyncRoute: typeof AdminSyncRoute
+  AdminTenantsRoute: typeof AdminTenantsRoute
   AdminTrainingRoute: typeof AdminTrainingRoute
   AdminTutorialsRoute: typeof AdminTutorialsRoute
   AdminUsageRoute: typeof AdminUsageRoute
+  AdminVoiceRoute: typeof AdminVoiceRoute
   AdminWebhookDlqRoute: typeof AdminWebhookDlqRoute
   AdminWebhookTestRoute: typeof AdminWebhookTestRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -924,25 +1450,33 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAddRoute: AdminAddRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminApiHubRoute: AdminApiHubRoute,
   AdminApiKeysRoute: AdminApiKeysRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminAutoRepliesRoute: AdminAutoRepliesRoute,
+  AdminBackupRoute: AdminBackupRoute,
   AdminCannedResponsesRoute: AdminCannedResponsesRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
   AdminCredentialsRoute: AdminCredentialsRoute,
+  AdminEscalationRoute: AdminEscalationRoute,
   AdminFlowBuilderRoute: AdminFlowBuilderRoute,
   AdminInboxRoute: AdminInboxRoute,
   AdminLogsRoute: AdminLogsRoute,
+  AdminMcpRoute: AdminMcpRoute,
   AdminOnboardingRoute: AdminOnboardingRoute,
   AdminPerformanceRoute: AdminPerformanceRoute,
   AdminPlaygroundRoute: AdminPlaygroundRoute,
   AdminProgressRoute: AdminProgressRoute,
+  AdminReadinessRoute: AdminReadinessRoute,
+  AdminResponsivenessRoute: AdminResponsivenessRoute,
   AdminSettingsRoute: AdminSettingsRouteWithChildren,
   AdminSkillBuilderRoute: AdminSkillBuilderRoute,
   AdminSyncRoute: AdminSyncRoute,
+  AdminTenantsRoute: AdminTenantsRoute,
   AdminTrainingRoute: AdminTrainingRoute,
   AdminTutorialsRoute: AdminTutorialsRoute,
   AdminUsageRoute: AdminUsageRoute,
+  AdminVoiceRoute: AdminVoiceRoute,
   AdminWebhookDlqRoute: AdminWebhookDlqRoute,
   AdminWebhookTestRoute: AdminWebhookTestRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -950,22 +1484,63 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface ApiPublicWebhookRouteChildren {
+  ApiPublicWebhookStockChangeRoute: typeof ApiPublicWebhookStockChangeRoute
+}
+
+const ApiPublicWebhookRouteChildren: ApiPublicWebhookRouteChildren = {
+  ApiPublicWebhookStockChangeRoute: ApiPublicWebhookStockChangeRoute,
+}
+
+const ApiPublicWebhookRouteWithChildren =
+  ApiPublicWebhookRoute._addFileChildren(ApiPublicWebhookRouteChildren)
+
 interface ApiRouteChildren {
+  ApiAdminPinCheckRoute: typeof ApiAdminPinCheckRoute
+  ApiAdminTtsTestRoute: typeof ApiAdminTtsTestRoute
+  ApiCronLearnRoute: typeof ApiCronLearnRoute
+  ApiCronTrainingPipelineRoute: typeof ApiCronTrainingPipelineRoute
+  ApiMetaCallbackRoute: typeof ApiMetaCallbackRoute
+  ApiMetaOauthUrlRoute: typeof ApiMetaOauthUrlRoute
+  ApiMetaPagesRoute: typeof ApiMetaPagesRoute
   ApiPublicChatRoute: typeof ApiPublicChatRoute
-  ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
+  ApiPublicFacebookMcpRoute: typeof ApiPublicFacebookMcpRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  ApiPublicMetaMcpRoute: typeof ApiPublicMetaMcpRoute
+  ApiPublicValidateStreamRoute: typeof ApiPublicValidateStreamRoute
+  ApiPublicWebhookRoute: typeof ApiPublicWebhookRouteWithChildren
+  ApiPublicWsRoute: typeof ApiPublicWsRoute
+  ApiSaasCreateTenantRoute: typeof ApiSaasCreateTenantRoute
   ApiPublicAiSyncStatusRoute: typeof ApiPublicAiSyncStatusRoute
+  ApiPublicCronAutoTrainRoute: typeof ApiPublicCronAutoTrainRoute
   ApiPublicCronSyncRoute: typeof ApiPublicCronSyncRoute
   ApiPublicMetaDeletionRoute: typeof ApiPublicMetaDeletionRoute
   ApiPublicWebhooksMetaRoute: typeof ApiPublicWebhooksMetaRoute
+  ApiPublicWebhooksTelegramRoute: typeof ApiPublicWebhooksTelegramRoute
 }
 
 const ApiRouteChildren: ApiRouteChildren = {
+  ApiAdminPinCheckRoute: ApiAdminPinCheckRoute,
+  ApiAdminTtsTestRoute: ApiAdminTtsTestRoute,
+  ApiCronLearnRoute: ApiCronLearnRoute,
+  ApiCronTrainingPipelineRoute: ApiCronTrainingPipelineRoute,
+  ApiMetaCallbackRoute: ApiMetaCallbackRoute,
+  ApiMetaOauthUrlRoute: ApiMetaOauthUrlRoute,
+  ApiMetaPagesRoute: ApiMetaPagesRoute,
   ApiPublicChatRoute: ApiPublicChatRoute,
-  ApiPublicWebhookRoute: ApiPublicWebhookRoute,
+  ApiPublicFacebookMcpRoute: ApiPublicFacebookMcpRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
+  ApiPublicMetaMcpRoute: ApiPublicMetaMcpRoute,
+  ApiPublicValidateStreamRoute: ApiPublicValidateStreamRoute,
+  ApiPublicWebhookRoute: ApiPublicWebhookRouteWithChildren,
+  ApiPublicWsRoute: ApiPublicWsRoute,
+  ApiSaasCreateTenantRoute: ApiSaasCreateTenantRoute,
   ApiPublicAiSyncStatusRoute: ApiPublicAiSyncStatusRoute,
+  ApiPublicCronAutoTrainRoute: ApiPublicCronAutoTrainRoute,
   ApiPublicCronSyncRoute: ApiPublicCronSyncRoute,
   ApiPublicMetaDeletionRoute: ApiPublicMetaDeletionRoute,
   ApiPublicWebhooksMetaRoute: ApiPublicWebhooksMetaRoute,
+  ApiPublicWebhooksTelegramRoute: ApiPublicWebhooksTelegramRoute,
 }
 
 const ApiRouteWithChildren = ApiRoute._addFileChildren(ApiRouteChildren)
@@ -981,10 +1556,23 @@ const rootRouteChildren: RootRouteChildren = {
   DataDeletionRoute: DataDeletionRoute,
   FaqRoute: FaqRoute,
   KnowledgeBaseRoute: KnowledgeBaseRoute,
+  McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   PrivacyRequestRoute: PrivacyRequestRoute,
+  SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
+  ValidateRoute: ValidateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

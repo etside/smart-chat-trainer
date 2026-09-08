@@ -24,6 +24,9 @@ export const saveTemplate = createServerFn({ method: "POST" })
       language: z.enum(['en', 'bn', 'banglish']),
       template_text: z.string().min(1).max(2000),
       variables: z.array(z.string()).default([]),
+      image_url: z.string().url().optional().or(z.literal('')).optional(),
+      caption: z.string().max(500).optional(),
+      trigger_keywords: z.array(z.string()).optional().default([]),
       publish: z.boolean().default(true),
     }).parse(d)
   )
@@ -38,6 +41,9 @@ export const saveTemplate = createServerFn({ method: "POST" })
       language: data.language,
       template_text: data.template_text,
       variables: data.variables,
+      image_url: data.image_url || null,
+      caption: data.caption || null,
+      trigger_keywords: data.trigger_keywords ?? [],
     };
 
     let templateId = data.id ?? null;
@@ -155,5 +161,100 @@ export const deleteTemplate = createServerFn({ method: "POST" })
     await assertRole(context.supabase, context.userId, "editor");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("auto_reply_templates").delete().eq("id", data.id);
+    return { ok: true };
+  });
+
+// ── Rule management ──────────────────────────────────────────────────────────
+
+export const listRules = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertRole(context.supabase, context.userId, "viewer");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rules } = await supabaseAdmin
+      .from("auto_reply_rules")
+      .select("id, name, trigger_type, trigger_value, template_id, ab_variant, is_active, priority_order, created_at")
+      .order("priority_order", { ascending: false });
+
+    const { data: templates } = await supabaseAdmin
+      .from("auto_reply_templates")
+      .select("id, name")
+      .eq("status", "published");
+
+    const templateMap = Object.fromEntries((templates ?? []).map((t: any) => [t.id, t.name]));
+
+    return (rules ?? []).map((r: any) => ({
+      ...r,
+      template_name: r.template_id ? (templateMap[r.template_id] ?? "Unknown template") : null,
+    }));
+  });
+
+export const toggleRule = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertRole(context.supabase, context.userId, "editor");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("auto_reply_rules").update({ is_active: data.is_active } as any).eq("id", data.id);
+    return { ok: true };
+  });
+
+export const testRuleMatch = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ message: z.string().min(1).max(500) }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertRole(context.supabase, context.userId, "viewer");
+    const { evaluateAutoReplyRules } = await import("@/lib/auto-reply.engine");
+    const result = await evaluateAutoReplyRules(data.message, "test-session", 0);
+    return result;
+  });
+
+export const saveRule = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({
+      id: z.string().uuid().optional(),
+      name: z.string().min(1).max(100),
+      trigger_type: z.enum(["keyword", "priority", "sentiment", "regex", "always"]),
+      trigger_value: z.string().min(1).max(500),
+      template_id: z.string().uuid().nullable().optional(),
+      ab_variant: z.string().nullable().optional(),
+      is_active: z.boolean().default(true),
+      priority_order: z.number().int().min(0).max(1000).default(0),
+    }).parse(d)
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertRole(context.supabase, context.userId, "editor");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const base = {
+      name: data.name,
+      trigger_type: data.trigger_type,
+      trigger_value: data.trigger_value,
+      template_id: data.template_id ?? null,
+      ab_variant: data.ab_variant ?? null,
+      is_active: data.is_active,
+      priority_order: data.priority_order,
+    };
+    if (data.id) {
+      await supabaseAdmin.from("auto_reply_rules").update(base as any).eq("id", data.id);
+      return { ok: true, id: data.id };
+    } else {
+      const { data: created, error } = await supabaseAdmin
+        .from("auto_reply_rules")
+        .insert(base as any)
+        .select("id")
+        .single();
+      if (error) throw new Error(error.message);
+      return { ok: true, id: (created as any).id };
+    }
+  });
+
+export const deleteRule = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertRole(context.supabase, context.userId, "editor");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("auto_reply_rules").delete().eq("id", data.id);
     return { ok: true };
   });

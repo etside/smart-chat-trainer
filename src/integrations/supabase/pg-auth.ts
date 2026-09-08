@@ -42,7 +42,7 @@ import { pool } from './pg-client';
 // Configuration
 // ---------------------------------------------------------------------------
 
-const JWT_SECRET = process.env['JWT_SECRET'];
+const JWT_SECRET = process.env['JWT_SECRET'] ?? '';
 if (!JWT_SECRET) {
   console.error('FATAL: JWT_SECRET environment variable is not set. Authentication will not work.');
 }
@@ -99,7 +99,8 @@ function signJwt(userId: string, email: string): string {
 
 function verifyJwt(token: string): { sub: string; email: string; role?: string } | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as { sub: string; email: string; role?: string };
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded as unknown as { sub: string; email: string; role?: string };
   } catch {
     return null;
   }

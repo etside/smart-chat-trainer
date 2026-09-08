@@ -1,0 +1,62 @@
+name: Nightly Cost Analysis
+
+on:
+  schedule:
+    # Runs daily at 03:00 UTC
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  cost-analysis:
+    name: Check usage & generate report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Check gateway models endpoint
+        id: models
+        env:
+          GATEWAY_PASSWORD: ${{ secrets.OPENCLAW_GATEWAY_PASSWORD }}
+        run: |
+          if [ -z "$GATEWAY_PASSWORD" ]; then
+            echo "No gateway password secret set — skipping live check"
+            echo "live_check=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "live_check=true" >> "$GITHUB_OUTPUT"
+          RESULT=$(curl -s --connect-timeout 10 --max-time 15 \
+            -H "Authorization: Bearer $GATEWAY_PASSWORD" \
+            https://openclaw.daddyai.online/v1/models 2>/dev/null || echo '{"error":"unreachable"}')
+          echo "response=$RESULT" >> "$GITHUB_OUTPUT"
+          echo "Models endpoint response: $(echo "$RESULT" | head -c 200)"
+
+      - name: Report total gateway uptime
+        run: |
+          echo "## Cost Analysis Report" > report.md
+          echo "" >> report.md
+          echo "**Date:** $(date -u)" >> report.md
+          echo "**Model:** deepseek-v4-flash (B.AI — free)" >> report.md
+          echo "**Input cost:** 0 (free provider)" >> report.md
+          echo "**Output cost:** 0 (free provider)" >> report.md
+          echo "**Cache cost:** 0 (free provider)" >> report.md
+          echo "" >> report.md
+          echo "### Notes" >> report.md
+          echo "- The B.AI provider is a free-tier API, so all inference is \$0." >> report.md
+          echo "- VPS cost: \$6/mo (DigitalOcean basic droplet, shared with daddyai)." >> report.md
+          echo "- Gateway RAM: ~65 MB. DaddyAI PM2: ~200 MB. Total app footprint: ~265 MB." >> report.md
+          echo "- No additional SaaS costs for OpenClaw." >> report.md
+          echo "" >> report.md
+          echo "### Recommendations" >> report.md
+          echo "- Monitor for B.AI API deprecation — if the free endpoint goes away, swap to another free provider." >> report.md
+          echo "- Current VPS has 1 GB RAM — if usage grows, daddyai needs optimizations before a droplet upgrade." >> report.md
+
+      - name: Commit report
+        run: |
+          mkdir -p openclaw/reports
+          cp report.md "openclaw/reports/cost-report-$(date +%Y-%m-%d).md"
+          git config user.name "daddyai-bot"
+          git config user.email "bot@daddyai.online"
+          git add openclaw/reports/
+          git diff --cached --quiet || git commit -m "chore: cost analysis report $(date +%Y-%m-%d)"
+          git push

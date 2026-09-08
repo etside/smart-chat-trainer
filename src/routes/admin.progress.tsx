@@ -37,7 +37,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
@@ -169,13 +168,10 @@ function TrainingProgress() {
           </div>
         ) : (
           <div className="grid gap-6">
-            <AnimatePresence mode="popLayout">
+            <>
               {jobs?.map((job: any, index: number) => (
-                <motion.div
+                <div
                   key={job.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
                   className="panel p-6 bg-card/40 backdrop-blur-md border-white/5 shadow-xl hover:shadow-2xl transition-all"
                 >
                   <div 
@@ -248,9 +244,9 @@ function TrainingProgress() {
                       Error: {job.error_log}
                     </div>
                   )}
-                </motion.div>
+                </div>
               ))}
-            </AnimatePresence>
+            </>
           </div>
         )}
       </div>

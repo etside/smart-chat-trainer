@@ -18,7 +18,7 @@ export async function assertRole(supabase: SupabaseClient, userId: string, requi
   if (!data) throw new Error("Forbidden: access required");
   
   const role = data.role as string;
-  const roles = ['viewer', 'editor', 'admin'];
+  const roles = ['viewer', 'moderator', 'editor', 'admin'];
   const actualIndex = roles.indexOf(role);
   const requiredIndex = roles.indexOf(requiredRole);
 

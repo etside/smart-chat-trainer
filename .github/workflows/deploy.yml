@@ -1,16 +1,29 @@
-name: Build & Deploy Daddy AI
+name: Build & Deploy DaddyAI
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      skip_snapshot:
+        description: "Skip pre-deploy DO snapshot"
+        type: boolean
+        default: false
+      rollback:
+        description: "Rollback to previous commit"
+        type: boolean
+        default: false
+
+env:
+  DROPLET_ID: "595134851"
 
 jobs:
   build:
-    name: Build & Typecheck
+    name: Build
     runs-on: ubuntu-latest
+    outputs:
+      commit_sha: ${{ github.sha }}
+      short_sha: ${{ steps.meta.outputs.short_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -19,10 +32,14 @@ jobs:
           node-version: 22
           cache: 'npm'
 
+      - name: Get meta
+        id: meta
+        run: echo "short_sha=$(echo ${{ github.sha }} | head -c 7)" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Build project
+      - name: Build (client + SSR)
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -31,17 +48,110 @@ jobs:
           VITE_SITE_URL: 'https://daddyai.online'
           VITE_APP_NAME: 'Daddy AI'
 
-  deploy-vps:
-    name: Deploy to VPS
+      - name: Verify dist
+        run: |
+          echo "Client chunks:" && ls dist/client/assets/*.js 2>/dev/null | wc -l
+          echo "Server entry:" && ls dist/server/server.js 2>/dev/null || echo "not found"
+          ls dist/server/assets/validate-*.js 2>/dev/null && echo "validate route OK" || echo "WARNING: validate chunk missing"
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+
+  pre-deploy:
+    name: Pre-deploy B2 Backup
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
-    environment: production
+    if: ${{ !inputs.skip_snapshot && !inputs.rollback }}
+    steps:
+      - name: Backup project to B2 via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "Creating pre-deploy backup for commit ${{ needs.build.outputs.short_sha }}..."
+            BACKUP_NAME="pre-deploy-${{ needs.build.outputs.short_sha }}-$(date +%Y%m%d%H%M%S).tar.gz"
+            cd /var/www
+            tar czf "/tmp/$BACKUP_NAME" \
+              --exclude='node_modules' \
+              --exclude='.git' \
+              --exclude='dist' \
+              daddyai/
+            b2 file upload Kpakkaka "/tmp/$BACKUP_NAME" "KK/backups/daddyai/$BACKUP_NAME" 2>&1 && \
+              echo "Backup uploaded: KK/backups/daddyai/$BACKUP_NAME" || \
+              echo "B2 upload failed (non-fatal, continuing deploy)"
+            rm -f "/tmp/$BACKUP_NAME"
 
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: [build, pre-deploy]
+    if: always() && needs.build.result == 'success'
+    environment: production
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      - name: Deploy to server
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist/
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd /var/www/daddyai
+
+            # Ensure swap exists (build needs RAM)
+            if [ ! -f /swapfile ]; then
+              fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+              echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
+            fi
+
+            # Handle rollback
+            if [ "${{ inputs.rollback }}" = "true" ]; then
+              echo "Rolling back to previous commit..."
+              git reset --hard HEAD~1
+            else
+              git pull daddyai main
+            fi
+
+            # Install & build
+            npm ci --prefer-offline 2>/dev/null || npm install
+            npm run build
+
+            # Reload PM2
+            pm2 reload daddyai --update-env || pm2 start ecosystem.config.cjs
+            pm2 save
+
+            echo "Deploy complete"
+            pm2 list
+
+      - name: Post-deploy health check
+        id: health
+        run: |
+          sleep 10
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://daddyai.online/ 2>/dev/null || echo "000")
+          echo "http_status=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+          echo "Health check: HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "HEALTH_FAILED=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Auto-rollback on failure
+        if: steps.health.outputs.HEALTH_FAILED == 'true'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -49,61 +159,90 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /var/www/daddyai
-            git pull origin main
-            export BUN_INSTALL=/root/.bun
-            export PATH=$BUN_INSTALL/bin:$PATH
-            # Use npm for build (bun may have issues with TanStack Start SSR bundling)
-            npm install
-            # Ensure swap is available for build (1GB VPS needs swap)
-            if [ ! -f /swapfile ]; then
-              fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
-              echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
-            fi
-            NITRO_PRESET=node-server npm run build
-            echo "=== Build output check ==="
-            ls -la .output/server/index.mjs 2>/dev/null || echo "No .output/server"
-            ls -la .output/public/ 2>/dev/null || echo "No .output/public"
-            # Run database migrations
-            echo "=== Running migrations ==="
-            PGPASSWORD=${{ secrets.PG_PASSWORD || 'daddyai_2026_secure' }} psql -h localhost -U daddyai -d daddyai -f migration.sql 2>/dev/null || echo "Base migration skipped"
-            PGPASSWORD=${{ secrets.PG_PASSWORD || 'daddyai_2026_secure' }} psql -h localhost -U daddyai -d daddyai -f migration_sales_agent.sql 2>/dev/null || echo "Sales agent migration applied"
-            pm2 delete daddyai 2>/dev/null || true
-            pm2 start ecosystem.config.cjs
+            echo "Health check failed — rolling back..."
+            git reset --hard HEAD~1
+            npm ci --prefer-offline 2>/dev/null || npm install
+            npm run build
+            pm2 reload daddyai --update-env
             pm2 save
-            systemctl restart nginx 2>/dev/null || true
+            echo "Rollback complete"
 
-  deploy-netlify:
-    name: Deploy to Netlify (Backup)
+      - name: Create rollback issue
+        if: steps.health.outputs.HEALTH_FAILED == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create --repo "${{ github.repository }}" \
+            --title "Auto-rollback triggered for ${{ needs.build.outputs.short_sha }}" \
+            --body "Health check returned HTTP ${{ steps.health.outputs.http_status }} after deploy. Auto-rollback executed." \
+            --label "deploy,bug"
+
+      - name: Tag successful deploy
+        if: steps.health.outputs.HEALTH_FAILED != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/deployments \
+            -f ref=${{ github.sha }} \
+            -f environment=production \
+            -f description="Deploy ${{ needs.build.outputs.short_sha }}" \
+            -f auto_merge=false \
+            -f required_contexts='[]' 2>/dev/null || true
+
+  backup:
+    name: B2 Backup
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
-
+    needs: deploy
+    if: needs.deploy.result == 'success'
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Trigger B2 backup via SSH
+        uses: appleboy/ssh-action@v1
+        continue-on-error: true
         with:
-          node-version: 22
-          cache: 'npm'
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Backup project source (excluding node_modules and .git)
+            BACKUP_NAME="daddyai-$(date +%Y%m%d-%H%M%S).tar.gz"
+            cd /var/www
+            tar czf "/tmp/$BACKUP_NAME" \
+              --exclude='node_modules' \
+              --exclude='.git' \
+              daddyai/
 
-      - run: npm ci
+            # Upload to B2
+            b2 file upload Kpakkaka "/tmp/$BACKUP_NAME" "backups/$BACKUP_NAME" 2>/dev/null && \
+              echo "Backup uploaded: backups/$BACKUP_NAME" || \
+              echo "B2 upload failed (non-fatal)"
 
-      - name: Build for Netlify
-        run: npm run build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
-          VITE_SITE_URL: 'https://daddyai.online'
-          VITE_APP_NAME: 'Daddy AI'
+            # Cleanup local
+            rm -f "/tmp/$BACKUP_NAME"
 
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3
-        with:
-          publish-dir: .netlify
-          production-deploy: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Auto-deploy from GitHub Actions"
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+            # Keep only last 10 backups in B2
+            b2 ls Kpakkaka backups/ --json 2>/dev/null | \
+              python3 -c "
+            import json, sys
+            files = json.load(sys.stdin).get('files', [])
+            files.sort(key=lambda f: f.get('uploadTimestamp', 0), reverse=True)
+            for f in files[10:]:
+                print(f['fileName'])
+            " 2>/dev/null | while read f; do
+              b2 delete-file-version "$f" 2>/dev/null && echo "Cleaned old backup: $f"
+            done || true
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    if: always()
+    steps:
+      - name: Deployment summary
+        run: |
+          echo "## DaddyAI Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${{ needs.build.outputs.short_sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build:** ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deploy:** ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Rollback requested:** ${{ inputs.rollback || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time:** $(date -u)" >> $GITHUB_STEP_SUMMARY

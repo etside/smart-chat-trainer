@@ -45,33 +45,54 @@ export const amIAdmin = createServerFn({ method: "GET" })
 export const getStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertRole(context.supabase, context.userId, "viewer");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertRole(context.supabase, context.userId, 'viewer');
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
 
-    const pairCount = async (status: "approved" | "pending" | "rejected") => {
+    const pairCount = async (status: 'approved' | 'pending' | 'rejected') => {
       const { count } = await supabaseAdmin
-        .from("training_pairs")
-        .select("*", { count: "exact", head: true })
-        .eq("status", status);
+        .from('training_pairs')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', status);
       return count ?? 0;
     };
 
-    const [convRes, msgRes, approved, pending, rejected, settingsRes] = await Promise.all([
-      supabaseAdmin.from("conversations").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("messages").select("*", { count: "exact", head: true }),
-      pairCount("approved"),
-      pairCount("pending"),
-      pairCount("rejected"),
-      supabaseAdmin.from("agent_settings").select("credit_usage").eq("id", 1).maybeSingle(),
+    const [convRes, msgRes, approved, pending, rejected, settingsRes,
+           hotLeads, warmLeads, coldLeads, activeSessionsRes,
+           escalationsRes, vipRes] = await Promise.all([
+      supabaseAdmin.from('conversations').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('messages').select('*', { count: 'exact', head: true }),
+      pairCount('approved'),
+      pairCount('pending'),
+      pairCount('rejected'),
+      supabaseAdmin.from('agent_settings').select('credit_usage').eq('id', 1).maybeSingle(),
+      // Lead tier counts
+      supabaseAdmin.from('lead_scores').select('*', { count: 'exact', head: true }).eq('tier', 'hot'),
+      supabaseAdmin.from('lead_scores').select('*', { count: 'exact', head: true }).eq('tier', 'warm'),
+      supabaseAdmin.from('lead_scores').select('*', { count: 'exact', head: true }).eq('tier', 'cold'),
+      // Active sessions today
+      supabaseAdmin.from('conversation_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .gte('last_message_at', new Date(Date.now() - 24*60*60*1000).toISOString()),
+      // Pending escalations
+      supabaseAdmin.from('escalations').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      // VIP customers
+      supabaseAdmin.from('conversation_sessions').select('*', { count: 'exact', head: true }).eq('vip_flag', true),
     ]);
-    
-    return { 
-      conversations: convRes.count ?? 0, 
-      messages: msgRes.count ?? 0, 
-      approved, 
-      pending, 
+
+    return {
+      conversations: convRes.count ?? 0,
+      messages: msgRes.count ?? 0,
+      approved,
+      pending,
       rejected,
-      creditUsage: settingsRes.data?.credit_usage ?? 0
+      creditUsage: settingsRes.data?.credit_usage ?? 0,
+      hotLeads: hotLeads.count ?? 0,
+      warmLeads: warmLeads.count ?? 0,
+      coldLeads: coldLeads.count ?? 0,
+      activeSessions: activeSessionsRes.count ?? 0,
+      pendingEscalations: escalationsRes.count ?? 0,
+      vipCustomers: vipRes.count ?? 0,
     };
   });
 
@@ -168,6 +189,55 @@ export const deletePair = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const updateTrainingPairLabel = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        labels: z.array(z.string().max(40)).max(20),
+      })
+      .parse(d),
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertRole(context.supabase, context.userId, "editor");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: updated, error } = await supabaseAdmin
+      .from("training_pairs")
+      .update({ labels: data.labels } as any)
+      .eq("id", data.id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return updated;
+  });
+
+export const getLabelCounts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertRole(context.supabase, context.userId, "viewer");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Use rpc for raw SQL to unnest the labels array and count per label
+    const { data, error } = await (supabaseAdmin as any).rpc("get_label_counts");
+    if (error) {
+      // Fallback: manually count using JS if the RPC doesn't exist yet
+      const { data: allRows } = await supabaseAdmin
+        .from("training_pairs")
+        .select("labels");
+      const counts: Record<string, number> = {};
+      for (const row of allRows ?? []) {
+        const lbls = (row as any).labels as string[] | null;
+        if (Array.isArray(lbls)) {
+          for (const lbl of lbls) {
+            counts[lbl] = (counts[lbl] ?? 0) + 1;
+          }
+        }
+      }
+      return Object.entries(counts).map(([label, count]) => ({ label, count }));
+    }
+    return (data ?? []) as { label: string; count: number }[];
+  });
+
 export const importPairs = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
@@ -205,27 +275,44 @@ export const importConversationsJson = createServerFn({ method: "POST" })
     return importConversationExport(data.json);
   });
 
+export interface AgentSettingsShape {
+  system_prompt: string;
+  model: string;
+  auto_approve: boolean;
+  ai_api_key: string;
+  ai_base_url: string;
+  lovable_api_key_override: string;
+  credit_usage: number;
+}
+
 export const getAgentSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<AgentSettingsShape> => {
     await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
       .from("agent_settings")
-      .select("system_prompt, model, auto_approve, lovable_api_key_override, credit_usage")
+      .select("system_prompt, model, auto_approve, ai_api_key, ai_base_url, lovable_api_key_override, credit_usage")
       .eq("id", 1)
       .maybeSingle();
-    const VALID = ["mimo-v2.5-pro", "mimo-v2.5"];
     const raw = data ?? {
       system_prompt: "",
       model: "mimo-v2.5",
       auto_approve: false,
+      ai_api_key: "",
+      ai_base_url: "",
       lovable_api_key_override: "",
       credit_usage: 0
     };
     return {
-      ...raw,
-      model: VALID.includes(raw.model) ? raw.model : "mimo-v2.5",
+      system_prompt: raw.system_prompt ?? "",
+      model: raw.model ?? "mimo-v2.5",
+      auto_approve: raw.auto_approve ?? false,
+      ai_base_url: raw.ai_base_url ?? "",
+      lovable_api_key_override: raw.lovable_api_key_override ?? "",
+      credit_usage: raw.credit_usage ?? 0,
+      // Surface the effective key (either column) so the UI can show it's set
+      ai_api_key: raw.ai_api_key || raw.lovable_api_key_override || "",
     };
   });
 
@@ -234,9 +321,11 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
     z
       .object({
         system_prompt: z.string().max(8000),
-        model: z.string().max(60),
+        model: z.string().max(120),
         auto_approve: z.boolean(),
-        lovable_api_key_override: z.string().max(200).optional(),
+        lovable_api_key_override: z.string().max(400).optional(),
+        ai_api_key: z.string().max(400).optional(),
+        ai_base_url: z.string().max(300).optional(),
       })
       .parse(d),
   )
@@ -244,17 +333,40 @@ export const saveAgentSettings = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertRole(context.supabase, context.userId, "admin");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const apiKey = data.ai_api_key ?? data.lovable_api_key_override ?? null;
     await supabaseAdmin
       .from("agent_settings")
-      .update({ 
+      .update({
         system_prompt: data.system_prompt,
         model: data.model,
         auto_approve: data.auto_approve,
-        lovable_api_key_override: data.lovable_api_key_override ?? null,
-        updated_at: new Date().toISOString() 
+        ai_api_key: apiKey,
+        // Keep legacy column in sync so existing consumers keep working
+        lovable_api_key_override: apiKey,
+        ai_base_url: data.ai_base_url?.trim() || null,
+        updated_at: new Date().toISOString()
       })
       .eq("id", 1);
+    const { clearAiConfigCache } = await import("@/lib/ai.server");
+    clearAiConfigCache();
     return { ok: true };
+  });
+
+export const testAiConnection = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ai_base_url: z.string().max(300).optional(),
+        ai_api_key: z.string().max(400).optional(),
+        model: z.string().max(120).optional(),
+      })
+      .parse(d),
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertRole(context.supabase, context.userId, "admin");
+    const { testAiConnection } = await import("@/lib/ai.server");
+    return testAiConnection(data.ai_base_url || null, data.ai_api_key || null, data.model || null);
   });
 
 export const listApiKeys = createServerFn({ method: "GET" })
@@ -481,7 +593,7 @@ export const extractPairsFromText = createServerFn({ method: "POST" })
         },
         { role: "user", content: data.text },
       ],
-      "mimo-v2.5-pro",
+      undefined,
     );
     
     if (typeof raw !== 'string') throw new Error("Expected string response from AI");
