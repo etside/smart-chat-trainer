@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 import { Code2, Globe, Shield, Zap, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/api")({
   head: () => ({
@@ -32,7 +32,8 @@ function CopyButton({ text }: { text: string }) {
 }
 
 function APIPage() {
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const [baseUrl, setBaseUrl] = useState("");
+  useEffect(() => { setBaseUrl(window.location.origin); }, []);
 
   return (
     <div className="min-h-screen bg-background p-6 md:p-24">

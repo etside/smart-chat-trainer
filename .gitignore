@@ -36,3 +36,6 @@ dist-ssr
 
 # Environment secrets
 .env
+# Runtime env + all API keys/secrets (PM2 app config)
+ecosystem.config.cjs
+ecosystem.config.cjs

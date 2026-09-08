@@ -1,0 +1,181 @@
+name: Admin PWA — Health Check & Alerts
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # every 15 minutes
+  workflow_dispatch:
+    inputs:
+      force_alert:
+        description: 'Force send alert (yes/no)'
+        default: 'no'
+
+jobs:
+  health-check:
+    name: Check DaddyAI VPS Health
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check site is up
+        id: site_check
+        run: |
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://daddyai.online/ || echo "000")
+          ADMIN=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://daddyai.online/admin || echo "000")
+          MCP=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://daddyai.online/mcp || echo "000")
+          echo "site_status=$HTTP" >> $GITHUB_OUTPUT
+          echo "admin_status=$ADMIN" >> $GITHUB_OUTPUT
+          echo "mcp_status=$MCP" >> $GITHUB_OUTPUT
+          echo "Site: $HTTP | Admin: $ADMIN | MCP: $MCP"
+          if [ "$HTTP" != "200" ] || [ "$ADMIN" != "200" ]; then
+            echo "site_down=true" >> $GITHUB_OUTPUT
+          else
+            echo "site_down=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check VPS via SSH
+        id: vps_check
+        if: steps.site_check.outputs.site_down == 'true' || github.event.inputs.force_alert == 'yes'
+        uses: appleboy/ssh-action@v1
+        continue-on-error: true
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          result_environment_file: /tmp/vps_status.env
+          script: |
+            echo "PM2_STATUS=$(pm2 jlist 2>/dev/null | python3 -c \"import json,sys; apps=json.load(sys.stdin); status=[a['pm2_env']['status'] for a in apps if a['name']=='daddyai']; print(','.join(status))\" 2>/dev/null || echo 'unknown')"
+            echo "DISK_FREE=$(df -h / | awk 'NR==2{print $4}')"
+            echo "MEM_FREE=$(free -m | awk 'NR==2{print $7}')MB"
+            echo "UPTIME=$(uptime -p)"
+            echo "LOAD=$(uptime | awk -F'load average:' '{print $2}' | xargs)"
+
+      - name: Check SSL certificate expiry
+        id: ssl_check
+        run: |
+          EXPIRY=$(echo | openssl s_client -servername daddyai.online -connect daddyai.online:443 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2 || echo "unknown")
+          echo "ssl_expiry=$EXPIRY" >> $GITHUB_OUTPUT
+          if [ "$EXPIRY" != "unknown" ]; then
+            DAYS=$(( ($(date -d "$EXPIRY" +%s 2>/dev/null || echo 0) - $(date +%s)) / 86400 ))
+            echo "ssl_days=$DAYS" >> $GITHUB_OUTPUT
+            if [ "$DAYS" -lt 14 ]; then
+              echo "ssl_warning=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Send Telegram alert on failure
+        if: steps.site_check.outputs.site_down == 'true' || github.event.inputs.force_alert == 'yes'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "No Telegram config — skipping alert"
+            exit 0
+          fi
+          MSG="🚨 *DaddyAI Alert*%0A%0A"
+          MSG="${MSG}Site: ${{ steps.site_check.outputs.site_status }}%0A"
+          MSG="${MSG}Admin: ${{ steps.site_check.outputs.admin_status }}%0A"
+          MSG="${MSG}MCP: ${{ steps.site_check.outputs.mcp_status }}%0A"
+          MSG="${MSG}Time: $(date -u '+%Y-%m-%d %H:%M UTC')%0A"
+          MSG="${MSG}%0ACheck: https://daddyai.online/admin"
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}&text=${MSG}&parse_mode=Markdown" > /dev/null
+
+      - name: Post alert to DaddyAI notification_logs
+        if: steps.site_check.outputs.site_down == 'true' || steps.ssl_check.outputs.ssl_warning == 'true' || github.event.inputs.force_alert == 'yes'
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "No Supabase config — skipping DB alert"
+            exit 0
+          fi
+          TYPE="provider_down"
+          TITLE="Site Down Alert"
+          BODY="HTTP ${{ steps.site_check.outputs.site_status }} | Admin ${{ steps.site_check.outputs.admin_status }} | $(date -u)"
+          SEVERITY="critical"
+          if [ "${{ steps.ssl_check.outputs.ssl_warning }}" = "true" ]; then
+            TYPE="ai_slow"
+            TITLE="SSL Certificate Expiring Soon"
+            BODY="SSL expires: ${{ steps.ssl_check.outputs.ssl_expiry }} (${{ steps.ssl_check.outputs.ssl_days }} days)"
+            SEVERITY="warning"
+          fi
+          curl -s -X POST "${SUPABASE_URL}/rest/v1/notification_logs" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "{\"type\":\"${TYPE}\",\"title\":\"${TITLE}\",\"body\":\"${BODY}\",\"severity\":\"${SEVERITY}\",\"resolved\":false}" > /dev/null
+          echo "Alert posted to notification_logs"
+
+      - name: Summary
+        run: |
+          echo "### DaddyAI Health Check" >> $GITHUB_STEP_SUMMARY
+          echo "| Endpoint | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| https://daddyai.online | ${{ steps.site_check.outputs.site_status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| /admin | ${{ steps.site_check.outputs.admin_status }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| /mcp | ${{ steps.site_check.outputs.mcp_status }} |" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.site_check.outputs.site_down }}" = "true" ]; then
+            echo "⚠️ **Site is DOWN**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **All systems operational**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  cost-check:
+    name: Check VPS Resource Usage
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.force_alert == 'yes'
+
+    steps:
+      - name: SSH resource check
+        id: resources
+        uses: appleboy/ssh-action@v1
+        continue-on-error: true
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            DISK_PCT=$(df / | awk 'NR==2{gsub(/%/,"",$5); print $5}')
+            MEM_USED_PCT=$(free | awk 'NR==2{printf "%.0f", $3/$2*100}')
+            PM2_MEM=$(pm2 jlist 2>/dev/null | python3 -c "
+            import json,sys
+            try:
+              apps=[a for a in json.load(sys.stdin) if a['name']=='daddyai']
+              total=sum(a.get('monit',{}).get('memory',0) for a in apps)
+              print(f'{total//1024//1024}MB')
+            except: print('unknown')
+            " 2>/dev/null || echo "unknown")
+            echo "Disk: ${DISK_PCT}% | Mem: ${MEM_USED_PCT}% | PM2: ${PM2_MEM}"
+            # Alert if disk > 85% or memory > 90%
+            if [ "$DISK_PCT" -gt 85 ] 2>/dev/null || [ "$MEM_USED_PCT" -gt 90 ] 2>/dev/null; then
+              echo "RESOURCE_ALERT=true"
+              echo "disk_pct=$DISK_PCT" >> $GITHUB_ENV
+              echo "mem_pct=$MEM_USED_PCT" >> $GITHUB_ENV
+            fi
+
+      - name: Alert on high resource usage
+        if: env.RESOURCE_ALERT == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          BODY="VPS high usage — Disk: ${disk_pct}% | Memory: ${mem_pct}%"
+          # Post to DB
+          if [ -n "$SUPABASE_URL" ]; then
+            curl -s -X POST "${SUPABASE_URL}/rest/v1/notification_logs" \
+              -H "apikey: ${SUPABASE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_KEY}" \
+              -H "Content-Type: application/json" \
+              -H "Prefer: return=minimal" \
+              -d "{\"type\":\"provider_down\",\"title\":\"VPS High Resource Usage\",\"body\":\"${BODY}\",\"severity\":\"warning\",\"resolved\":false}" > /dev/null
+          fi
+          # Telegram
+          if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -d "chat_id=${TELEGRAM_CHAT_ID}&text=⚠️ DaddyAI VPS: ${BODY}&parse_mode=Markdown" > /dev/null
+          fi
+          echo "Resource alert sent"

@@ -25,7 +25,8 @@ const getEscalations = createServerFn({ method: "GET" })
 
 const resolveEscalation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context, data }: { context: any; data: { id: string; notes?: string } }) => {
+  .validator((d: unknown) => d as { id: string; notes?: string })
+  .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
@@ -41,7 +42,8 @@ const resolveEscalation = createServerFn({ method: "POST" })
 
 const assignEscalation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context, data }: { context: any; data: { id: string; assignedTo: string } }) => {
+  .validator((d: unknown) => d as { id: string; assignedTo: string })
+  .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
@@ -123,7 +125,7 @@ function EscalationPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Escalation Queue & Lead Scores</h1>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Pending</CardTitle></CardHeader>
           <CardContent><div className="text-3xl font-bold text-orange-500">{pending.length}</div></CardContent>

@@ -1,0 +1,66 @@
+{
+  "productName": "DaddyAI",
+  "version": "1.0.0",
+  "identifier": "com.daddyai.app",
+  "build": {
+    "frontendDist": "../dist/client",
+    "devUrl": "http://localhost:3000/admin",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "title": "DaddyAI",
+        "width": 1280,
+        "height": 840,
+        "minWidth": 900,
+        "minHeight": 640,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "center": true,
+        "url": "index.html"
+      }
+    ],
+    "security": {
+      "csp": null,
+      "dangerousDisableAssetCspModification": true
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png"
+    ],
+    "copyright": "2026 DaddyAI",
+    "category": "Business",
+    "shortDescription": "AI Sales Agent for Bangladeshi businesses",
+    "longDescription": "DaddyAI replies to customers 24/7 in Bangla, Banglish and English on Messenger, Instagram and WhatsApp.",
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "allowDowngrades": false
+    },
+    "android": {
+      "minSdkVersion": 24,
+      "versionCode": 1
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      },
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    }
+  }
+}

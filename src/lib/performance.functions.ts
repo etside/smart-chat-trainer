@@ -1,6 +1,4 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import { assertAdmin } from "./admin.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -30,10 +28,13 @@ export const getPerformanceStats = createServerFn({ method: "GET" })
   });
 
 export const updatePerformanceSettings = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => z.object({
-    max_simultaneous_replies: z.number().int().min(1).max(50),
-    enable_streaming: z.boolean()
-  }).parse(d))
+  .inputValidator(async (d: unknown) => {
+    const { z } = await import("zod");
+    return z.object({
+      max_simultaneous_replies: z.number().int().min(1).max(50),
+      enable_streaming: z.boolean()
+    }).parse(d);
+  })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     const ctx = context as any;

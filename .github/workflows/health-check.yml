@@ -1,0 +1,125 @@
+name: Nightly Health Check
+
+on:
+  schedule:
+    # Runs daily at 02:00 UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  health-check:
+    name: Check domains are reachable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check openclaw.daddyai.online
+        id: openclaw
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 --max-time 15 \
+            https://openclaw.daddyai.online/ 2>/dev/null || echo "000")
+          echo "status=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+          echo "OpenClaw gateway returned HTTP $HTTP_CODE"
+
+      - name: Check daddyai.online
+        id: daddyai
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 --max-time 15 \
+            https://daddyai.online/ 2>/dev/null || echo "000")
+          echo "status=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+          echo "DaddyAI returned HTTP $HTTP_CODE"
+
+      - name: Open issue if OpenClaw is down
+        if: steps.openclaw.outputs.status != '200'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['health-check']
+            });
+            const openIssues = issues.filter(i =>
+              i.title.includes('OpenClaw gateway is DOWN')
+            );
+            if (openIssues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '⚠️ OpenClaw gateway is DOWN',
+                body: `Health check at $(date -u) detected OpenClaw gateway is unreachable.
+
+- Domain: https://openclaw.daddyai.online/
+- HTTP status: ${steps.openclaw.outputs.status}
+
+Check the VPS and restart the gateway:
+\`\`\`
+ssh root@143.198.29.180 'systemctl status openclaw-gateway'
+\`\`\`
+`,
+                labels: ['health-check', 'bug']
+              });
+            }
+
+      - name: Open issue if daddyai is down
+        if: steps.daddyai.outputs.status != '200'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['health-check']
+            });
+            const openIssues = issues.filter(i =>
+              i.title.includes('DaddyAI is DOWN')
+            );
+            if (openIssues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '⚠️ DaddyAI is DOWN',
+                body: `Health check at $(date -u) detected DaddyAI is unreachable.
+
+- Domain: https://daddyai.online/
+- HTTP status: ${steps.daddyai.outputs.status}
+
+Check the VPS and restart the PM2 app:
+\`\`\`
+ssh root@143.198.29.180 'pm2 status'
+\`\`\`
+`,
+                labels: ['health-check', 'bug']
+              });
+            }
+
+      - name: Close stale health-issue if recovery was automatic
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: ['health-check']
+            });
+            for (const issue of issues) {
+              const culprit = issue.title.includes('OpenClaw') ? 'openclaw' : 'daddyai';
+              const status = steps[culprit].outputs.status;
+              if (status === '200') {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: '✅ Service is back up (HTTP 200). Closing.'
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                });
+              }
+            }

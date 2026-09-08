@@ -99,16 +99,17 @@ export const Route = createFileRoute("/api/public/webhook")({
           }
 
           // Log start of authorized request
-          const { data: logRow } = await supabaseAdmin.from("webhook_logs").insert({
+          // NOTE: do not chain .select() after .insert() — the pg-client shim
+          // would reset the mode and turn this into a plain SELECT.
+          const { data: logRows } = await supabaseAdmin.from("webhook_logs").insert({
             source: 'custom',
             event_type: requestPayload?.event || 'message',
             payload: requestPayload,
             headers: Object.fromEntries(request.headers.entries()),
             status_code: 200,
             processing_status: 'pending'
-          }).select('id').single();
-          
-          logId = logRow?.id || null;
+          });
+          logId = (logRows as any)?.[0]?.id || null;
 
           const parsed = WebhookSchema.safeParse(requestPayload);
           if (!parsed.success) {
@@ -140,6 +141,19 @@ export const Route = createFileRoute("/api/public/webhook")({
           }
 
           const { generateReply, logConversation } = await import("@/lib/agent.server");
+
+          // Check auto-reply mode (direct DB read — getExtraSettingsAdmin is auth-gated and
+          // cannot be called from a webhook context without a user session)
+          const { data: settingsRow } = await supabaseAdmin
+            .from("agent_settings")
+            .select("auto_reply_mode")
+            .eq("id", 1)
+            .maybeSingle();
+          const autoReplyMode = (settingsRow as any)?.auto_reply_mode || 'off';
+
+          // OFF mode: generate reply but store as draft (don't send)
+          // ON mode: generate and send immediately
+          // Standby: same as OFF (draft for approval)
 
           // For generic messages, ensure we use current catalog info for stock/inventory info
           // by passing the secret and token in headers if available for the inner sync logic
@@ -194,8 +208,71 @@ export const Route = createFileRoute("/api/public/webhook")({
 
           // Handle generic message events
           if (parsed.data.message) {
-            const { reply } = await generateReply(parsed.data.message, []);
-            
+            // Use sales pipeline for sentiment, lead scoring, and smart escalation
+            let reply: string | null = null;
+            let pipelineResult: any = null;
+            try {
+              const { processSalesMessage } = await import("@/lib/sales-agent.server");
+              pipelineResult = await processSalesMessage({
+                message: parsed.data.message,
+                conversationId: null,
+                sessionId: null,
+                externalId: parsed.data.sender || parsed.data.conversation_id || null,
+                channel: "webhook",
+                history: [],
+                generateReplyFn: async (msg, hist) => {
+                  const generated = await generateReply(msg, hist);
+                  return { reply: generated.reply, examples: [] };
+                },
+              });
+              reply = pipelineResult.reply;
+            } catch (aiError: any) {
+              console.error("Sales pipeline failed (conversation will still be logged):", aiError?.message || aiError);
+              // Fallback to direct generateReply
+              try {
+                const generated = await generateReply(parsed.data.message, []);
+                reply = generated.reply;
+              } catch (fallbackError: any) {
+                console.error("generateReply also failed:", fallbackError?.message || fallbackError);
+              }
+            }
+
+            // Log conversation to inbox (both ON and OFF modes, and even when AI failed)
+            await logConversation(
+              parsed.data.conversation_id || parsed.data.sender || null,
+              "webhook",
+              reply
+                ? [
+                    { role: "user", content: parsed.data.message },
+                    { role: "assistant", content: reply }
+                  ]
+                : [{ role: "user", content: parsed.data.message }]
+            );
+
+            // AI failed: record failure and stop (nothing to send or approve)
+            if (!reply) {
+              if (logId) {
+                await supabaseAdmin.from("webhook_logs").update({
+                  processing_status: 'failed',
+                  error_details: 'AI reply generation failed (check AI provider credits/config)'
+                }).eq('id', logId);
+              }
+              return json({ status: "logged_without_reply", error: "AI unavailable" }, 200);
+            }
+
+            // OFF or Standby: generate reply but store as draft (don't send)
+            if (autoReplyMode === 'off' || autoReplyMode === 'standby') {
+              if (logId) {
+                await supabaseAdmin.from("webhook_logs").update({
+                  processing_status: 'pending_approval',
+                  payload: { ...requestPayload, draft_reply: reply },
+                }).eq('id', logId);
+              }
+              console.log(`[auto-reply] Mode is ${autoReplyMode.toUpperCase()} — draft stored`);
+              return json({ status: "draft_stored", draft_reply: reply });
+            }
+
+            // ON mode: send reply immediately
             // Log activity to first valid API key for tracking if possible
             const { data: firstKey } = await supabaseAdmin
               .from("api_keys")
@@ -210,15 +287,6 @@ export const Route = createFileRoute("/api/public/webhook")({
                 .update({ last_used_at: new Date().toISOString() })
                 .eq("id", firstKey.id);
             }
-
-            await logConversation(
-              parsed.data.conversation_id || parsed.data.sender || null,
-              "webhook",
-              [
-                { role: "user", content: parsed.data.message },
-                { role: "assistant", content: reply }
-              ]
-            );
 
             if (logId) {
               await supabaseAdmin.from("webhook_logs").update({

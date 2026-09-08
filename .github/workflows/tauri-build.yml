@@ -1,0 +1,100 @@
+name: Build DaddyAI Admin APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "Build type"
+        default: "debug"
+        type: choice
+        options: [debug, release]
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-android:
+    name: Build Android WebView APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Capacitor
+        run: npm install --save-dev @capacitor/cli @capacitor/core @capacitor/android
+
+      - name: Write Capacitor config
+        run: |
+          cat > capacitor.config.json << 'CAPEOF'
+          {
+            "appId": "com.daddyai.app",
+            "appName": "DaddyAI",
+            "webDir": "dist-pwa",
+            "server": {
+              "url": "https://daddyai.online/admin",
+              "cleartext": false,
+              "androidScheme": "https"
+            }
+          }
+          CAPEOF
+          mkdir -p dist-pwa
+          echo "<html><body>Loading DaddyAI...</body></html>" > dist-pwa/index.html
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon 2>&1 | tail -30
+
+      - name: Find APK
+        run: |
+          echo "Searching for APK..."
+          find android -name "*.apk" 2>/dev/null
+          APK=$(find android -name "*debug*.apk" | head -1)
+          echo "APK: $APK"
+          ls -lh "$APK" 2>/dev/null || echo "APK not found at expected path"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: daddyai-admin-apk-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Create GitHub Release on tag
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          name: DaddyAI Admin ${{ github.ref_name }}
+          body: |
+            ## DaddyAI Admin APK ${{ github.ref_name }}
+            WebView app — loads https://daddyai.online/admin
+            ### Install
+            1. Download `app-debug.apk` below
+            2. Enable "Install from unknown sources" in Android Settings
+            3. Install, open, and login with your daddyai.online credentials
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

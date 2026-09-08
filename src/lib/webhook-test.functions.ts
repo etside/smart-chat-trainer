@@ -4,6 +4,7 @@ import { z } from "zod";
 import { assertAdmin } from "./admin.server";
 import { transcribeAudio } from "./ai.server";
 import { generateReply } from "./agent.server";
+import { evaluateAutoReplyRules } from "./auto-reply.engine";
 
 export const testWebhookPayload = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
@@ -41,8 +42,27 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
       throw new Error("No message content found");
     }
 
-    const result = await generateReply(textMessage, []);
+    // Step 1: Try auto-reply template matching first
+    const autoReplyResult = await evaluateAutoReplyRules(textMessage, `test-${data.sender}`, 0);
 
+    let reply: string;
+    let templateMatched = false;
+    let templateName: string | null = null;
+    let matchConfidence = 0;
+
+    if (autoReplyResult && autoReplyResult.confidence >= 0.5) {
+      // Use the matched template
+      reply = autoReplyResult.templateText;
+      templateMatched = true;
+      templateName = autoReplyResult.templateName;
+      matchConfidence = autoReplyResult.confidence;
+    } else {
+      // Fall back to AI generation
+      const result = await generateReply(textMessage, []);
+      reply = result.reply;
+    }
+
+    // Log conversation
     const { data: conv } = await supabaseAdmin
       .from("conversations")
       .insert({
@@ -55,14 +75,18 @@ export const testWebhookPayload = createServerFn({ method: "POST" })
     if (conv) {
       await supabaseAdmin.from("messages").insert([
         { conversation_id: conv.id, role: "user", content: textMessage },
-        { conversation_id: conv.id, role: "assistant", content: result.reply },
+        { conversation_id: conv.id, role: "assistant", content: reply },
       ] as any);
     }
 
     return {
       transcription: transcriptionResult,
-      reply: result.reply,
-      examplesCount: result.examples.length,
+      reply,
+      templateMatched,
+      templateName,
+      matchConfidence,
+      examplesCount: autoReplyResult ? 1 : 0,
       conversationId: conv?.id,
+      source: templateMatched ? "auto-reply template" : "AI generation",
     };
   });

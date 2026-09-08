@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { getAgentSettings, saveAgentSettings, getMyRole } from "@/lib/console.functions";
+import { getAgentSettings, saveAgentSettings, getMyRole, testAiConnection } from "@/lib/console.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { getSyncCredentials, updateSyncCredentials, getMetaCredentials, updateMetaCredentials } from "@/lib/settings.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,22 +18,58 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Key, KeyRound, Save, Sparkles, MessageSquare, Info, ShieldCheck, Copy, AlertCircle, Terminal, Globe, Zap, Database as DbIcon, Cloud, Music, Server } from "lucide-react";
 import { getExtraSettingsAdmin, updateExtraSettings } from "@/lib/extra-settings.functions";
+import { testBackblazeConnection, testBosonConnection, testFishAudioConnection, testMimoTTSConnection, getB2BStatus } from "@/lib/b2b.functions";
 import { useEffect, useState } from "react";
 import { verifyMetaConnection, getMetaWebhookConfig } from "@/lib/meta.functions";
 import { rotateSyncCredentials, rollbackSyncCredentials } from "@/lib/audit.functions";
 import { toast } from "sonner";
+import { AutoReplyToggle } from "@/components/auto-reply-toggle";
+import { SettingsTabs } from "@/components/SettingsTabs";
 
 export const Route = createFileRoute("/admin/settings")({
   component: SettingsPage,
 });
 
-const VALID_MODELS = ["mimo-v2.5-pro", "mimo-v2.5"];
-const DEFAULT_MODEL = "mimo-v2.5";
+const DEFAULT_MODEL = "qwen/qwen3.8-27b-free"; // OrcaRouter free default
 
+// Suggestions only — the model field is free text so any provider's model
+// can be used (routing is driven by AI Base URL + AI API Key + model).
 const MODELS = [
-  { id: "mimo-v2.5-pro", label: "MiMo V2.5 Pro (High-Performance)" },
-  { id: "mimo-v2.5", label: "MiMo V2.5 (Balanced)" },
+  // ── OrcaRouter FREE (recommended) ────────────────────────────────────────
+  { id: "qwen/qwen3.8-27b-free",          label: "Qwen 3.8 27B (OrcaRouter FREE)" },
+  { id: "deepseek/deepseek-v4-flash-free", label: "DeepSeek V4 Flash (OrcaRouter FREE)" },
+  { id: "tencent/hy3-free",               label: "HunyuanLarge 3 (OrcaRouter FREE)" },
+  // ── OrcaRouter paid ────────────────────────────────────────────────────────
+  { id: "orcarouter/fusion-mini",          label: "OrcaRouter Fusion Mini (low cost)" },
+  { id: "orcarouter/fusion-flash",         label: "OrcaRouter Fusion Flash" },
+  { id: "orcarouter/auto",                 label: "OrcaRouter Auto (smart routing)" },
+  { id: "google/gemini-2.5-flash",         label: "Gemini 2.5 Flash" },
+  { id: "google/gemini-3.5-flash",         label: "Gemini 3.5 Flash" },
+  { id: "openai/gpt-4o-mini",              label: "GPT-4o Mini" },
+  { id: "openai/gpt-4o",                   label: "GPT-4o" },
+  { id: "anthropic/claude-haiku-4.5",      label: "Claude Haiku 4.5" },
+  // ── Legacy ────────────────────────────────────────────────────────────────
+  { id: "mimo-v2.5", label: "MiMo V2.5 (legacy)" },
+  { id: "glm-5.3",   label: "GLM 5.3 (Z.ai)" },
+  { id: "deepseek-chat", label: "DeepSeek Chat (direct)" },
 ];
+
+// Common OpenAI-compatible endpoints for quick reference
+const AI_ENDPOINTS = [
+  { label: "OrcaRouter (recommended)", url: "https://api.orcarouter.ai/v1" },
+  { label: "MiMo (legacy)",               url: "https://api.xiaomimimo.com/v1" },
+  { label: "OpenAI",                       url: "https://api.openai.com/v1" },
+  { label: "DeepSeek",                     url: "https://api.deepseek.com/v1" },
+  { label: "Z.ai (GLM)",                   url: "https://api.z.ai/api/paas/v4" },
+  { label: "Google Gemini",                url: "https://generativelanguage.googleapis.com/v1beta/openai" },
+];
+
+// OrcaRouter preset — one-click configure (no key — loaded from server config)
+const ORCA_PRESET = {
+  url: "https://api.orcarouter.ai/v1",
+  model: "qwen/qwen3.8-27b-free",
+  key: "",
+};
 
 function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
   const [status, setStatus] = useState<string>("unknown");
@@ -109,6 +145,7 @@ function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
   };
 
   const declinedPermissions = permissions.filter(p => p.status === 'declined');
+  const [showToken, setShowToken] = useState(false);
 
   return (
     <div className="flex flex-col gap-4 p-5 rounded-xl bg-primary/5 border border-primary/10 mb-6">
@@ -138,7 +175,7 @@ function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
       </div>
 
       {status === 'connected' && (
-        <div className="space-y-3 pt-3 border-t border-white/5">
+        <div className="space-y-3 pt-3 border-t border-border/30">
           <div className="flex flex-wrap gap-2">
             {permissions.map((p, i) => (
               <div 
@@ -168,8 +205,8 @@ function MetaLoginButton({ metaAppId }: { metaAppId: string }) {
             </div>
           )}
 
-          <div className="text-[9px] font-mono text-muted-foreground bg-background/50 p-2 rounded border border-white/5 overflow-x-auto">
-            Token: {user?.accessToken.substring(0, 30)}...
+          <div className="text-[9px] font-mono text-muted-foreground bg-background/50 p-2 rounded border border-border/30 overflow-x-auto">
+            Token: {showToken ? user?.accessToken : "••••••••••••••••••••••••••••••"} <button type="button" onClick={() => setShowToken(!showToken)} className="text-primary ml-1 text-[9px] hover:underline">{showToken ? "Hide" : "Show"}</button>
           </div>
         </div>
       )}
@@ -196,15 +233,53 @@ function SettingsPage() {
   const [model, setModel] = useState("mimo-v2.5");
   const [autoApprove, setAutoApprove] = useState(false);
   const [apiKeyOverride, setApiKeyOverride] = useState("");
+  const [aiBaseUrl, setAiBaseUrl] = useState("");
+  const [aiTestResult, setAiTestResult] = useState<{ ok: boolean; error?: string } | null>(null);
+  const [aiTesting, setAiTesting] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
 
   const [b2bBackblazeKey, setB2bBackblazeKey] = useState("");
   const [bosonWorkspaceId, setBosonWorkspaceId] = useState("");
   const [fishAudioApiKey, setFishAudioApiKey] = useState("");
   const [fishAudioModelId, setFishAudioModelId] = useState("");
-  const [voiceProvider, setVoiceProvider] = useState<"fish" | "mimo">("fish");
+  const [voiceProvider, setVoiceProvider] = useState<"fish" | "mimo" | "gemini">("gemini");
   const [altApiKeys, setAltApiKeys] = useState<Record<string, string>>({});
+  const [adminPin, setAdminPin] = useState("856777");
+  const [pinEnabled, setPinEnabled] = useState(true);
+  const [bytezApiKey, setBytezApiKey] = useState("");
+  const [b2bTestResults, setB2bTestResults] = useState<Record<string, { ok: boolean; data?: any; error?: string }>>({});
+
+  const testAi = useServerFn(testAiConnection);
+  const testBackblaze = useServerFn(testBackblazeConnection);
+  const testBoson = useServerFn(testBosonConnection);
+  const testFishAudio = useServerFn(testFishAudioConnection);
+  const testMimoTTS = useServerFn(testMimoTTSConnection);
+  const fetchB2BStatus = useServerFn(getB2BStatus);
+
+  const { data: b2bStatus } = useQuery({ queryKey: ["b2b-status"], queryFn: () => fetchB2BStatus() });
+
+  const b2bTestMutation = useMutation({
+    mutationFn: async (service: string) => {
+      switch (service) {
+        case "backblaze": return testBackblaze();
+        case "boson": return testBoson();
+        case "fish_audio": return testFishAudio();
+        case "mimo_tts": return testMimoTTS();
+        default: throw new Error("Unknown service");
+      }
+    },
+    onSuccess: (res: any, service) => {
+      setB2bTestResults(prev => ({ ...prev, [service]: res }));
+      if (res.ok) toast.success(`${service} connection successful`);
+      else toast.error(res.error || `${service} connection failed`);
+    },
+    onError: (err: any, service) => {
+      setB2bTestResults(prev => ({ ...prev, [service]: { ok: false, error: err.message } }));
+      toast.error(`${service} test failed`);
+    },
+  });
   const [vpsConfig, setVpsConfig] = useState<any>({});
+  const [telegramBotToken, setTelegramBotToken] = useState("");
 
   const [syncToken, setSyncToken] = useState("");
   const [syncSecret, setSyncSecret] = useState("");
@@ -258,24 +333,31 @@ function SettingsPage() {
     setVoiceProvider(extraData.voiceProvider || "fish");
     setAltApiKeys(extraData.altApiKeys);
     setVpsConfig(extraData.vpsHostingConfig);
+    if (extraData.adminPin) setAdminPin(extraData.adminPin);
+    if (extraData.pinEnabled !== undefined) setPinEnabled(extraData.pinEnabled);
+    if (extraData.bytezApiKey) setBytezApiKey(extraData.bytezApiKey);
   }, [extraData]);
 
   useEffect(() => {
     if (!data) return;
     setPrompt(data.system_prompt ?? "");
-    setModel(VALID_MODELS.includes(data.model) ? data.model : DEFAULT_MODEL);
+    setModel(data.model || DEFAULT_MODEL);
     setAutoApprove(Boolean(data.auto_approve));
-    setApiKeyOverride(data.lovable_api_key_override ?? "");
+    setApiKeyOverride(data.ai_api_key ?? "");
+    setAiBaseUrl(data.ai_base_url ?? "");
+    setTelegramBotToken((data as any).telegram_bot_token ?? "");
   }, [data]);
 
   const mutation = useMutation({
     mutationFn: () =>
-      save({ data: { 
-        system_prompt: prompt, 
-        model, 
+      save({ data: {
+        system_prompt: prompt,
+        model,
         auto_approve: autoApprove,
-        lovable_api_key_override: apiKeyOverride
-      } }).then(() => saveExtra({ data: { 
+        ai_api_key: apiKeyOverride,
+        ai_base_url: aiBaseUrl,
+        telegram_bot_token: telegramBotToken
+      } }).then(() => saveExtra({ data: {
         reduceMotion,
         b2bBackblazeKey,
         bosonWorkspaceId,
@@ -283,7 +365,10 @@ function SettingsPage() {
         fishAudioModelId,
         voiceProvider,
         altApiKeys,
-        vpsHostingConfig: vpsConfig
+        vpsHostingConfig: vpsConfig,
+        adminPin,
+        pinEnabled,
+        bytezApiKey,
       } })),
     onSuccess: () => {
       toast.success("সেটিংস সেভ হয়েছে");
@@ -374,7 +459,9 @@ function SettingsPage() {
         </div>
       </div>
 
-      <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl mb-8 border-red-500/30 ring-1 ring-red-500/10">
+      <SettingsTabs />
+
+      <div className="panel p-8 bg-card/40 backdrop-blur-sm border-border/30 shadow-2xl mb-8 border-red-500/30 ring-1 ring-red-500/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-lg bg-red-500/10 flex items-center justify-center">
@@ -382,7 +469,7 @@ function SettingsPage() {
             </div>
             <div>
               <h2 className="text-lg font-bold">সিঙ্ক ক্রেডেনশিয়াল রোটেশন (Secret Rotation)</h2>
-              <p className="text-[10px] text-red-400 mt-1 font-semibold">⚠ Warning: This action invalidates old tokens.</p>
+              <p className="text-[10px] text-red-400 mt-1 font-semibold">Warning: This action invalidates old tokens.</p>
               <p className="text-xs text-muted-foreground italic">নিরাপত্তার জন্য নিয়মিত Webhook Secret এবং API Token পরিবর্তন করুন।</p>
             </div>
           </div>
@@ -424,7 +511,7 @@ function SettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl">
+          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-border/30 shadow-2xl">
             <div className="flex items-center gap-2 mb-4">
               <div className="size-2 rounded-full bg-primary animate-pulse" />
               <h2 className="text-lg font-bold">এজেন্ট ইনস্ট্রাকশন (System Prompt)</h2>
@@ -434,7 +521,7 @@ function SettingsPage() {
               rows={12}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              className="font-mono text-sm leading-relaxed bg-muted/20 border-white/5 focus:bg-background transition-all focus:ring-1 focus:ring-primary/50"
+              className="font-mono text-sm leading-relaxed bg-muted/20 border-border/30 focus:bg-background transition-all focus:ring-1 focus:ring-primary/50"
               placeholder="আপনি একজন দক্ষ সেলস এজেন্ট..."
             />
             <p className="mt-4 text-xs text-muted-foreground leading-relaxed flex items-start gap-2">
@@ -445,53 +532,119 @@ function SettingsPage() {
             </p>
           </div>
 
-          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl">
+          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-border/30 shadow-2xl">
+            <div className="flex items-center gap-2 mb-4">
+              <MessageSquare className="size-5 text-primary" />
+              <h2 className="text-lg font-bold">Auto-Reply Mode</h2>
+            </div>
+            <AutoReplyToggle currentMode={extraData?.autoReplyMode || 'off'} />
+          </div>
+
+          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-border/30 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Cloud className="size-5 text-primary" />
                 <h2 className="text-lg font-bold tracking-tight">B2B & External Services</h2>
+                {b2bStatus && (
+                  <div className="flex gap-1 ml-2">
+                    {b2bStatus.backblaze?.configured && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/10 text-success border border-success/20">B2</span>}
+                    {b2bStatus.fishAudio?.configured && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/10 text-success border border-success/20">Fish</span>}
+                    {b2bStatus.mimoTTS?.configured && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/10 text-success border border-success/20">MiMo</span>}
+                    {b2bStatus.boson?.configured && <span className="text-[9px] px-1.5 py-0.5 rounded bg-success/10 text-success border border-success/20">Boson</span>}
+                  </div>
+                )}
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  for (const svc of ["backblaze", "fish_audio", "mimo_tts", "boson"]) {
+                    await b2bTestMutation.mutateAsync(svc).catch(() => {});
+                  }
+                }}
+                disabled={b2bTestMutation.isPending}
+                className="h-8 text-xs"
+              >
+                {b2bTestMutation.isPending ? "Testing..." : "Test All"}
+              </Button>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Backblaze B2 Key</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Backblaze B2 Key</Label>
+                  <div className="flex items-center gap-1">
+                    {b2bTestResults.backblaze && (
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${b2bTestResults.backblaze.ok ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+                        {b2bTestResults.backblaze.ok ? `Connected (${b2bTestResults.backblaze.data?.buckets} buckets)` : 'Failed'}
+                      </span>
+                    )}
+                    <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => b2bTestMutation.mutate("backblaze")} disabled={b2bTestMutation.isPending}>
+                      Test
+                    </Button>
+                  </div>
+                </div>
                 <Input
                   type="password"
                   placeholder={extraData?.b2bBackblazeKey ? "••••••••" : "API Key"}
                   value={b2bBackblazeKey}
                   onChange={(e) => setB2bBackblazeKey(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Boson Workspace ID</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Boson Workspace ID</Label>
+                  <div className="flex items-center gap-1">
+                    {b2bTestResults.boson && (
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${b2bTestResults.boson.ok ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+                        {b2bTestResults.boson.ok ? 'Connected' : 'Failed'}
+                      </span>
+                    )}
+                    <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => b2bTestMutation.mutate("boson")} disabled={b2bTestMutation.isPending}>
+                      Test
+                    </Button>
+                  </div>
+                </div>
                 <Input
                   placeholder="ID"
                   value={bosonWorkspaceId}
                   onChange={(e) => setBosonWorkspaceId(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Voice Provider</Label>
                 <select
                   value={voiceProvider}
-                  onChange={(e) => setVoiceProvider(e.target.value as "fish" | "mimo")}
-                  className="w-full rounded-md border border-white/5 bg-muted/20 px-3 py-2 text-sm font-mono focus:bg-background"
+                  onChange={(e) => setVoiceProvider(e.target.value as "fish" | "mimo" | "gemini")}
+                  className="w-full rounded-md border border-border/30 bg-muted/20 px-3 py-2 text-sm font-mono focus:bg-background"
                 >
                   <option value="fish">Fish Audio (Voice Cloning)</option>
                   <option value="mimo">MiMo TTS (Xiaomi)</option>
+                  <option value="gemini">Gemini TTS (Free)</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Fish Audio API Key</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Fish Audio API Key</Label>
+                  <div className="flex items-center gap-1">
+                    {b2bTestResults.fish_audio && (
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${b2bTestResults.fish_audio.ok ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+                        {b2bTestResults.fish_audio.ok ? `Connected (${b2bTestResults.fish_audio.data?.models} models)` : 'Failed'}
+                      </span>
+                    )}
+                    <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => b2bTestMutation.mutate("fish_audio")} disabled={b2bTestMutation.isPending}>
+                      Test
+                    </Button>
+                  </div>
+                </div>
                 <Input
                   type="password"
                   placeholder={extraData?.fishAudioApiKey ? "••••••••" : "API Key"}
                   value={fishAudioApiKey}
                   onChange={(e) => setFishAudioApiKey(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
                 />
               </div>
               <div className="space-y-2">
@@ -500,9 +653,86 @@ function SettingsPage() {
                   placeholder="Voice model ID (leave empty for default)"
                   value={fishAudioModelId}
                   onChange={(e) => setFishAudioModelId(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
                 />
                 <p className="text-[10px] text-muted-foreground/50">Paste a Fish Audio voice model ID for voice cloning</p>
+              </div>
+              {/* DigitalOcean Inference Key — used for Vision AI (openai-gpt-4o) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">
+                    DigitalOcean Inference Key
+                  </Label>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">Vision AI</span>
+                </div>
+                <Input
+                  type="password"
+                  placeholder={altApiKeys?.do_inference_key ? "••••••••" : "DO Inference API key"}
+                  value={altApiKeys?.do_inference_key ?? ""}
+                  onChange={(e) => setAltApiKeys({ ...altApiKeys, do_inference_key: e.target.value })}
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
+                />
+                <p className="text-[10px] text-muted-foreground/50">
+                  Used for image analysis via <span className="text-blue-400 font-mono">kimi-k3</span> on DigitalOcean Gradient AI (DO-hosted, no OpenAI subscription needed).
+                  Get your key at <span className="text-blue-400">cloud.digitalocean.com → AI → Model Access Keys</span>
+                </p>
+              </div>
+
+              {/* ── Bytez API Key ────────────────────────────── */}
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">
+                    Bytez API Key
+                  </Label>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 border border-violet-500/20">Vision · ASR · TTS · Chat Fallback</span>
+                </div>
+                <Input
+                  type="password"
+                  placeholder={extraData?.bytezApiKey ? "••••••••" : "Bytez API Key (f7c0...)"}
+                  value={bytezApiKey}
+                  onChange={(e) => setBytezApiKey(e.target.value)}
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
+                />
+                <p className="text-[10px] text-muted-foreground/50">
+                  Free open-source AI fallback for vision, transcription, TTS, and text. Get your key at{" "}
+                  <a href="https://bytez.com/api" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:underline">bytez.com/api</a>.
+                  100,000+ models — used when primary providers fail.
+                </p>
+              </div>
+
+              {/* ── Admin PIN Lock ───────────────────────────── */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">
+                    Admin PIN Lock
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground">Enabled</span>
+                    <button
+                      type="button"
+                      onClick={() => setPinEnabled(!pinEnabled)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${pinEnabled ? 'bg-primary' : 'bg-muted'}`}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${pinEnabled ? 'translate-x-4' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+                </div>
+                <Input
+                  type="password"
+                  placeholder="6-digit PIN (e.g. 856777)"
+                  value={adminPin}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setAdminPin(v);
+                  }}
+                  maxLength={6}
+                  inputMode="numeric"
+                  className="bg-muted/20 border-border/30 font-mono text-sm tracking-[0.5em] focus:bg-background"
+                  disabled={!pinEnabled}
+                />
+                <p className="text-[10px] text-muted-foreground/50">
+                  6-digit PIN shown on admin panel load. Biometric (Face ID / fingerprint) also supported where available. Session lasts 4 hours.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">VPS Hosting Server URL</Label>
@@ -510,14 +740,24 @@ function SettingsPage() {
                   placeholder="https://..."
                   value={vpsConfig?.serverUrl || ""}
                   onChange={(e) => setVpsConfig({ ...vpsConfig, serverUrl: e.target.value })}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
                 />
               </div>
+            </div>
+            <div className="flex justify-end mt-6 pt-4 border-t border-border/30">
+              <Button
+                onClick={() => mutation.mutate()}
+                disabled={mutation.isPending}
+                className="h-9 text-xs font-semibold"
+              >
+                <Save className="mr-2 size-3" />
+                {mutation.isPending ? "সেভ হচ্ছে..." : "B2B সেটিংস সেভ করুন"}
+              </Button>
             </div>
           </div>
 
 
-          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl">
+          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-border/30 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Key className="size-5 text-primary" />
@@ -542,7 +782,7 @@ function SettingsPage() {
                   placeholder={syncData?.token ? "••••••••" : "ব্যাকএন্ড টোকেন দিন"}
                   value={syncToken}
                   onChange={(e) => setSyncToken(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
                 />
               </div>
               <div className="space-y-2">
@@ -552,7 +792,7 @@ function SettingsPage() {
                   placeholder={syncData?.secret ? "••••••••" : "ব্যাকএন্ড সিক্রেট দিন"}
                   value={syncSecret}
                   onChange={(e) => setSyncSecret(e.target.value)}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background"
                 />
               </div>
             </div>
@@ -560,7 +800,7 @@ function SettingsPage() {
               নিরাপত্তার স্বার্থে টোকেন এবং সিক্রেট মাস্ক করে দেখানো হচ্ছে। নতুন মান সেভ করলে আগেরগুলো ওভাররাইট হবে।
             </p>
           </div>
-          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-white/5 shadow-2xl">
+          <div className="panel p-8 bg-card/40 backdrop-blur-sm border-border/30 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Globe className="size-5 text-[#1877F2]" />
@@ -599,7 +839,7 @@ function SettingsPage() {
                   value={metaAppId}
                   onChange={(e) => setMetaAppId(e.target.value)}
                   disabled={!isAdmin}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="space-y-2">
@@ -610,7 +850,7 @@ function SettingsPage() {
                   value={metaAppSecret}
                   onChange={(e) => setMetaAppSecret(e.target.value)}
                   disabled={!isAdmin}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="space-y-2">
@@ -620,7 +860,7 @@ function SettingsPage() {
                   value={metaPageId}
                   onChange={(e) => setMetaPageId(e.target.value)}
                   disabled={!isAdmin}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="space-y-2">
@@ -630,7 +870,7 @@ function SettingsPage() {
                   value={metaWhatsappId}
                   onChange={(e) => setMetaWhatsappId(e.target.value)}
                   disabled={!isAdmin}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="space-y-2">
@@ -640,7 +880,7 @@ function SettingsPage() {
                   value={metaApiVersion}
                   onChange={(e) => setMetaApiVersion(e.target.value)}
                   disabled={!isAdmin}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
               <div className="col-span-1 md:col-span-2 space-y-2">
@@ -651,7 +891,7 @@ function SettingsPage() {
                   value={metaAccessToken}
                   onChange={(e) => setMetaAccessToken(e.target.value)}
                   disabled={!isAdmin}
-                  className="bg-muted/20 border-white/5 font-mono text-sm focus:bg-background disabled:opacity-50"
+                  className="bg-muted/20 border-border/30 font-mono text-sm focus:bg-background disabled:opacity-50"
                 />
               </div>
             </div>
@@ -664,7 +904,7 @@ function SettingsPage() {
                 </h3>
                 <div className="space-y-4 text-xs">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-3 rounded bg-background/50 border border-white/5 space-y-2">
+                    <div className="p-3 rounded bg-background/50 border border-border/30 space-y-2">
                       <p className="font-bold text-primary italic">Client OAuth Settings</p>
                       <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                         <li>Standard OAuth: Enabled</li>
@@ -673,7 +913,7 @@ function SettingsPage() {
                         <li>Strict Mode: Enabled</li>
                       </ul>
                     </div>
-                    <div className="p-3 rounded bg-background/50 border border-white/5 space-y-2">
+                    <div className="p-3 rounded bg-background/50 border border-border/30 space-y-2">
                       <p className="font-bold text-primary italic">JavaScript SDK Settings</p>
                       <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                         <li>Login with JS SDK: Enabled</li>
@@ -683,7 +923,7 @@ function SettingsPage() {
                   </div>
 
                   <div className="space-y-3 pt-2">
-                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-border/30">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground font-medium">Valid OAuth Redirect URIs:</span>
                         <span className="text-[10px] text-accent italic font-bold">Popups & In-app Browsers</span>
@@ -702,7 +942,7 @@ function SettingsPage() {
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-border/30">
                       <span className="text-muted-foreground font-medium">Allowed Domains for the JavaScript SDK:</span>
                       <div className="flex items-center justify-between gap-2">
                         <code className="text-primary font-mono truncate">{typeof window !== 'undefined' ? window.location.hostname : ''}</code>
@@ -715,7 +955,7 @@ function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-border/30">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground font-medium">Deauthorize / Data Deletion Callback:</span>
                         <span className="text-[10px] text-destructive italic font-bold">Security & Privacy</span>
@@ -734,7 +974,7 @@ function SettingsPage() {
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-border/30">
                       <span className="text-muted-foreground font-medium">Data Deletion Request URL (User Facing):</span>
                       <div className="flex items-center justify-between gap-2">
                         <code className="text-primary font-mono truncate">https://salesdaddy.netlify.app/data-policy</code>
@@ -747,7 +987,7 @@ function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-white/5">
+                    <div className="flex flex-col gap-1.5 p-2 rounded bg-background/40 border border-border/30">
                       <span className="text-muted-foreground font-medium">Webhook Callback URL:</span>
                       <div className="flex items-center justify-between gap-2">
                         <code className="text-primary font-mono truncate">{webhookConfig?.callbackUrl || "..."}</code>
@@ -760,10 +1000,10 @@ function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 rounded bg-background/40 border border-white/5">
+                    <div className="flex items-center justify-between p-2 rounded bg-background/40 border border-border/30">
                       <span className="text-muted-foreground font-medium">Verify Token:</span>
                       <Input 
-                        className="h-7 w-48 text-[10px] bg-background/50 border-white/10"
+                        className="h-7 w-48 text-[10px] bg-background/50 border-border/30"
                         value={metaVerifyToken}
                         onChange={(e) => setMetaVerifyToken(e.target.value)}
                         placeholder="আপনার ভেরিফাই টোকেন"
@@ -782,7 +1022,7 @@ function SettingsPage() {
                       <p className="text-xs text-muted-foreground">Partner Integration Config ID</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono text-primary">
+                      <code className="px-2 py-1 bg-background rounded border border-border/30 text-xs font-mono text-primary">
                         4435001526812234
                       </code>
                       <Button 
@@ -806,7 +1046,7 @@ function SettingsPage() {
                       <p className="text-xs text-muted-foreground">Creator Marketplace Config ID</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono text-pink-500">
+                      <code className="px-2 py-1 bg-background rounded border border-border/30 text-xs font-mono text-pink-500">
                         1065823475931849
                       </code>
                       <Button 
@@ -830,7 +1070,7 @@ function SettingsPage() {
                       <p className="text-xs text-muted-foreground">App Onboarding Config ID</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono text-indigo-400">
+                      <code className="px-2 py-1 bg-background rounded border border-border/30 text-xs font-mono text-indigo-400">
                         1687781608963502
                       </code>
                       <Button 
@@ -854,7 +1094,7 @@ function SettingsPage() {
                       <p className="text-xs text-muted-foreground">Measurement Partner Config ID</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono text-emerald-400">
+                      <code className="px-2 py-1 bg-background rounded border border-border/30 text-xs font-mono text-emerald-400">
                         1069878039319399
                       </code>
                       <Button 
@@ -878,7 +1118,7 @@ function SettingsPage() {
                       <p className="text-xs text-muted-foreground">Embedded Signup (60d Token) ID</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <code className="px-2 py-1 bg-background rounded border border-white/10 text-xs font-mono text-emerald-500">
+                      <code className="px-2 py-1 bg-background rounded border border-border/30 text-xs font-mono text-emerald-500">
                         1627789222122323
                       </code>
                       <Button 
@@ -935,38 +1175,152 @@ function SettingsPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="panel p-6 bg-card/60 backdrop-blur-sm border-white/5">
+          <div className="panel p-6 bg-card/60 backdrop-blur-sm border-border/30">
             <h2 className="font-bold mb-4 flex items-center gap-2">
               <Sparkles className="size-4 text-primary" />
               AI ইঞ্জিন
             </h2>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">মডেল সিলেক্ট করুন</Label>
-                <Select value={model} onValueChange={setModel}>
-                  <SelectTrigger className="w-full bg-background/50 border-white/5">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MODELS.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">মডেল (Model ID)</Label>
+                <Input
+                  list="ai-model-suggestions"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  placeholder="glm-5.3"
+                  className="bg-background/50 border-border/30 font-mono"
+                />
+                <datalist id="ai-model-suggestions">
+                  {MODELS.map((m) => (
+                    <option key={m.id} value={m.id}>{m.label}</option>
+                  ))}
+                </datalist>
+                <p className="text-xs text-muted-foreground">
+                  যেকোনো প্রোভাইডারের মডেল লিখুন (যেমন glm-5.3, mimo-v2.5, gpt-4o-mini)। নিচের Base URL ও API Key অনুযায়ী রাউট হবে।
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Custom API Key (Optional)</Label>
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">AI Base URL (OpenAI-compatible)</Label>
+                <Input
+                  value={aiBaseUrl}
+                  onChange={(e) => setAiBaseUrl(e.target.value)}
+                  placeholder="https://api.z.ai/api/paas/v4"
+                  className="bg-background/50 border-border/30 font-mono"
+                />
+                {/* OrcaRouter quick-setup banner */}
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-primary/5 border border-primary/20 mb-2">
+                  <span className="text-lg"><Zap size={18} className="text-primary" /></span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-primary">OrcaRouter — 191 models, FREE tier available</p>
+                    <p className="text-[10px] text-muted-foreground truncate">qwen/qwen3.8-27b-free · deepseek/deepseek-v4-flash-free · and more</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiBaseUrl(ORCA_PRESET.url);
+                      setModel(ORCA_PRESET.model);
+                      setApiKeyOverride(ORCA_PRESET.key);
+                    }}
+                    className="shrink-0 px-2.5 py-1 rounded-lg bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-wide hover:bg-primary/90 transition-colors"
+                  >
+                    One-click Setup
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {AI_ENDPOINTS.map((ep) => (
+                    <button
+                      key={ep.url}
+                      type="button"
+                      onClick={() => setAiBaseUrl(ep.url)}
+                      className="text-xs px-2 py-0.5 rounded-full border border-border/30 bg-background/40 hover:bg-background/70 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {ep.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">OrcaRouter ব্যবহার করুন — <span className="text-primary font-semibold">191টি মডেল, FREE tier সহ</span>।</p>
+
+                {/* Self-Hosted AI Presets */}
+                <div className="mt-3 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                  <p className="text-xs font-bold text-emerald-400 mb-2 flex items-center gap-1.5">
+                    <Server className="size-3.5" /> Self-Hosted AI / VPS Presets
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: "Ollama (Local)", url: "http://localhost:11434/v1", model: "llama3.1" },
+                      { label: "Ollama (VPS)", url: "http://YOUR_VPS_IP:11434/v1", model: "llama3.1" },
+                      { label: "vLLM", url: "http://localhost:8000/v1", model: "meta-llama/Llama-3.1-8B-Instruct" },
+                      { label: "LocalAI", url: "http://localhost:8080/v1", model: "gpt-4" },
+                      { label: "text-generation-webui", url: "http://localhost:5000/v1", model: "default" },
+                      { label: "LM Studio", url: "http://localhost:1234/v1", model: "local-model" },
+                    ].map((preset) => (
+                      <button
+                        key={preset.url}
+                        type="button"
+                        onClick={() => {
+                          setAiBaseUrl(preset.url);
+                          setModel(preset.model);
+                        }}
+                        className="text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1.5">
+                    আপনার নিজের VPS বা লোকাল মেশিনে AI হোস্ট করুন। Base URL ও Model অটো-সেট হবে।
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">AI API Key (যেকোনো প্রোভাইডার)</Label>
                 <Input
                   id="api-key"
                   type="password"
-                  placeholder="sk-..."
+                  placeholder="sk-orca-... / sk-... / zai-..."
                   value={apiKeyOverride}
                   onChange={(e) => setApiKeyOverride(e.target.value)}
-                  className="bg-background/50 border-white/5"
+                  className="bg-background/50 border-border/30"
                 />
+                <p className="text-xs text-muted-foreground">
+                  খালি রাখলে সার্ভারের ORCA_API_KEY বা MIMO_API_KEY ব্যবহৃত হবে।
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={aiTesting || !model}
+                  onClick={async () => {
+                    setAiTesting(true);
+                    setAiTestResult(null);
+                    try {
+                      const res = await testAi({ data: { ai_base_url: aiBaseUrl,
+        telegram_bot_token: telegramBotToken || undefined, ai_api_key: apiKeyOverride || undefined, model } });
+                      setAiTestResult({ ok: res.ok, error: res.error });
+                      if (res.ok) toast.success(`AI কানেকশন ঠিক আছে (${res.model})`);
+                      else toast.error("AI কানেকশন ব্যর্থ");
+                    } catch (err: any) {
+                      setAiTestResult({ ok: false, error: err?.message || String(err) });
+                      toast.error("AI কানেকশন ব্যর্থ");
+                    } finally {
+                      setAiTesting(false);
+                    }
+                  }}
+                >
+                  {aiTesting ? "টেস্ট হচ্ছে..." : "কানেকশন টেস্ট করুন"}
+                </Button>
+                {aiTestResult && (
+                  <span className={`text-xs ${aiTestResult.ok ? "text-green-500" : "text-red-500"}`}>
+                    {aiTestResult.ok
+                      ? `সফল (${model})`
+                      : `ব্যর্থ: ${aiTestResult.error || "অজানা সমস্যা"}`}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -984,11 +1338,44 @@ function SettingsPage() {
             </div>
           </div>
 
+          
+          {/* Telegram Bot Configuration */}
+          <div className="panel p-6 bg-card/60 backdrop-blur-sm border-border/30">
+            <h2 className="font-bold mb-4 flex items-center gap-2">
+              <Globe className="size-4 text-sky-400" />
+              Telegram Bot
+            </h2>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground/70">Bot Token</Label>
+                <Input
+                  type="password"
+                  value={telegramBotToken}
+                  onChange={(e) => setTelegramBotToken(e.target.value)}
+                  placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+                  className="bg-background/50 border-border/30 font-mono"
+                />
+                <p className="text-xs text-muted-foreground">
+                  @BotFather থেকে টোকেন নিন। সেট করলে Telegram থেকে মেসেজ আসলে AI রিপ্লাই দেবে।
+                </p>
+              </div>
+              {telegramBotToken && (
+                <div className="p-3 rounded-xl bg-sky-500/5 border border-sky-500/20">
+                  <p className="text-xs text-sky-400 font-bold mb-1">Webhook URL</p>
+                  <code className="text-xs font-mono text-muted-foreground">https://daddyai.online/api/public/webhooks/telegram</code>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Telegram Bot API এ এই URL সেট করুন: <code>setWebhook</code> API দিয়ে।
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="panel p-6 border-l-4 border-l-primary bg-primary/5 backdrop-blur-sm">
             <h2 className="font-bold mb-4">কুইক লিংক</h2>
             <div className="space-y-3">
               <Link to="/admin/webhook-test">
-                <Button variant="outline" size="sm" className="w-full justify-start border-white/10 hover:bg-white/5">
+                <Button variant="outline" size="sm" className="w-full justify-start border-border/30 hover:bg-white/5">
                   প্লাটফর্ম টেস্ট রান
                 </Button>
               </Link>

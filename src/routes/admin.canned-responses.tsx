@@ -40,6 +40,11 @@ import {
   Command,
   FileText,
   Layers,
+  Copy,
+  Check,
+  Globe,
+  Layout,
+  ImageIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -54,6 +59,10 @@ type CannedResponse = {
   shortcut: string | null;
   category: string | null;
   content: string;
+  template_text: string | null;
+  image_url: string | null;
+  platform: string | null;
+  language: string | null;
   variables: unknown;
   created_at: string | null;
   updated_at: string | null;
@@ -65,6 +74,9 @@ type FormState = {
   shortcut: string;
   category: string;
   content: string;
+  image_url: string;
+  platform: string;
+  language: string;
 };
 
 const DEFAULT_CATEGORIES = [
@@ -84,7 +96,14 @@ const EMPTY_FORM: FormState = {
   shortcut: "",
   category: "general",
   content: "",
+  image_url: "",
+  platform: "all",
+  language: "both",
 };
+
+function extractVars(text: string): string[] {
+  return [...new Set([...text.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]))];
+}
 
 function highlightVariables(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
@@ -112,6 +131,25 @@ function highlightVariables(text: string): React.ReactNode[] {
   return parts.length > 0 ? parts : [text];
 }
 
+function VariableCopyChip({ varName }: { varName: string }) {
+  const [copied, setCopied] = useState(false);
+  function handleCopy() {
+    navigator.clipboard.writeText(`{{${varName}}}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded border border-primary/20 hover:bg-primary/20 transition-colors"
+    >
+      {copied ? <Check className="size-2.5" /> : <Copy className="size-2.5" />}
+      {`{{${varName}}}`}
+    </button>
+  );
+}
+
 function CannedResponsesPage() {
   const queryClient = useQueryClient();
   const fetchResponses = useServerFn(listCannedResponses);
@@ -135,6 +173,8 @@ function CannedResponsesPage() {
     queryFn: () => fetchResponses(),
   });
 
+  const detectedVars = useMemo(() => extractVars(form.content), [form.content]);
+
   const createMutation = useMutation({
     mutationFn: (data: FormState) =>
       createFn({
@@ -143,7 +183,11 @@ function CannedResponsesPage() {
           shortcut: data.shortcut || undefined,
           category: data.category,
           content: data.content,
-          variables: extractVariables(data.content),
+          template_text: data.content,
+          image_url: data.image_url || undefined,
+          platform: data.platform as "messenger" | "whatsapp" | "instagram" | "all",
+          language: data.language as "bn" | "en" | "both",
+          variables: extractVars(data.content),
         },
       }),
     onSuccess: () => {
@@ -163,7 +207,11 @@ function CannedResponsesPage() {
           shortcut: data.shortcut || undefined,
           category: data.category,
           content: data.content,
-          variables: extractVariables(data.content),
+          template_text: data.content,
+          image_url: data.image_url || null,
+          platform: data.platform as "messenger" | "whatsapp" | "instagram" | "all",
+          language: data.language as "bn" | "en" | "both",
+          variables: extractVars(data.content),
         },
       }),
     onSuccess: () => {
@@ -186,12 +234,6 @@ function CannedResponsesPage() {
   const userRole = roleQuery.data?.role || "viewer";
   const canEdit = userRole === "admin" || userRole === "editor";
 
-  function extractVariables(content: string): string[] {
-    const matches = content.match(/\{\{(\w+)\}\}/g);
-    if (!matches) return [];
-    return [...new Set(matches.map((v: string) => v.replace(/[{}]/g, "")))];
-  }
-
   function openNewDialog() {
     setEditing(null);
     setForm(EMPTY_FORM);
@@ -204,7 +246,10 @@ function CannedResponsesPage() {
       name: item.name,
       shortcut: item.shortcut || "",
       category: item.category || "general",
-      content: item.content,
+      content: item.template_text || item.content,
+      image_url: item.image_url || "",
+      platform: item.platform || "all",
+      language: item.language || "both",
     });
     setDialogOpen(true);
   }
@@ -260,6 +305,21 @@ function CannedResponsesPage() {
     if (!value) return "general";
     const found = categories.find((c) => c.value === value);
     return found?.label || value;
+  };
+
+  const getPlatformLabel = (p: string | null) => {
+    const map: Record<string, string> = {
+      messenger: "Messenger",
+      whatsapp: "WhatsApp",
+      instagram: "Instagram",
+      all: "All",
+    };
+    return map[p || "all"] || p || "All";
+  };
+
+  const getLangLabel = (l: string | null) => {
+    const map: Record<string, string> = { bn: "বাংলা", en: "EN", both: "BN+EN" };
+    return map[l || "both"] || l || "Both";
   };
 
   if (isLoading) {
@@ -328,89 +388,115 @@ function CannedResponsesPage() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((item: CannedResponse) => (
-                  <Card
-                    key={item.id}
-                    className="panel panel-hover border-l-4 border-l-primary/30 flex flex-col"
-                  >
-                    <CardContent className="p-5 flex flex-col flex-1">
-                      {/* Card Header */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                          <MessageSquare className="size-5 text-primary" />
+                {items.map((item: CannedResponse) => {
+                  const itemText = item.template_text || item.content;
+                  const itemVars = Array.isArray(item.variables)
+                    ? (item.variables as string[])
+                    : extractVars(itemText);
+                  return (
+                    <Card
+                      key={item.id}
+                      className="panel panel-hover border-l-4 border-l-primary/30 flex flex-col"
+                    >
+                      <CardContent className="p-5 flex flex-col flex-1">
+                        {/* Card Header */}
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <MessageSquare className="size-5 text-primary" />
+                          </div>
+                          {canEdit && (
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => openEditDialog(item)}
+                              >
+                                <Edit2 className="size-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 text-destructive"
+                                onClick={() => {
+                                  if (confirm("মুছে ফেলতে চান?"))
+                                    deleteMutation.mutate(item.id);
+                                }}
+                              >
+                                <Trash2 className="size-3.5" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                        {canEdit && (
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              onClick={() => openEditDialog(item)}
-                            >
-                              <Edit2 className="size-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8 text-destructive"
-                              onClick={() => {
-                                if (confirm("মুছে ফেলতে চান?"))
-                                  deleteMutation.mutate(item.id);
+
+                        {/* Image thumbnail */}
+                        {item.image_url && (
+                          <div className="mb-3 rounded-lg overflow-hidden border border-border/30">
+                            <img
+                              src={item.image_url}
+                              alt="template media"
+                              className="w-full h-24 object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
                               }}
-                            >
-                              <Trash2 className="size-3.5" />
-                            </Button>
+                            />
                           </div>
                         )}
-                      </div>
 
-                      {/* Name + Shortcut */}
-                      <div className="mb-2">
-                        <h3 className="font-bold text-lg leading-tight">
-                          {item.name}
-                        </h3>
-                        {item.shortcut && (
-                          <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                            <Command className="size-2.5" /> /{item.shortcut}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Category Badge */}
-                      <div className="mb-3">
-                        <span className="flex items-center gap-1 text-[10px] uppercase font-black bg-muted px-2 py-0.5 rounded-full text-muted-foreground w-fit">
-                          <Tag className="size-2.5" />{" "}
-                          {getCategoryLabel(item.category)}
-                        </span>
-                      </div>
-
-                      {/* Content Preview with highlighted variables */}
-                      <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg px-3 py-2 mb-4 line-clamp-4 leading-relaxed">
-                        {highlightVariables(item.content)}
-                      </div>
-
-                      {/* Variables */}
-                      {Array.isArray(item.variables) && item.variables.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {item.variables.map((v: string) => (
-                            <span
-                              key={v}
-                              className="inline-block bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded"
-                            >
-                              {`{{${v}}}`}
+                        {/* Name + Shortcut */}
+                        <div className="mb-2">
+                          <h3 className="font-bold text-lg leading-tight">
+                            {item.name}
+                          </h3>
+                          {item.shortcut && (
+                            <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                              <Command className="size-2.5" /> /{item.shortcut}
                             </span>
-                          ))}
+                          )}
                         </div>
-                      )}
 
-                      {/* Footer */}
-                      <div className="mt-auto pt-3 border-t border-border/40 text-[10px] text-muted-foreground">
-                        তৈরি:{" "}
-                        {item.created_at ? new Date(item.created_at).toLocaleDateString("bn-BD") : "N/A"}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        {/* Category + Platform + Language badges */}
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          <span className="flex items-center gap-1 text-[10px] uppercase font-black bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+                            <Tag className="size-2.5" />{" "}
+                            {getCategoryLabel(item.category)}
+                          </span>
+                          <span className="flex items-center gap-1 text-[10px] uppercase font-black bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full">
+                            <Layout className="size-2.5" /> {getPlatformLabel(item.platform)}
+                          </span>
+                          <span className="flex items-center gap-1 text-[10px] uppercase font-black bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full">
+                            <Globe className="size-2.5" /> {getLangLabel(item.language)}
+                          </span>
+                        </div>
+
+                        {/* Content Preview with highlighted variables */}
+                        <div className="text-sm text-muted-foreground bg-muted/30 rounded-lg px-3 py-2 mb-3 line-clamp-4 leading-relaxed">
+                          {highlightVariables(itemText)}
+                        </div>
+
+                        {/* Variable chips */}
+                        {itemVars.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-3">
+                            {itemVars.map((v: string) => (
+                              <span
+                                key={v}
+                                className="inline-block bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded border border-primary/20"
+                              >
+                                {`{{${v}}}`}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Footer */}
+                        <div className="mt-auto pt-3 border-t border-border/40 text-[10px] text-muted-foreground">
+                          তৈরি:{" "}
+                          {item.created_at ? new Date(item.created_at).toLocaleDateString("bn-BD") : "N/A"}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -419,7 +505,7 @@ function CannedResponsesPage() {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="italic">
               {editing ? "টেমপ্লেট এডিট করুন" : "নতুন টেমপ্লেট যোগ করুন"}
@@ -448,6 +534,47 @@ function CannedResponsesPage() {
               />
             </div>
 
+            {/* Platform + Language */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>প্ল্যাটফর্ম</Label>
+                <Select
+                  value={form.platform}
+                  onValueChange={(val) =>
+                    setForm((p) => ({ ...p, platform: val }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="messenger">Messenger</SelectItem>
+                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                    <SelectItem value="all">All Platforms</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>ভাষা</Label>
+                <Select
+                  value={form.language}
+                  onValueChange={(val) =>
+                    setForm((p) => ({ ...p, language: val }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bn">বাংলা</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="both">BN + EN</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             {/* Shortcut + Category */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -469,13 +596,10 @@ function CannedResponsesPage() {
                     maxLength={20}
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground italic">
-                  শুধু ইংরেজি অক্ষর, সংখ্যা এবং (- _)
-                </p>
               </div>
 
               <div className="space-y-2">
-                <Label>ক্যাটাগরি</Label>
+                <Label>ক্যাটাগরি ট্যাগ</Label>
                 <Select
                   value={form.category}
                   onValueChange={(val) =>
@@ -496,10 +620,10 @@ function CannedResponsesPage() {
               </div>
             </div>
 
-            {/* Content */}
+            {/* Template Body */}
             <div className="space-y-2">
               <Label>
-                উত্তরের কন্টেন্ট <span className="text-destructive">*</span>
+                টেমপ্লেট টেক্সট <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 value={form.content}
@@ -526,6 +650,45 @@ function CannedResponsesPage() {
                   </span>
                   {highlightVariables(form.content)}
                 </div>
+              )}
+            </div>
+
+            {/* Detected Variables with copy buttons */}
+            {detectedVars.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-[11px] uppercase font-black text-muted-foreground tracking-wider">
+                  ডিটেক্টেড ভেরিয়েবল — ক্লিক করে কপি করুন
+                </Label>
+                <div className="flex flex-wrap gap-2 p-3 bg-muted/20 rounded-lg border border-dashed">
+                  {detectedVars.map((v) => (
+                    <VariableCopyChip key={v} varName={v} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Image URL */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <ImageIcon className="size-3.5 text-muted-foreground" /> ইমেজ URL (ঐচ্ছিক)
+              </Label>
+              <Input
+                value={form.image_url}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, image_url: e.target.value }))
+                }
+                type="url"
+                placeholder="https://... (image URL)"
+              />
+              {form.image_url && (
+                <img
+                  src={form.image_url}
+                  alt="preview"
+                  className="h-20 w-auto rounded-xl border border-border/40 object-cover mt-1"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
               )}
             </div>
 

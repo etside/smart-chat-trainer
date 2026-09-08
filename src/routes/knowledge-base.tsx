@@ -116,13 +116,13 @@ function SearchResultCard({
   const [open, setOpen] = useState(false);
 
   return (
-    <Card className="group border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <Card className="group border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
       <button
         onClick={() => setOpen(!open)}
         className="flex w-full items-start justify-between gap-4 p-5 text-left"
       >
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-slate-900 leading-snug">
+          <h3 className="text-base font-semibold text-foreground leading-snug">
             {pair.question}
           </h3>
           {pair.labels && pair.labels.length > 0 && (
@@ -132,7 +132,7 @@ function SearchResultCard({
                   <Badge
                     key={i}
                     variant="secondary"
-                    className="text-[11px] font-medium bg-slate-100 text-slate-600 border-slate-200"
+                    className="text-[11px] font-medium bg-muted text-foreground border-border"
                   >
                     {label}
                   </Badge>
@@ -141,7 +141,7 @@ function SearchResultCard({
             </div>
           )}
         </div>
-        <span className="mt-0.5 shrink-0 text-slate-400 transition-transform">
+        <span className="mt-0.5 shrink-0 text-muted-foreground transition-transform">
           {open ? (
             <ChevronUp className="h-5 w-5" />
           ) : (
@@ -152,8 +152,8 @@ function SearchResultCard({
 
       {open && (
         <div className="px-5 pb-5 animate-in fade-in slide-in-from-top-1 duration-200">
-          <Separator className="mb-4 bg-slate-100" />
-          <p className="text-sm leading-relaxed text-slate-600 whitespace-pre-line">
+          <Separator className="mb-4 bg-muted" />
+          <p className="text-sm leading-relaxed text-foreground whitespace-pre-line">
             {pair.answer}
           </p>
         </div>
@@ -172,15 +172,15 @@ function FaqCard({
   const [open, setOpen] = useState(false);
 
   return (
-    <Card className="border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <Card className="border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
       <button
         onClick={() => setOpen(!open)}
         className="flex w-full items-start justify-between gap-4 p-5 text-left"
       >
-        <h3 className="flex-1 text-base font-semibold text-slate-900 leading-snug">
+        <h3 className="flex-1 text-base font-semibold text-foreground leading-snug">
           {faq.question}
         </h3>
-        <span className="mt-0.5 shrink-0 text-slate-400 transition-transform">
+        <span className="mt-0.5 shrink-0 text-muted-foreground transition-transform">
           {open ? (
             <ChevronUp className="h-5 w-5" />
           ) : (
@@ -190,8 +190,8 @@ function FaqCard({
       </button>
       {open && (
         <div className="px-5 pb-5 animate-in fade-in slide-in-from-top-1 duration-200">
-          <Separator className="mb-4 bg-slate-100" />
-          <p className="text-sm leading-relaxed text-slate-600 whitespace-pre-line">
+          <Separator className="mb-4 bg-muted" />
+          <p className="text-sm leading-relaxed text-foreground whitespace-pre-line">
             {faq.answer}
           </p>
         </div>
@@ -208,11 +208,11 @@ function CategoryCard({
   locale: "en" | "bn";
 }) {
   return (
-    <button className="group flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm transition-all hover:border-blue-200 hover:shadow-md hover:bg-blue-50/30">
-      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors group-hover:bg-blue-100 group-hover:text-blue-600">
+    <button className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-5 text-center shadow-sm transition-all hover:border-primary/30 hover:shadow-md hover:bg-primary/5">
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
         {category.icon}
       </span>
-      <span className="text-sm font-medium text-slate-700 group-hover:text-blue-700">
+      <span className="text-sm font-medium text-foreground group-hover:text-primary">
         {category.label}
       </span>
     </button>
@@ -275,21 +275,21 @@ function KnowledgeBasePage() {
   }, [faqs]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* ── Nav bar ────────────────────────────────────────────────── */}
-      <header className="border-b border-slate-200 bg-white">
+      <header className="border-b border-border bg-card">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
           <Link
             to="/"
-            className="flex items-center gap-2 text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors"
+            className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
           >
-            <BookOpen className="h-5 w-5 text-blue-600" />
+            <BookOpen className="h-5 w-5 text-primary" />
             <span>Daddy AI</span>
           </Link>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setLocale(locale === "en" ? "bn" : "en")}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
+              className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-background"
             >
               {locale === "en" ? "বাংলা" : "English"}
             </button>
@@ -304,16 +304,16 @@ function KnowledgeBasePage() {
       </header>
 
       {/* ── Hero ────────────────────────────────────────────────────── */}
-      <section className="border-b border-slate-200 bg-white">
+      <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-5xl px-4 py-14 text-center sm:px-6 sm:py-20">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             {t(
               "How can we help you?",
               "আমরা আপনাকে কীভাবে সাহায্য করতে পারি?",
               locale,
             )}
           </h1>
-          <p className="mt-3 text-base text-slate-500 sm:text-lg">
+          <p className="mt-3 text-base text-muted-foreground sm:text-lg">
             {t(
               "Search our knowledge base or browse popular articles below.",
               "আমাদের নলেজ বেস খুঁজুন অথবা নিচের জনপ্রিয় নিবন্ধগুলো দেখুন।",
@@ -324,7 +324,7 @@ function KnowledgeBasePage() {
           {/* Search bar */}
           <div className="mx-auto mt-8 max-w-xl">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="text"
                 value={searchQuery}
@@ -334,7 +334,7 @@ function KnowledgeBasePage() {
                   "উত্তর খুঁজুন...",
                   locale,
                 )}
-                className="h-12 rounded-xl border-slate-200 bg-white pl-10 pr-4 text-sm shadow-sm placeholder:text-slate-400 focus-visible:ring-blue-500"
+                className="h-12 rounded-xl border-border bg-card pl-10 pr-4 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:ring-primary"
               />
             </div>
           </div>
@@ -347,11 +347,11 @@ function KnowledgeBasePage() {
           /* ── Search results ─────────────────────────────────────── */
           <div>
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-foreground">
                 {t("Search Results", "অনুসন্ধানের ফলাফল", locale)}
               </h2>
               {searchResults.length > 0 && (
-                <span className="text-sm text-slate-500">
+                <span className="text-sm text-muted-foreground">
                   {searchResults.length}{" "}
                   {t("results found", "টি ফলাফল পাওয়া গেছে", locale)}
                 </span>
@@ -363,22 +363,22 @@ function KnowledgeBasePage() {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-24 animate-pulse rounded-xl border border-slate-200 bg-white"
+                    className="h-24 animate-pulse rounded-xl border border-border bg-card"
                   />
                 ))}
               </div>
             ) : searchResults.length === 0 ? (
-              <Card className="border-slate-200 bg-white text-center">
+              <Card className="border-border bg-card text-center">
                 <CardContent className="py-12">
-                  <Search className="mx-auto h-10 w-10 text-slate-300" />
-                  <p className="mt-4 text-sm font-medium text-slate-500">
+                  <Search className="mx-auto h-10 w-10 text-muted-foreground" />
+                  <p className="mt-4 text-sm font-medium text-muted-foreground">
                     {t(
                       `No results found for "${debouncedQuery}"`,
                       `"${debouncedQuery}" - কোনো ফলাফল পাওয়া যায়নি`,
                       locale,
                     )}
                   </p>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {t(
                       "Try different keywords or browse categories below.",
                       "অন্য কীওয়ার্ড চেষ্টা করুন অথবা নিচের ক্যাটাগরি দেখুন।",
@@ -407,7 +407,7 @@ function KnowledgeBasePage() {
                   setSearchQuery("");
                   setDebouncedQuery("");
                 }}
-                className="text-slate-500 hover:text-slate-700"
+                className="text-muted-foreground hover:text-foreground"
               >
                 {t("Clear search", "খোঁজ মুছুন", locale)}
               </Button>
@@ -418,7 +418,7 @@ function KnowledgeBasePage() {
           <div className="space-y-12">
             {/* Categories */}
             <section>
-              <h2 className="mb-4 text-lg font-semibold text-slate-900">
+              <h2 className="mb-4 text-lg font-semibold text-foreground">
                 {t("Browse by Category", "ক্যাটাগরি অনুযায়ী দেখুন", locale)}
               </h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -433,7 +433,7 @@ function KnowledgeBasePage() {
               <section>
                 <div className="mb-4 flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-amber-500" />
-                  <h2 className="text-lg font-semibold text-slate-900">
+                  <h2 className="text-lg font-semibold text-foreground">
                     {t(
                       "Popular Articles",
                       "জনপ্রিয় নিবন্ধ",
@@ -451,20 +451,20 @@ function KnowledgeBasePage() {
 
             {/* Quick links */}
             <section>
-              <h2 className="mb-4 text-lg font-semibold text-slate-900">
+              <h2 className="mb-4 text-lg font-semibold text-foreground">
                 {t("Quick Links", "দ্রুত লিংক", locale)}
               </h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Link
                   to="/faq"
-                  className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+                  className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
                 >
-                  <HelpCircle className="h-5 w-5 text-slate-400 group-hover:text-blue-500" />
+                  <HelpCircle className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900 group-hover:text-blue-700">
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary">
                       {t("FAQ", "সচরাচর জিজ্ঞাসা", locale)}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {t(
                         "Quick answers to common questions",
                         "সাধারণ প্রশ্নের দ্রুত উত্তর",
@@ -472,18 +472,18 @@ function KnowledgeBasePage() {
                       )}
                     </p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-500" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                 </Link>
                 <Link
                   to="/privacy"
-                  className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+                  className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
                 >
-                  <BookOpen className="h-5 w-5 text-slate-400 group-hover:text-blue-500" />
+                  <BookOpen className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900 group-hover:text-blue-700">
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary">
                       {t("Privacy Policy", "গোপনীয়তা নীতি", locale)}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {t(
                         "How we protect your data",
                         "আমরা আপনার তথ্য কীভাবে সুরক্ষা করি",
@@ -491,18 +491,18 @@ function KnowledgeBasePage() {
                       )}
                     </p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-500" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                 </Link>
                 <Link
                   to="/terms"
-                  className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+                  className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
                 >
-                  <BookOpen className="h-5 w-5 text-slate-400 group-hover:text-blue-500" />
+                  <BookOpen className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900 group-hover:text-blue-700">
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary">
                       {t("Terms of Service", "সেবার শর্তাবলী", locale)}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {t(
                         "Our terms and conditions",
                         "আমাদের শর্তাবলী",
@@ -510,18 +510,18 @@ function KnowledgeBasePage() {
                       )}
                     </p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-500" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                 </Link>
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+                  className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
                 >
-                  <MessageCircle className="h-5 w-5 text-slate-400 group-hover:text-blue-500" />
+                  <MessageCircle className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900 group-hover:text-blue-700">
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary">
                       {t("Contact Support", "সাপোর্টে যোগাযোগ", locale)}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {t(
                         "Get in touch with our team",
                         "আমাদের টিমের সাথে যোগাযোগ করুন",
@@ -529,7 +529,7 @@ function KnowledgeBasePage() {
                       )}
                     </p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-500" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                 </a>
               </div>
             </section>
@@ -538,34 +538,34 @@ function KnowledgeBasePage() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-200 bg-white">
+      <footer className="border-t border-border bg-card">
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <BookOpen className="h-4 w-4 text-blue-600" />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <BookOpen className="h-4 w-4 text-primary" />
               <span>Daddy AI</span>
-              <span className="text-slate-300">|</span>
+              <span className="text-muted-foreground">|</span>
               <span>
                 {t("Knowledge Base", "নলেজ বেস", locale)}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-sm text-slate-500">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="flex items-center gap-1.5 transition-colors hover:text-blue-600"
+                className="flex items-center gap-1.5 transition-colors hover:text-primary"
               >
                 <MessageCircle className="h-3.5 w-3.5" />
                 {t("Contact Support", "সাপোর্টে যোগাযোগ", locale)}
               </a>
               <Link
                 to="/faq"
-                className="transition-colors hover:text-blue-600"
+                className="transition-colors hover:text-primary"
               >
                 {t("FAQ", "সচরাচর জিজ্ঞাসা", locale)}
               </Link>
             </div>
           </div>
-          <div className="mt-4 text-center text-xs text-slate-400">
+          <div className="mt-4 text-center text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Daddy AI.{" "}
             {t("All rights reserved.", "সর্বস্বত্ব সংরক্ষিত।", locale)}
           </div>

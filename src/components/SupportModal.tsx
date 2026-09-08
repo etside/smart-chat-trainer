@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import { MessageCircle, X, Send, User, Mail, Globe, HelpCircle, MessageSquare, Lightbulb, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -53,13 +52,10 @@ export function SupportModal() {
         <MessageCircle className="size-6" />
       </button>
 
-      <AnimatePresence>
+      <>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed bottom-24 right-6 w-[90vw] max-w-[400px] glass rounded-[2.5rem] shadow-2xl border-white/10 z-[100] overflow-hidden"
+          <div
+            className="fixed bottom-24 right-6 w-[90vw] max-w-[400px] glass rounded-[2.5rem] shadow-2xl border-white/10 z-[100] overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-200"
           >
             <div className="p-6 bg-primary/10 border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -199,9 +195,9 @@ export function SupportModal() {
                 </form>
               )}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
     </>
   );
 }

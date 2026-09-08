@@ -11,9 +11,14 @@ export const Route = createFileRoute('/api/public/meta/deletion')({
         request.headers.forEach((value, key) => { headers[key] = value; });
 
         try {
+          // Check content-type before parsing — formData() throws on JSON
+          const contentType = request.headers.get('content-type') || '';
+          if (!contentType.includes('multipart/form-data') && !contentType.includes('application/x-www-form-urlencoded')) {
+            return new Response('Expected form-encoded request body', { status: 400 });
+          }
+
           const formData = await request.formData();
           const signedRequest = formData.get('signed_request') as string;
-
 
           if (!signedRequest) {
             return new Response('Missing signed_request', { status: 400 });

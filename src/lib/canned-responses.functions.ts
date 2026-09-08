@@ -23,6 +23,10 @@ export const createCannedResponse = createServerFn({ method: "POST" })
         shortcut: z.string().max(20).optional(),
         category: z.string().max(50).default("general"),
         content: z.string().min(1).max(4000),
+        template_text: z.string().min(1).max(4000).optional(),
+        image_url: z.string().url().optional().or(z.literal("")),
+        platform: z.enum(["messenger", "whatsapp", "instagram", "all"]).default("all"),
+        language: z.enum(["bn", "en", "both"]).default("both"),
         variables: z.array(z.string()).default([]),
       })
       .parse(d)
@@ -30,11 +34,16 @@ export const createCannedResponse = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
     await assertRole(context.supabase, context.userId, "editor");
+    const templateText = data.template_text || data.content;
     const { error } = await supabaseAdmin.from("canned_responses").insert({
       name: data.name,
       shortcut: data.shortcut || null,
       category: data.category,
-      content: data.content,
+      content: templateText,
+      template_text: templateText,
+      image_url: data.image_url || null,
+      platform: data.platform,
+      language: data.language,
       variables: data.variables,
       created_by: context.userId,
     });
@@ -51,6 +60,10 @@ export const updateCannedResponse = createServerFn({ method: "POST" })
         shortcut: z.string().max(20).optional(),
         category: z.string().max(50).optional(),
         content: z.string().min(1).max(4000).optional(),
+        template_text: z.string().min(1).max(4000).optional(),
+        image_url: z.string().url().optional().or(z.literal("")).nullable(),
+        platform: z.enum(["messenger", "whatsapp", "instagram", "all"]).optional(),
+        language: z.enum(["bn", "en", "both"]).optional(),
         variables: z.array(z.string()).optional(),
       })
       .parse(d)
@@ -63,6 +76,9 @@ export const updateCannedResponse = createServerFn({ method: "POST" })
     for (const [k, v] of Object.entries(updates)) {
       if (v !== undefined) filtered[k] = v;
     }
+    // Keep content in sync with template_text
+    if (filtered.template_text) filtered.content = filtered.template_text;
+    if (filtered.content && !filtered.template_text) filtered.template_text = filtered.content;
     filtered['updated_at'] = new Date().toISOString();
     const { error } = await supabaseAdmin.from("canned_responses").update(filtered as any).eq("id", id);
     if (error) throw new Error(error.message);

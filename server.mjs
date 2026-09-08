@@ -9,7 +9,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const CLIENT_DIR = join(__dirname, "dist", "client");
 const port = process.env.PORT || 3000;
 
-const MIME = {".css":"text/css",".js":"application/javascript",".mjs":"application/javascript",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".jpeg":"image/jpeg",".gif":"image/gif",".svg":"image/svg+xml",".ico":"image/x-icon",".woff":"font/woff",".woff2":"font/woff2",".ttf":"font/ttf",".webp":"image/webp"};
+const MIME = {".css":"text/css",".js":"application/javascript",".mjs":"application/javascript",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".jpeg":"image/jpeg",".gif":"image/gif",".svg":"image/svg+xml",".ico":"image/x-icon",".woff":"font/woff",".woff2":"font/woff2",".ttf":"font/ttf",".webp":"image/webp",".html":"text/html; charset=utf-8"};
 
 function collectBody(req){return new Promise(r=>{const c=[];req.on("data",d=>c.push(d));req.on("end",()=>r(Buffer.concat(c)))})}
 
@@ -344,11 +344,12 @@ setInterval(() => {
 // ---------------------------------------------------------------------------
 const server = createServer(async (req, res) => {
   try {
-    const url = new URL(req.url, "http://" + req.headers.host);
+    const host = req.headers.host || 'localhost';
+    const url = new URL(req.url, "http://" + host);
     const ext = extname(url.pathname);
 
     // Static assets
-    if (url.pathname.startsWith("/assets/") || MIME[ext]) {
+    if (url.pathname.startsWith("/assets/") || MIME[ext] || url.pathname.startsWith("/puter-auth-capture")) {
       if (await serveStatic(url.pathname, res)) return;
     }
 

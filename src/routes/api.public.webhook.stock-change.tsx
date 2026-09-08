@@ -87,8 +87,8 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
           const event = (payload.event as string) || "stock_changed";
           const productId = payload.product_id as string;
           const productName = payload.name as string;
-          const stock = payload.stock as number;
-          const previousStock = payload.previous_stock as number;
+          const stock = payload.stock as number | "out_of_stock";
+          const previousStock = payload.previous_stock as number | undefined;
           const price = payload.price as string;
           const category = payload.category as string;
           const brand = payload.brand as string;
@@ -111,6 +111,35 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
             response_status: 200,
           });
 
+          // 4b. Update product_catalogue so the AI always has live stock/price.
+          // Keyed on retailer_id (product_id/sku) with slug fallback to avoid
+          // creating duplicate catalogue rows when only the ID is supplied.
+          try {
+            const catKey = String(productId || (productName || "").toLowerCase().replace(/\s+/g, "-"));
+            const catRow: Record<string, unknown> = {
+              retailer_id: catKey,
+              slug: String(payload.slug || productId || catKey),
+              name: productName || `Product ${productId}`,
+              availability: (Number(stock) > 0) ? "in stock" : "out of stock",
+              stock: Number(stock) || 0,
+              updated_at: new Date().toISOString(),
+            };
+            if (price) catRow.price = parseFloat(String(price)) || 0;
+            if (category) catRow.category = String(category);
+            if (brand) catRow.brand = String(brand);
+            if (variants && Array.isArray(variants)) {
+              catRow.variants = JSON.stringify(variants);
+              catRow.sizes = variants.map((v: any) => v.options?.size || v.size || v.name).filter(Boolean);
+            }
+            const { error: catErr } = await supabaseAdmin
+              .from("product_catalogue")
+              .upsert(catRow, { onConflict: "retailer_id" });
+            if (catErr) console.error("[stock-webhook] product_catalogue upsert error:", catErr.message);
+            else console.log(`[stock-webhook] updated catalogue for ${catKey}`);
+          } catch (catErr: any) {
+            console.error("[stock-webhook] catalogue update failed:", catErr?.message || catErr);
+          }
+
           // 5. Update training pairs based on stock change
           const name = productName || `Product ${productId}`;
           const stockStatus = stock === 0 || stock === "out_of_stock" ? "স্টকে নেই" : "স্টকে আছে";
@@ -121,6 +150,7 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
             answer: string;
             status: "approved";
             source: string;
+            intent: "stock" | "price";
           }> = [];
 
           // Stock availability Q&A
@@ -129,6 +159,7 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
             answer: `${name} এর স্টক: ${stockStatus}।${stock > 0 ? ` ${stock}টি স্টকে আছে।` : ""}`,
             status: "approved",
             source: "stock_webhook",
+            intent: "stock",
           });
 
           trainingUpdates.push({
@@ -136,6 +167,7 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
             answer: `${name} is ${stockStatusEn}.${stock > 0 ? ` ${stock} units available.` : ""}`,
             status: "approved",
             source: "stock_webhook",
+            intent: "stock",
           });
 
           // Price Q&A (if price changed)
@@ -145,6 +177,7 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
               answer: `${name} এর দাম ${price} টাকা।${category ? ` ক্যাটাগরি: ${category}।` : ""}${brand ? ` ব্র্যান্ড: ${brand}।` : ""}`,
               status: "approved",
               source: "stock_webhook",
+              intent: "price",
             });
           }
 
@@ -155,6 +188,7 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
               answer: `হ্যাঁ, ${name} এখন স্টকে নেই। আমরা শীঘ্রই স্টকে ফিরিয়ে আনব।`,
               status: "approved",
               source: "stock_webhook",
+              intent: "stock",
             });
           }
 
@@ -165,6 +199,7 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
               answer: `হ্যাঁ! ${name} আবার স্টকে এসেছে। ${stock}টি স্টকে আছে। এখনই অর্ডার করুন!`,
               status: "approved",
               source: "stock_webhook",
+              intent: "stock",
             });
           }
 
@@ -179,6 +214,7 @@ export const Route = createFileRoute("/api/public/webhook/stock-change")({
                   answer: `${name} (${variantName}) ${variantStock === 0 ? "স্টকে নেই" : `${variantStock}টি স্টকে আছে`}।`,
                   status: "approved",
                   source: "stock_webhook",
+                  intent: "stock",
                 });
               }
             }
