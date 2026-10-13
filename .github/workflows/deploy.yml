@@ -146,6 +146,8 @@ jobs:
             export PATH="$PATH:/usr/local/bin:/root/.local/bin"
             cd /var/www/daddyai
             echo "dist contents:" && ls dist/
+            # Recreate node_modules symlinks (scp dereferences them) — mirrors package.json build step
+            node -e "const{symlinkSync,existsSync,unlinkSync}=require('fs');['dist/server/node_modules','dist/server/assets/node_modules'].forEach(t=>{try{unlinkSync(t)}catch(e){}});symlinkSync('../../node_modules','dist/server/node_modules');symlinkSync('../../../node_modules','dist/server/assets/node_modules');console.log('symlinked node_modules into dist/server/ and dist/server/assets/')"
             pm2 reload daddyai --update-env || pm2 start ecosystem.config.cjs
             pm2 save
             echo "Deploy complete"
@@ -153,17 +155,35 @@ jobs:
 
       - name: Post-deploy health check
         id: health
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            sleep 12
+            for i in 1 2 3 4 5; do
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 http://127.0.0.1:3000/ 2>/dev/null || echo "000")
+              echo "Health check attempt $i: HTTP $HTTP_CODE"
+              [ "$HTTP_CODE" = "200" ] && break
+              sleep 5
+            done
+            echo "FINAL_HTTP_STATUS=$HTTP_CODE" >> /tmp/daddyai-health.txt
+            [ "$HTTP_CODE" = "200" ] || exit 1
+
+      - name: Report health
+        if: always()
         run: |
-          sleep 10
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 http://168.144.180.56:3000/ 2>/dev/null || echo "000")
-          echo "http_status=$HTTP_CODE" >> "$GITHUB_OUTPUT"
-          echo "Health check: HTTP $HTTP_CODE"
-          if [ "$HTTP_CODE" != "200" ]; then
+          if [ "${{ steps.health.outcome }}" = "failure" ]; then
             echo "HEALTH_FAILED=true" >> "$GITHUB_OUTPUT"
+            echo "::error::Health check failed — app did not return 200"
+          else
+            echo "Health check passed"
           fi
 
       - name: Auto-rollback on failure
-        if: steps.health.outputs.HEALTH_FAILED == 'true'
+        if: steps.health.outcome == 'failure'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -178,17 +198,17 @@ jobs:
             echo "Rollback attempt complete"
 
       - name: Create rollback issue
-        if: steps.health.outputs.HEALTH_FAILED == 'true'
+        if: steps.health.outcome == 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create --repo "${{ github.repository }}" \
             --title "Auto-rollback triggered for ${{ needs.build.outputs.short_sha }}" \
-            --body "Health check returned HTTP ${{ steps.health.outputs.http_status }} after deploy. Auto-rollback executed." \
+            --body "Health check did not return HTTP 200 after deploy. Auto-rollback executed." \
             --label "deploy,bug"
 
       - name: Tag successful deploy
-        if: steps.health.outputs.HEALTH_FAILED != 'true'
+        if: steps.health.outcome != 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
