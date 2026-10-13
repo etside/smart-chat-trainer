@@ -12,7 +12,7 @@ module.exports = {
         PGPORT: '5432',
         PGDATABASE: 'daddyai',
         PGUSER: 'daddyai',
-        PGPASSWORD: 'daddyai_2026_secure',
+        PGPASSWORD: 'kxM0Nym2V43QiLQ6',
         // JWT Auth
         JWT_SECRET: 'daddyai_jwt_secret_2026_change_me_in_production_xk9m2p',
         // App
