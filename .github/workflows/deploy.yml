@@ -126,13 +126,13 @@ jobs:
             echo "--- Installing dependencies ---"
             npm ci --prefer-offline 2>/dev/null || npm install
 
-      - name: Upload dist to VPS
+      - name: Upload dist + runtime to VPS
         uses: appleboy/scp-action@v2
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "dist"
+          source: "dist,server.mjs,ecosystem.config.cjs,package.json,package-lock.json,scripts"
           target: /var/www/daddyai
 
       - name: Reload DaddyAI via SSH
