@@ -32,7 +32,7 @@ function AuditLogsPage() {
         </div>
       </div>
 
-      <div className="panel overflow-hidden">
+      <div className="panel overflow-hidden overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -65,7 +65,7 @@ function AuditLogsPage() {
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
                       <User className="size-3 text-muted-foreground" />
-                      <span className="text-xs truncate max-w-[150px]" title={log.actor_id}>
+                      <span className="text-xs truncate max-w-[100px] sm:max-w-[150px]" title={log.actor_id}>
                         {log.actor_id?.slice(0, 8)}...
                       </span>
                     </div>

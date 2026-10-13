@@ -505,7 +505,7 @@ function CannedResponsesPage() {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg w-[94vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="italic">
               {editing ? "টেমপ্লেট এডিট করুন" : "নতুন টেমপ্লেট যোগ করুন"}

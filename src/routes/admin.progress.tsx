@@ -1,4 +1,4 @@
-import { getTrainingJobs, triggerTraining, getTrainingJobDetail, exportTrainingRunLogs } from "@/lib/console.functions";
+import { getTrainingJobs, triggerTraining, getTrainingJobDetail, exportTrainingRunLogs, savePair, deletePair } from "@/lib/console.functions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -15,7 +15,9 @@ import {
   Download,
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Pencil,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -35,6 +37,7 @@ import {
   TableCell 
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
@@ -50,6 +53,21 @@ function TrainingProgress() {
   const startTraining = useServerFn(triggerTraining);
   const fetchJobDetail = useServerFn(getTrainingJobDetail);
   const exportLogs = useServerFn(exportTrainingRunLogs);
+  const doSavePair = useServerFn(savePair);
+  const doDeletePair = useServerFn(deletePair);
+  const [editingPair, setEditingPair] = useState<any>(null);
+  const [editQ, setEditQ] = useState("");
+  const [editA, setEditA] = useState("");
+  const savePairMut = useMutation({
+    mutationFn: (d: any) => doSavePair({ data: d }),
+    onSuccess: () => { toast.success("পেয়ার সংরক্ষিত"); setEditingPair(null); qc.invalidateQueries({ queryKey: ["training-job-detail"] }); },
+    onError: (e: any) => toast.error("সংরক্ষণ ব্যর্থ: " + (e.message || "unknown")),
+  });
+  const delPairMut = useMutation({
+    mutationFn: (id: string) => doDeletePair({ data: { id } }),
+    onSuccess: () => { toast.success("পেয়ার মুছে ফেলা হয়েছে"); qc.invalidateQueries({ queryKey: ["training-job-detail"] }); },
+    onError: (e: any) => toast.error("মুছে ফেলা ব্যর্থ: " + (e.message || "unknown")),
+  });
 
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -252,7 +270,7 @@ function TrainingProgress() {
       </div>
 
       <Dialog open={!!selectedJobId} onOpenChange={(open) => !open && setSelectedJobId(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[94vw] max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span>জব ডিটেইলস (#{selectedJobId?.slice(0, 8)})</span>
@@ -310,7 +328,7 @@ function TrainingProgress() {
                     <MessageSquare className="size-4" />
                     ট্রান্সক্রিপশন স্যাম্পল
                   </h3>
-                  <div className="relative w-64">
+                  <div className="relative flex-1 max-w-xs">
                     <Search className="absolute left-2 top-2.5 size-4 text-muted-foreground" />
                     <Input
                       placeholder="সার্চ স্যাম্পল..."
@@ -324,19 +342,20 @@ function TrainingProgress() {
                   </div>
                 </div>
 
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[40%]">প্রশ্ন (Question)</TableHead>
-                        <TableHead className="w-[40%]">উত্তর (Answer)</TableHead>
+                        <TableHead className="min-w-[120px]">প্রশ্ন (Question)</TableHead>
+                        <TableHead className="min-w-[120px]">উত্তর (Answer)</TableHead>
                         <TableHead>স্ট্যাটাস</TableHead>
+                        <TableHead className="w-20 text-right">অ্যাকশন</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {detailData.samples.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                             কোন স্যাম্পল পাওয়া যায়নি।
                           </TableCell>
                         </TableRow>
@@ -349,6 +368,16 @@ function TrainingProgress() {
                               <Badge variant="outline" className="text-[10px] uppercase">
                                 {sample.status}
                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setEditingPair(sample); setEditQ(sample.question); setEditA(sample.answer); }} title="এডিট">
+                                  <Pencil className="size-3" />
+                                </Button>
+                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => delPairMut.mutate(sample.id)} title="মুছুন">
+                                  <Trash2 className="size-3" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))
@@ -385,6 +414,31 @@ function TrainingProgress() {
               </div>
             </div>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editingPair} onOpenChange={(o) => !o && setEditingPair(null)}>
+        <DialogContent className="w-[94vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>পেয়ার এডিট করুন</DialogTitle>
+            <DialogDescription>প্রশ্ন ও উত্তর পরিবর্তন করুন।</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 p-1">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-muted-foreground">প্রশ্ন</label>
+              <Textarea value={editQ} onChange={(e) => setEditQ(e.target.value)} rows={3} className="text-sm" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-muted-foreground">উত্তর</label>
+              <Textarea value={editA} onChange={(e) => setEditA(e.target.value)} rows={5} className="text-sm" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingPair(null)}>বাতিল</Button>
+            <Button onClick={() => savePairMut.mutate({ id: editingPair?.id, question: editQ, answer: editA, status: editingPair?.status })} disabled={savePairMut.isPending || !editQ.trim() || !editA.trim()}>
+              {savePairMut.isPending ? <Loader2 className="size-4 animate-spin" /> : "সংরক্ষণ"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

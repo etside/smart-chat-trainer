@@ -701,7 +701,7 @@ function AttachmentRenderer({ msg }: { msg: SessionMessage }) {
 
   if (attachType === "video") {
     return (
-      <div className="relative w-[180px] h-[110px] bg-black/40 rounded-xl border border-border/30 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full max-w-[180px] h-auto aspect-video bg-black/40 rounded-xl border border-border/30 flex items-center justify-center overflow-hidden">
         {meta.attachment_preview && (
           <img src={meta.attachment_preview} alt="video thumb" className="absolute inset-0 w-full h-full object-cover opacity-60" />
         )}

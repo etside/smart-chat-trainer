@@ -822,11 +822,11 @@ function FlowEditor({
                       key={edge.id}
                       className="flex items-center gap-1 text-[10px] text-muted-foreground"
                     >
-                      <span className="truncate max-w-[70px] font-medium">
+                      <span className="truncate max-w-[60px] sm:max-w-[70px] font-medium">
                         {src?.label || "?"}
                       </span>
                       <ArrowRight className="size-2.5 shrink-0" />
-                      <span className="truncate max-w-[70px] font-medium">
+                      <span className="truncate max-w-[60px] sm:max-w-[70px] font-medium">
                         {tgt?.label || "?"}
                       </span>
                       <button

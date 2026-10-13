@@ -125,7 +125,7 @@ function Section({ title, icon: Icon, color, children, defaultOpen = true }: {
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-2xl border border-border/30 bg-card/20 overflow-hidden">
+    <div className="rounded-2xl border border-border/30 bg-card/20 overflow-hidden overflow-x-auto">
       <button onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-3 px-5 py-4 hover:bg-muted/20 transition-colors text-left">
         <div className={cn("size-8 rounded-xl flex items-center justify-center", color)}>
           <Icon className="size-4 text-primary-foreground" />
@@ -401,7 +401,7 @@ function ApiHubPage() {
         {/* Task routing table */}
         <div>
           <p className="text-[10px] uppercase tracking-wider font-black text-muted-foreground mb-2">Task → Model Routing (auto)</p>
-          <div className="rounded-xl border border-border/20 overflow-hidden">
+          <div className="rounded-xl border border-border/20 overflow-hidden overflow-x-auto">
             <table className="w-full text-[11px]">
               <thead><tr className="border-b border-border/20 bg-muted/20"><th className="text-left px-3 py-2 font-bold text-muted-foreground">Task</th><th className="text-left px-3 py-2 font-bold text-muted-foreground">Model</th><th className="text-left px-3 py-2 font-bold text-muted-foreground">Cost</th><th className="text-left px-3 py-2 font-bold text-muted-foreground">Reason</th></tr></thead>
               <tbody>

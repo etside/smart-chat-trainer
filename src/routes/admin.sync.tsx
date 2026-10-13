@@ -196,7 +196,7 @@ function SyncStatusPage() {
             <p className="text-muted-foreground">কোন সিঙ্ক রেকর্ড পাওয়া যায়নি।</p>
           </div>
         ) : (
-          <div className="panel overflow-hidden">
+          <div className="panel overflow-hidden overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">

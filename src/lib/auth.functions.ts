@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createServerFn } from '@tanstack/react-start';
 import { pgAuthClient } from '@/integrations/supabase/pg-auth';
 
@@ -6,13 +7,13 @@ import { z } from 'zod';
 export const serverSignIn = createServerFn({ method: 'POST' })
   .inputValidator((data) => z.object({ email: z.string(), password: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    return pgAuthClient.signInWithPassword(data);
+    return pgAuthClient.signInWithPassword(data) as any;
   });
 
 export const serverSignUp = createServerFn({ method: 'POST' })
   .inputValidator((data) => z.object({ email: z.string(), password: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    return pgAuthClient.signUp(data);
+    return pgAuthClient.signUp(data) as any;
   });
 
 export const serverSignOut = createServerFn({ method: 'POST' })

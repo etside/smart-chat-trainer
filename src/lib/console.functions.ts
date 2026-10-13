@@ -792,3 +792,13 @@ export const getIngestionStats = createServerFn({ method: "GET" })
       retryHistory: retryHistory.data || []
     };
   });
+
+// ─── E2E Adaptive Training: product knowledge injection ─────────────────────
+export const getProductKnowledge = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data } = await supabaseAdmin
+      .from("product_catalogue")
+      .select("id, name, price, currency, availability, stock, category, short_description, sizes")
+      .limit(500);
+    return { products: data ?? [] };
+  });

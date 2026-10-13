@@ -156,7 +156,7 @@ function EscalationPage() {
 
         <TabsContent value="escalations">
           <Card>
-            <CardContent className="p-0">
+            <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -208,7 +208,7 @@ function EscalationPage() {
 
         <TabsContent value="leads">
           <Card>
-            <CardContent className="p-0">
+            <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

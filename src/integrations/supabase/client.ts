@@ -49,7 +49,7 @@ const auth = {
             return { data: { session: _currentSession }, error: null };
           }
         } catch {}
-        storage.removeItem(AUTH_TOKEN_KEY);
+        storage?.removeItem(AUTH_TOKEN_KEY);
       }
     }
 
@@ -104,7 +104,7 @@ const auth = {
         const fns = await loadFns();
         await fns.serverSignOut({ data: { token } });
       } catch {}
-      storage.removeItem(AUTH_TOKEN_KEY);
+      storage?.removeItem(AUTH_TOKEN_KEY);
     }
     _currentSession = null;
     notifyAuthListeners('SIGNED_OUT', null);

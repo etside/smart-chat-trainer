@@ -384,7 +384,7 @@ export async function chatComplete(
     const { rotateApiKey } = await import("@/lib/ai.server");
     if (rotateApiKey()) {
       console.log("[AI] key rotated on 402, retrying entire call...");
-      return chatComplete(messages, { ...params, apiKey: undefined }, stream);
+      return chatComplete(messages);
     }
     throw new Error("NO_CREDITS");
   }
@@ -394,7 +394,7 @@ export async function chatComplete(
       const { rotateApiKey } = await import("@/lib/ai.server");
       if (rotateApiKey()) {
         console.log("[AI] key rotated on " + res.status + ", retrying entire call...");
-        return chatComplete(messages, { ...params, apiKey: undefined }, stream);
+        return chatComplete(messages);
       }
     }
     throw new Error(`AI request failed (${res.status}): ${text.slice(0, 300)}`);
