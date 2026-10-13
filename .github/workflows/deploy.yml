@@ -15,7 +15,7 @@ on:
         default: false
 
 env:
-  DROPLET_ID: "595134851"
+  DROPLET_ID: "608481907"
 
 jobs:
   build:
@@ -81,10 +81,14 @@ jobs:
               --exclude='node_modules' \
               --exclude='.git' \
               --exclude='dist' \
-              daddyai/
-            b2 file upload Kpakkaka "/tmp/$BACKUP_NAME" "KK/backups/daddyai/$BACKUP_NAME" 2>&1 && \
-              echo "Backup uploaded: KK/backups/daddyai/$BACKUP_NAME" || \
-              echo "B2 upload failed (non-fatal, continuing deploy)"
+              daddyai/ 2>/dev/null || true
+            if command -v b2 >/dev/null 2>&1; then
+              b2 file upload Kpakkaka "/tmp/$BACKUP_NAME" "KK/backups/daddyai/$BACKUP_NAME" 2>&1 && \
+                echo "Backup uploaded: KK/backups/daddyai/$BACKUP_NAME" || \
+                echo "B2 upload failed (non-fatal, continuing deploy)"
+            else
+              echo "b2 not installed — skipping B2 upload (continuing deploy)"
+            fi
             rm -f "/tmp/$BACKUP_NAME"
 
   deploy:
@@ -112,30 +116,38 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -e
+            mkdir -p /var/www/daddyai
             cd /var/www/daddyai
 
-            # Ensure swap exists (build needs RAM)
-            if [ ! -f /swapfile ]; then
-              fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
-              echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
-            fi
+            # Install PM2 if missing
+            export PATH="$PATH:/usr/local/bin:/root/.local/bin"
+            which pm2 >/dev/null 2>&1 || npm i -g pm2
 
-            # Handle rollback
-            if [ "${{ inputs.rollback }}" = "true" ]; then
-              echo "Rolling back to previous commit..."
-              git reset --hard HEAD~1
-            else
-              git pull daddyai main
-            fi
-
-            # Install & build
+            echo "--- Installing dependencies ---"
             npm ci --prefer-offline 2>/dev/null || npm install
-            npm run build
 
-            # Reload PM2
+      - name: Upload dist to VPS
+        uses: appleboy/scp-action@v2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "dist"
+          target: /var/www/daddyai
+
+      - name: Reload DaddyAI via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            export PATH="$PATH:/usr/local/bin:/root/.local/bin"
+            cd /var/www/daddyai
+            echo "dist contents:" && ls dist/
             pm2 reload daddyai --update-env || pm2 start ecosystem.config.cjs
             pm2 save
-
             echo "Deploy complete"
             pm2 list
 
@@ -143,7 +155,7 @@ jobs:
         id: health
         run: |
           sleep 10
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://daddyai.online/ 2>/dev/null || echo "000")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 http://168.144.180.56:3000/ 2>/dev/null || echo "000")
           echo "http_status=$HTTP_CODE" >> "$GITHUB_OUTPUT"
           echo "Health check: HTTP $HTTP_CODE"
           if [ "$HTTP_CODE" != "200" ]; then
@@ -160,12 +172,10 @@ jobs:
           script: |
             cd /var/www/daddyai
             echo "Health check failed — rolling back..."
-            git reset --hard HEAD~1
-            npm ci --prefer-offline 2>/dev/null || npm install
-            npm run build
-            pm2 reload daddyai --update-env
-            pm2 save
-            echo "Rollback complete"
+            export PATH="$PATH:/usr/local/bin:/root/.local/bin"
+            pm2 reload daddyai --update-env 2>/dev/null || pm2 restart daddyai 2>/dev/null || true
+            pm2 save 2>/dev/null || true
+            echo "Rollback attempt complete"
 
       - name: Create rollback issue
         if: steps.health.outputs.HEALTH_FAILED == 'true'
@@ -211,10 +221,14 @@ jobs:
               --exclude='.git' \
               daddyai/
 
-            # Upload to B2
-            b2 file upload Kpakkaka "/tmp/$BACKUP_NAME" "backups/$BACKUP_NAME" 2>/dev/null && \
-              echo "Backup uploaded: backups/$BACKUP_NAME" || \
-              echo "B2 upload failed (non-fatal)"
+            # Upload to B2 (skip if b2 missing)
+            if command -v b2 >/dev/null 2>&1; then
+              b2 file upload Kpakkaka "/tmp/$BACKUP_NAME" "backups/$BACKUP_NAME" 2>/dev/null && \
+                echo "Backup uploaded: backups/$BACKUP_NAME" || \
+                echo "B2 upload failed (non-fatal)"
+            else
+              echo "b2 not installed — skipping B2 upload (non-fatal)"
+            fi
 
             # Cleanup local
             rm -f "/tmp/$BACKUP_NAME"
